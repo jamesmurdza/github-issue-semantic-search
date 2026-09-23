@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .env
 .qdrant/
+.gh-issue/
 .fastembed_cache/
 .pytest_cache/
 .mypy_cache/

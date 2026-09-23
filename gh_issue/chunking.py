@@ -39,6 +39,12 @@ class Chunk(TypedDict):
     content_hash: str
 
 
+class EmbeddedChunk(Chunk):
+    """A chunk once it has a vector. This is what the store writes."""
+
+    vector: list[float]
+
+
 def _hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
