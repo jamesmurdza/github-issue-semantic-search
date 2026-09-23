@@ -1,0 +1,148 @@
+"""Thin GitHub REST client.
+
+Everything here is called from inside an Inngest step, so each function is one
+network round trip with no retry logic of its own — Inngest owns the retries.
+"""
+
+import os
+import re
+from typing import Any, TypedDict
+from urllib.parse import parse_qs, urlparse
+
+import httpx
+
+API = "https://api.github.com"
+PER_PAGE = 100
+
+Issue = dict[str, Any]
+Comment = dict[str, Any]
+
+_NEXT_LINK = re.compile(r'<([^>]+)>;\s*rel="next"')
+
+
+class IssuePage(TypedDict):
+    """One page of issues plus the cursor that fetches the page after it."""
+
+    issues: list[Issue]
+    next: str | None
+
+
+class RateLimit(TypedDict):
+    limit: int
+    remaining: int
+    reset: int
+
+
+def next_cursor_from_link(link_header: str | None) -> str | None:
+    """Pull the `after` cursor out of GitHub's Link header.
+
+    The issues endpoint paginates with an opaque cursor rather than a page
+    number, and it only appears in the header, never in the body.
+    """
+    if not link_header:
+        return None
+    match = _NEXT_LINK.search(link_header)
+    if match is None:
+        return None
+    after = parse_qs(urlparse(match.group(1)).query).get("after")
+    return after[0] if after else None
+
+
+def trim_comment(comment: Comment) -> Comment:
+    """Keep only the fields chunking reads.
+
+    A raw comment object is roughly 1.5 KB of JSON, most of it URLs we never
+    look at. This is the return value of a step, and a step's return value is
+    capped at 4 MiB, so the trim is what lets a very long thread through.
+    """
+    return {
+        "id": comment["id"],
+        "body": comment.get("body") or "",
+        "user": {"login": comment["user"]["login"]},
+        "created_at": comment["created_at"],
+    }
+
+
+def _client() -> httpx.Client:
+    token = os.environ["GITHUB_TOKEN"]
+    return httpx.Client(
+        base_url=API,
+        timeout=30.0,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+
+
+def list_issues(repo: str, cursor: str | None = None, since: str | None = None) -> IssuePage:
+    """One page of issues, newest state included, plus the next cursor.
+
+    `since` is what the hourly sweep uses: everything updated after that moment.
+    Note that this endpoint also returns pull requests — they carry a
+    `pull_request` field and the caller drops them.
+    """
+    params: dict[str, str | int] = {"per_page": PER_PAGE, "state": "all", "direction": "asc"}
+    if cursor:
+        params["after"] = cursor
+    if since:
+        params["since"] = since
+
+    with _client() as http:
+        response = http.get(f"/repos/{repo}/issues", params=params)
+        response.raise_for_status()
+        issues: list[Issue] = response.json()
+        return {"issues": issues, "next": next_cursor_from_link(response.headers.get("link"))}
+
+
+def list_comments(repo: str, number: int) -> list[Comment]:
+    """Every comment on one issue, trimmed.
+
+    Comments page at 100, so a long thread costs several calls. This is the one
+    call the indexing run makes, and the one that spends rate limit.
+    """
+    comments: list[Comment] = []
+    page = 1
+    with _client() as http:
+        while True:
+            response = http.get(
+                f"/repos/{repo}/issues/{number}/comments",
+                params={"per_page": PER_PAGE, "page": page},
+            )
+            response.raise_for_status()
+            batch: list[Comment] = response.json()
+            comments.extend(trim_comment(comment) for comment in batch)
+            if len(batch) < PER_PAGE:
+                return comments
+            page += 1
+
+
+def rate_limit() -> RateLimit:
+    """The token's current core budget. This endpoint does not spend any of it."""
+    with _client() as http:
+        response = http.get("/rate_limit")
+        response.raise_for_status()
+        core: RateLimit = response.json()["resources"]["core"]
+        return core
+
+
+def register_webhook(repo: str, url: str, secret: str) -> dict[str, Any]:
+    """Point a repo's issue events at an Inngest webhook URL.
+
+    Nothing of ours is in the request path: GitHub posts to Inngest, a transform
+    there shapes the payload into an event, and the indexing function picks it up.
+    """
+    with _client() as http:
+        response = http.post(
+            f"/repos/{repo}/hooks",
+            json={
+                "name": "web",
+                "active": True,
+                "events": ["issues", "issue_comment"],
+                "config": {"url": url, "content_type": "json", "secret": secret},
+            },
+        )
+        response.raise_for_status()
+        hook: dict[str, Any] = response.json()
+        return hook
