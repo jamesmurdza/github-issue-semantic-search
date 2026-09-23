@@ -6,10 +6,16 @@ instead of `url` and it keeps everything in a local directory with no daemon —
 and the test suite uses it so that running the tests needs nothing running.
 
 Embedded mode is not what ships, for one measured reason: it silently ignores
-payload indexes. Every filtered read then scans the whole collection, which costs
-about 19 ms against 1,500 chunks and 240 ms against 15,000. Since a filtered read
-happens once per issue, a 25,000-issue repo would spend hours doing nothing but
-looking things up. A server builds the indexes and turns that into a lookup.
+payload indexes, so every filtered read scans the whole collection. Since a
+filtered read happens once per issue, that cost is paid 25,000 times on a repo
+of the size this example is written for. Measured on the same machine, same data:
+
+    chunks    embedded   server
+     1,500     19.4 ms   13.1 ms
+    15,000    240.3 ms   12.3 ms
+
+Embedded grows with the collection. The server does not — past a few thousand
+chunks it is just the round trip.
 """
 
 import uuid

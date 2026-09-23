@@ -1,22 +1,36 @@
+import os
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from qdrant_client import QdrantClient
 
 from gh_issue.chunking import EmbeddedChunk
-from gh_issue.index.store import Store
+from gh_issue.index.store import COLLECTION, Store
 
 DIM = 4
+
+# Set this to run the same tests against the Qdrant that ships, rather than the
+# embedded one. Off by default so `uv run pytest` needs no daemon.
+#   GH_ISSUE_TEST_QDRANT_URL=http://localhost:6333 uv run pytest tests/test_store.py
+SERVER_URL = os.environ.get("GH_ISSUE_TEST_QDRANT_URL")
 
 
 @pytest.fixture
 def store(tmp_path: Path) -> Iterator[Store]:
-    """A real embedded Qdrant in a throwaway directory. Nothing here is mocked.
+    """A real Qdrant. Nothing here is mocked either way.
 
     Embedded mode locks its directory, so the store has to be closed before the
-    next test opens its own.
+    next test opens its own. Server mode shares one collection between tests, so
+    each test starts by dropping it.
     """
-    opened = Store(dim=DIM, path=str(tmp_path))
+    if SERVER_URL:
+        admin = QdrantClient(url=SERVER_URL)
+        admin.delete_collection(COLLECTION)
+        admin.close()
+        opened = Store(dim=DIM, url=SERVER_URL)
+    else:
+        opened = Store(dim=DIM, path=str(tmp_path))
     yield opened
     opened.close()
 
