@@ -6,16 +6,16 @@ network round trip with no retry logic of its own — Inngest owns the retries.
 
 import os
 import re
+from collections.abc import Mapping
 from typing import Any, TypedDict
 from urllib.parse import parse_qs, urlparse
 
 import httpx
 
+from gh_issue.github.types import Comment, Issue
+
 API = "https://api.github.com"
 PER_PAGE = 100
-
-Issue = dict[str, Any]
-Comment = dict[str, Any]
 
 _NEXT_LINK = re.compile(r'<([^>]+)>;\s*rel="next"')
 
@@ -48,7 +48,7 @@ def next_cursor_from_link(link_header: str | None) -> str | None:
     return after[0] if after else None
 
 
-def trim_comment(comment: Comment) -> Comment:
+def trim_comment(comment: Mapping[str, Any]) -> Comment:
     """Keep only the fields chunking reads.
 
     A raw comment object is roughly 1.5 KB of JSON, most of it URLs we never
@@ -111,7 +111,7 @@ def list_comments(repo: str, number: int) -> list[Comment]:
                 params={"per_page": PER_PAGE, "page": page},
             )
             response.raise_for_status()
-            batch: list[Comment] = response.json()
+            batch: list[dict[str, Any]] = response.json()
             comments.extend(trim_comment(comment) for comment in batch)
             if len(batch) < PER_PAGE:
                 return comments
