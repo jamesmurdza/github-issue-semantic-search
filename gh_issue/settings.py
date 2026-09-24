@@ -10,6 +10,7 @@ import os
 from functools import lru_cache
 
 from gh_issue.embed import DIM
+from gh_issue.index.cursors import Cursors
 from gh_issue.index.store import Store
 
 # The backfill, the webhook transform and the hourly sweep all emit this one.
@@ -37,3 +38,9 @@ def data_dir() -> str:
 def store() -> Store:
     """One connection per process, reused by every function and by the CLI."""
     return Store(dim=DIM, url=qdrant_url())
+
+
+@lru_cache(maxsize=1)
+def cursors() -> Cursors:
+    """Each tracked repo's sweep cursor, one small file per repo."""
+    return Cursors(os.path.join(data_dir(), "cursors"))
