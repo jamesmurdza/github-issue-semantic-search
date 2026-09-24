@@ -106,8 +106,14 @@ def rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Rig]:
 def test_indexes_the_body_and_every_comment(rig: Rig) -> None:
     output = rig.run(ISSUE)
 
-    assert output == {"repo": REPO, "issue": 412, "embedded": 3, "deleted": 0}
-    assert sorted(rig.store.hashes_for_issue(REPO, 412)) == [
+    assert output == {
+        "repo": REPO,
+        "issue": 412,
+        "embedded": 3,
+        "deleted": 0,
+        "refreshed": False,
+    }
+    assert sorted(rig.store.fingerprints_for_issue(REPO, 412)) == [
         "owner/name#412:body",
         "owner/name#412:comment:1",
         "owner/name#412:comment:2",
@@ -120,16 +126,57 @@ def test_an_issue_with_no_comments_never_calls_github(rig: Rig) -> None:
 
     assert rig.comment_fetches == []
     assert output["embedded"] == 1
-    assert list(rig.store.hashes_for_issue(REPO, 412)) == ["owner/name#412:body"]
+    assert list(rig.store.fingerprints_for_issue(REPO, 412)) == ["owner/name#412:body"]
 
 
 def test_running_twice_embeds_nothing_the_second_time(rig: Rig) -> None:
     rig.run(ISSUE)
     output = rig.run(ISSUE)
 
-    assert output == {"repo": REPO, "issue": 412, "embedded": 0, "deleted": 0}
+    assert output == {
+        "repo": REPO,
+        "issue": 412,
+        "embedded": 0,
+        "deleted": 0,
+        "refreshed": False,
+    }
     assert rig.embedded == 3
-    assert len(rig.store.hashes_for_issue(REPO, 412)) == 3
+    assert len(rig.store.fingerprints_for_issue(REPO, 412)) == 3
+
+
+def stored_meta(rig: Rig) -> set[tuple[str, str, tuple[str, ...]]]:
+    """Every distinct copy of the issue metadata across the thread's chunks."""
+    return {
+        (chunk["title"], chunk["state"], tuple(chunk["labels"]))
+        for chunk in rig.store.chunks_for_issue(REPO, 412)
+    }
+
+
+def test_closing_an_issue_updates_every_chunk_without_re_embedding(rig: Rig) -> None:
+    """Closing changes no text, so no hash moves — without the refresh, every
+    chunk would say `open` forever and a `state: closed` search would miss it."""
+    rig.run(ISSUE)
+    before = rig.embedded
+
+    output = rig.run({**ISSUE, "state": "closed", "labels": [{"name": "wontfix"}]})
+
+    assert output["refreshed"] is True
+    assert rig.embedded == before
+    assert stored_meta(rig) == {("App freezes when I scroll fast", "closed", ("wontfix",))}
+
+
+def test_retitling_re_embeds_the_body_and_refreshes_the_comments(rig: Rig) -> None:
+    """The title is part of the body's text, so the body is embedded again. The
+    comments only carry a copy of it, which the refresh rewrites."""
+    rig.run(ISSUE)
+    before = rig.embedded
+
+    output = rig.run({**ISSUE, "title": "Scrolling long lists freezes the app"})
+
+    assert output["embedded"] == 1
+    assert rig.embedded - before == 1
+    assert output["refreshed"] is True
+    assert stored_meta(rig) == {("Scrolling long lists freezes the app", "open", ("bug",))}
 
 
 def test_an_edited_comment_re_embeds_only_itself(rig: Rig) -> None:
@@ -142,7 +189,8 @@ def test_an_edited_comment_re_embeds_only_itself(rig: Rig) -> None:
     assert rig.embedded - before == 1
     assert output["embedded"] == 1
     assert output["deleted"] == 0
-    assert len(rig.store.hashes_for_issue(REPO, 412)) == 3
+    assert output["refreshed"] is False
+    assert len(rig.store.fingerprints_for_issue(REPO, 412)) == 3
 
 
 def test_a_removed_comment_is_cleaned_up(rig: Rig) -> None:
@@ -153,7 +201,7 @@ def test_a_removed_comment_is_cleaned_up(rig: Rig) -> None:
     output = rig.run({**ISSUE, "comments": 1})
 
     assert output["deleted"] == 1
-    assert sorted(rig.store.hashes_for_issue(REPO, 412)) == [
+    assert sorted(rig.store.fingerprints_for_issue(REPO, 412)) == [
         "owner/name#412:body",
         "owner/name#412:comment:1",
     ]
@@ -166,7 +214,7 @@ def test_a_deleted_issue_purges_the_whole_thread(rig: Rig) -> None:
     output = rig.run(ISSUE, deleted=True)
 
     assert output == {"repo": REPO, "issue": 412, "purged": True}
-    assert rig.store.hashes_for_issue(REPO, 412) == {}
+    assert rig.store.fingerprints_for_issue(REPO, 412) == {}
     assert rig.comment_fetches == [412]  # the purge path fetches nothing
     assert rig.embedded == before
 
@@ -179,4 +227,4 @@ def test_embedding_is_batched_against_the_step_output_cap(rig: Rig) -> None:
 
     assert rig.embed_batches == [EMBED_BATCH, 251 - EMBED_BATCH]
     assert output["embedded"] == 251
-    assert len(rig.store.hashes_for_issue(REPO, 412)) == 251
+    assert len(rig.store.fingerprints_for_issue(REPO, 412)) == 251

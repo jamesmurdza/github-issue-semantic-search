@@ -23,7 +23,13 @@ from typing import NotRequired, TypedDict, cast
 
 import inngest
 
-from gh_issue.chunking import chunks_for, needs_embedding, orphaned_ids
+from gh_issue.chunking import (
+    chunks_for,
+    issue_meta,
+    metadata_outdated,
+    needs_embedding,
+    orphaned_ids,
+)
 from gh_issue.embed import BATCH as EMBED_BATCH
 from gh_issue.embed import embed_chunks
 from gh_issue.functions.client import client
@@ -77,14 +83,26 @@ def index_issue(ctx: inngest.ContextSync) -> dict[str, object]:
 
     # The `or {}` is not defensive noise. A step returning an empty dict hands
     # back None, while every other falsy value survives the round trip — `[]`,
-    # `0` and `""` all come back intact. An unindexed issue has no stored hashes,
+    # `0` and `""` all come back intact. An unindexed issue has nothing stored,
     # so this is the ordinary case on a first backfill, not an edge case.
-    existing = ctx.step.run("lookup-hashes", index.hashes_for_issue, repo, number) or {}
+    existing = ctx.step.run("lookup-stored", index.fingerprints_for_issue, repo, number) or {}
 
     # No step.run on any of this: pure functions over results already in hand.
     chunks = chunks_for(repo, issue, comments)
-    stale = needs_embedding(chunks, existing)
-    orphans = orphaned_ids(chunks, existing)
+    hashes = {chunk_id: stored["content_hash"] for chunk_id, stored in existing.items()}
+    stale = needs_embedding(chunks, hashes)
+    orphans = orphaned_ids(chunks, hashes)
+    meta = issue_meta(issue)
+    refresh = metadata_outdated(meta, existing.values())
+
+    # Closing, relabelling or retitling an issue changes the copy of that
+    # metadata on every chunk without changing any chunk's text, so the hashes
+    # cannot see it. One write by filter fixes the whole thread, and it only
+    # runs when a stored copy actually differs. It goes before the upserts so
+    # that a run dying partway never leaves old chunks with old metadata behind
+    # new ones.
+    if refresh:
+        ctx.step.run("refresh-metadata", index.set_issue_meta, repo, number, meta)
 
     # Batched because a step's return value is capped at 4 MiB and one vector is
     # roughly 8 KB of JSON, so an unbatched embed step fails somewhere past four
@@ -100,4 +118,10 @@ def index_issue(ctx: inngest.ContextSync) -> dict[str, object]:
     # retry picks up at the delete instead of redoing the issue.
     ctx.step.run("cleanup", index.delete_many, orphans)
 
-    return {"repo": repo, "issue": number, "embedded": len(stale), "deleted": len(orphans)}
+    return {
+        "repo": repo,
+        "issue": number,
+        "embedded": len(stale),
+        "deleted": len(orphans),
+        "refreshed": refresh,
+    }

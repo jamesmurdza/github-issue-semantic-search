@@ -1,4 +1,10 @@
-from gh_issue.chunking import chunks_for, needs_embedding, orphaned_ids
+from gh_issue.chunking import (
+    chunks_for,
+    issue_meta,
+    metadata_outdated,
+    needs_embedding,
+    orphaned_ids,
+)
 from gh_issue.github.types import Comment, Issue
 
 REPO = "owner/name"
@@ -46,6 +52,28 @@ def test_every_chunk_carries_filterable_metadata() -> None:
         assert meta["kind"] in ("body", "comment")
         assert meta["author"]
         assert meta["created_at"]
+
+
+def test_every_chunk_carries_the_issue_title() -> None:
+    """A search hit on a comment is unreadable without knowing which issue it
+    belongs to, and Qdrant has no joins to look it up at query time."""
+    for chunk in chunks_for(REPO, ISSUE, COMMENTS):
+        assert chunk["meta"]["title"] == "App freezes when I scroll fast"
+
+
+def test_labels_are_stored_sorted() -> None:
+    """GitHub does not promise an order, and comparing stored labels with
+    current ones must not flag a reorder as a change."""
+    chunks = chunks_for(REPO, {**ISSUE, "labels": [{"name": "perf"}, {"name": "bug"}]}, [])
+    assert chunks[0]["meta"]["labels"] == ["bug", "perf"]
+
+
+def test_issue_meta_is_the_part_every_chunk_shares() -> None:
+    assert issue_meta(ISSUE) == {
+        "title": "App freezes when I scroll fast",
+        "state": "closed",
+        "labels": ["bug", "perf"],
+    }
 
 
 def test_comment_chunk_carries_its_own_author_and_date() -> None:
@@ -122,3 +150,26 @@ def test_an_edited_comment_is_re_embedded_but_never_orphaned() -> None:
 
     assert [c["id"] for c in needs_embedding(after, existing)] == ["owner/name#412:comment:9981"]
     assert orphaned_ids(after, existing) == []
+
+
+def test_metadata_is_current_when_every_stored_copy_matches() -> None:
+    assert not metadata_outdated(issue_meta(ISSUE), [issue_meta(ISSUE), issue_meta(ISSUE)])
+
+
+def test_nothing_stored_is_not_outdated() -> None:
+    """A first index writes fresh metadata with every chunk; there is nothing to fix."""
+    assert not metadata_outdated(issue_meta(ISSUE), [])
+
+
+def test_closing_relabelling_or_retitling_is_outdated() -> None:
+    """None of these change any chunk's text, so the content hash cannot see them."""
+    stored = issue_meta(ISSUE)
+    assert metadata_outdated({**stored, "state": "open"}, [stored])
+    assert metadata_outdated({**stored, "labels": ["bug"]}, [stored])
+    assert metadata_outdated({**stored, "title": "Scrolling freezes"}, [stored])
+
+
+def test_one_stale_copy_is_enough_to_be_outdated() -> None:
+    """A run that died halfway can leave a thread with mixed copies."""
+    current = issue_meta(ISSUE)
+    assert metadata_outdated(current, [current, {**current, "state": "open"}])

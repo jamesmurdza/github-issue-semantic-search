@@ -12,6 +12,7 @@ def _chunk(chunk_id: str, text: str) -> Chunk:
         "text": text,
         "content_hash": "h",
         "meta": {
+            "title": "App freezes when I scroll fast",
             "repo": "owner/name",
             "issue_number": 412,
             "state": "open",

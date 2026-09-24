@@ -14,19 +14,34 @@ cannot do both.
 """
 
 import hashlib
+from collections.abc import Iterable
 from typing import TypedDict
 
 from gh_issue.github.types import Comment, Issue
 
 
-class ChunkMeta(TypedDict):
+class IssueMeta(TypedDict):
+    """The part of a chunk's metadata that belongs to the issue, not the chunk.
+
+    It is copied onto the body and every comment, because Qdrant has no joins: a
+    search filtering on `state` only sees what is on the chunk it matched, and a
+    hit on a comment is only readable if it knows its issue's title. The price
+    is that closing, relabelling or retitling an issue changes every copy
+    without changing any chunk's text, so the content hash cannot notice.
+    `metadata_outdated` is what does.
+    """
+
+    title: str
+    state: str
+    labels: list[str]
+
+
+class ChunkMeta(IssueMeta):
     """Written to every chunk. Qdrant filters on stored payload, so a field that
     is not here cannot be filtered on later."""
 
     repo: str
     issue_number: int
-    state: str
-    labels: list[str]
     kind: str
     author: str
     created_at: str
@@ -53,18 +68,31 @@ def _chunk(chunk_id: str, text: str, meta: ChunkMeta) -> Chunk:
     return {"id": chunk_id, "text": text, "meta": meta, "content_hash": _hash(text)}
 
 
+def issue_meta(issue: Issue) -> IssueMeta:
+    """What every chunk of this issue should currently carry.
+
+    Labels are sorted because GitHub does not promise an order, and a reorder
+    must not look like a change.
+    """
+    return {
+        "title": issue["title"],
+        "state": issue["state"],
+        "labels": sorted(label["name"] for label in issue.get("labels", [])),
+    }
+
+
 def chunks_for(repo: str, issue: Issue, comments: list[Comment]) -> list[Chunk]:
     """Every chunk this issue produces right now, body first."""
     number: int = issue["number"]
-    state: str = issue["state"]
-    labels = [label["name"] for label in issue.get("labels", [])]
+    shared = issue_meta(issue)
 
     def meta(kind: str, author: str, created_at: str) -> ChunkMeta:
         return {
+            "title": shared["title"],
+            "state": shared["state"],
+            "labels": list(shared["labels"]),
             "repo": repo,
             "issue_number": number,
-            "state": state,
-            "labels": list(labels),
             "kind": kind,
             "author": author,
             "created_at": created_at,
@@ -107,3 +135,14 @@ def orphaned_ids(chunks: list[Chunk], existing: dict[str, str]) -> list[str]:
     """
     live = {chunk["id"] for chunk in chunks}
     return [chunk_id for chunk_id in existing if chunk_id not in live]
+
+
+def metadata_outdated(current: IssueMeta, stored: Iterable[IssueMeta]) -> bool:
+    """Whether any stored copy of the issue's metadata differs from `current`.
+
+    Any, not the body's alone: a run that dies after writing some chunks but
+    before refreshing the rest leaves a thread with mixed copies, and the next
+    run has to see that.
+    """
+    wanted = (current["title"], current["state"], current["labels"])
+    return any((copy["title"], copy["state"], copy["labels"]) != wanted for copy in stored)
