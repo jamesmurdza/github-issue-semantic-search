@@ -30,6 +30,23 @@ def worker() -> None:
     run()
 
 
+@app.command
+def sync(*repos: str) -> None:
+    """Index a repo, or bring it up to date. Safe to run again at any time.
+
+    The first sync of a repo starts a backfill. After that, sync checks for
+    changes, resumes a backfill that stopped, and retries issues that failed.
+
+    Parameters
+    ----------
+    repos
+        One or more repos as owner/name. Leave out to sync every repo synced before.
+    """
+    from gh_issue.sync import run
+
+    run(list(repos))
+
+
 def main() -> None:
     load_env()
     app()

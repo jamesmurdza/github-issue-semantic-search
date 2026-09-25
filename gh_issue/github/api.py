@@ -123,6 +123,32 @@ def list_comments(repo: str, number: int) -> list[Comment]:
             page += 1
 
 
+def get_issue(repo: str, number: int) -> Issue | None:
+    """One issue as it is on GitHub now, or None if this repo no longer has it.
+
+    404 is an issue that was never there, 410 one that was deleted, and 301 one
+    transferred to another repo; for this repo's index they all mean gone.
+    """
+    with _client() as http:
+        response = http.get(f"/repos/{repo}/issues/{number}")
+        if response.status_code in (301, 404, 410):
+            return None
+        response.raise_for_status()
+        issue: Issue = response.json()
+        return issue
+
+
+def repo_exists(repo: str) -> bool:
+    """Whether the token can see this repo, checked before starting a backfill so
+    a typo fails here rather than in a run that retries for minutes."""
+    with _client() as http:
+        response = http.get(f"/repos/{repo}")
+        if response.status_code == 404:
+            return False
+        response.raise_for_status()
+        return True
+
+
 def rate_limit() -> RateLimit:
     """The token's current core budget. This endpoint does not spend any of it."""
     with _client() as http:

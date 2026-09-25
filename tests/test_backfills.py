@@ -28,3 +28,10 @@ def test_each_repo_keeps_its_own_progress(tmp_path: Path) -> None:
     backfills.set(progress("c/d", None))
     assert backfills.get("a/b") == progress("a/b", "CURSOR-3")
     assert backfills.get("c/d") == progress("c/d", None)
+
+
+def test_repos_lists_every_repo_with_a_backfill(tmp_path: Path) -> None:
+    backfills = Backfills(str(tmp_path))
+    backfills.set(progress("c/d", None))
+    backfills.set(progress("a/b", "CURSOR-3"))
+    assert backfills.repos() == ["a/b", "c/d"]

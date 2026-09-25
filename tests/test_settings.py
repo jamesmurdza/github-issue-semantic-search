@@ -1,11 +1,10 @@
-import os
 from collections.abc import Iterator
 
-import httpx
 import inngest
 import pytest
 
 from gh_issue import settings
+from gh_issue.embed import DIM
 from gh_issue.functions.client import client
 
 
@@ -63,15 +62,21 @@ def test_the_client_talks_to_cloud_unless_inngest_dev_is_set(
     assert "8288" in dev.api_origin
 
 
-def _server_reachable() -> bool:
-    try:
-        httpx.get(os.environ.get("QDRANT_URL", "http://localhost:6333") + "/readyz", timeout=1.0)
-    except httpx.HTTPError:
-        return False
-    return True
+def test_the_store_is_opened_once_and_reused(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One process, one connection. Every function reaches for this.
 
+    A stand-in for the store, so this neither needs a Qdrant running nor opens
+    the index that lives in one — it used to, and failed the day that index's
+    collection had been made with the wrong vector size.
+    """
+    opened: list[dict[str, object]] = []
 
-@pytest.mark.skipif(not _server_reachable(), reason="needs the Qdrant from docker-compose")
-def test_the_store_is_opened_once_and_reused() -> None:
-    """One process, one connection. Every function reaches for this."""
+    class Opening:
+        def __init__(self, **options: object) -> None:
+            opened.append(options)
+
+    monkeypatch.setattr(settings, "Store", Opening)
+    monkeypatch.setenv("QDRANT_URL", "http://qdrant.internal:6333")
+
     assert settings.store() is settings.store()
+    assert opened == [{"dim": DIM, "url": "http://qdrant.internal:6333"}]

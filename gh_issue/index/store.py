@@ -113,17 +113,25 @@ def _stored_from_payload(payload: Mapping[str, Any]) -> StoredChunk:
 
 
 class Store:
-    def __init__(self, dim: int, url: str | None = None, path: str | None = None) -> None:
+    def __init__(
+        self,
+        dim: int,
+        url: str | None = None,
+        path: str | None = None,
+        collection: str = COLLECTION,
+    ) -> None:
         """Connect to a Qdrant server at `url`, or open an embedded one at `path`.
 
         Exactly one of the two. `url` is what ships; `path` exists so the tests
-        can run without a daemon.
+        can run without a daemon. `collection` exists so tests pointed at a real
+        server never touch the index that lives there.
         """
         if (url is None) == (path is None):
             raise ValueError("pass exactly one of url= (server) or path= (embedded)")
         self._server = url is not None
         self._client = QdrantClient(url=url) if url is not None else QdrantClient(path=path)
         self._dim = dim
+        self._collection = collection
         self._ensure_collection()
 
     def close(self) -> None:
@@ -140,23 +148,40 @@ class Store:
         The indexes are requested on every open, not only on create. Qdrant
         treats an index that already exists as a no-op, so a collection made
         before a field was added picks the new index up without a reindex.
+
+        A collection that already exists must hold vectors of this model's size.
+        If it does not, every write would fail with a 400 that Inngest retries
+        for minutes, and the runs would just look stuck; better to say so here.
         """
-        if not self._client.collection_exists(COLLECTION):
+        if not self._client.collection_exists(self._collection):
             self._client.create_collection(
-                COLLECTION,
+                self._collection,
                 vectors_config=models.VectorParams(size=self._dim, distance=models.Distance.COSINE),
             )
+        else:
+            vectors = self._client.get_collection(self._collection).config.params.vectors
+            size = vectors.size if isinstance(vectors, models.VectorParams) else None
+            if size != self._dim:
+                raise ValueError(
+                    f"The Qdrant collection {self._collection} holds {size}-dimension vectors, "
+                    f"but the embedding model makes {self._dim}. Something else made it (another "
+                    "model, or a test run). Delete the collection and run `gh-issue sync` again."
+                )
         if not self._server:
             return
         for field in _KEYWORD_INDEXES:
             self._client.create_payload_index(
-                COLLECTION, field_name=field, field_schema=models.PayloadSchemaType.KEYWORD
+                self._collection, field_name=field, field_schema=models.PayloadSchemaType.KEYWORD
             )
         self._client.create_payload_index(
-            COLLECTION, field_name="issue_number", field_schema=models.PayloadSchemaType.INTEGER
+            self._collection,
+            field_name="issue_number",
+            field_schema=models.PayloadSchemaType.INTEGER,
         )
         self._client.create_payload_index(
-            COLLECTION, field_name="created_at", field_schema=models.PayloadSchemaType.DATETIME
+            self._collection,
+            field_name="created_at",
+            field_schema=models.PayloadSchemaType.DATETIME,
         )
 
     @staticmethod
@@ -174,7 +199,7 @@ class Store:
         offset: models.ExtendedPointId | None = None
         while True:
             page, offset = self._client.scroll(
-                COLLECTION,
+                self._collection,
                 scroll_filter=where,
                 limit=256,
                 offset=offset,
@@ -214,7 +239,7 @@ class Store:
         if not chunks:
             return 0
         self._client.upsert(
-            COLLECTION,
+            self._collection,
             points=[
                 models.PointStruct(
                     id=point_id(chunk["id"]),
@@ -236,7 +261,7 @@ class Store:
         if not chunk_ids:
             return 0
         self._client.delete(
-            COLLECTION,
+            self._collection,
             points_selector=models.PointIdsList(
                 points=[point_id(chunk_id) for chunk_id in chunk_ids]
             ),
@@ -250,13 +275,13 @@ class Store:
         7 to 37 ms for threads of 20 to 1,000 chunks.
         """
         self._client.set_payload(
-            COLLECTION, payload=dict(meta), points=self._issue_filter(repo, number)
+            self._collection, payload=dict(meta), points=self._issue_filter(repo, number)
         )
 
     def delete_by_issue(self, repo: str, number: int) -> None:
         """Purge a whole thread, for when the issue itself was deleted."""
         self._client.delete(
-            COLLECTION,
+            self._collection,
             points_selector=models.FilterSelector(filter=self._issue_filter(repo, number)),
         )
 
@@ -270,7 +295,7 @@ class Store:
         than whichever of the top ten happened to be closed.
         """
         hits = self._client.query_points(
-            COLLECTION,
+            self._collection,
             query=vector,
             query_filter=_search_filter(filters or {}),
             limit=limit,
@@ -296,9 +321,11 @@ class Store:
 
     def _count_by_repo(self, where: models.Filter | None) -> dict[str, int]:
         hits = self._client.facet(
-            COLLECTION, key="repo", facet_filter=where, limit=_MAX_REPOS, exact=True
+            self._collection, key="repo", facet_filter=where, limit=_MAX_REPOS, exact=True
         ).hits
-        return {str(hit.value): hit.count for hit in hits}
+        # The server keeps a value in its payload index after the last point
+        # carrying it is deleted, and reports it with a count of zero.
+        return {str(hit.value): hit.count for hit in hits if hit.count > 0}
 
 
 def _match(key: str, value: str) -> models.Filter:

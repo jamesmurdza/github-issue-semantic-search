@@ -175,6 +175,9 @@ def preflight(production: bool) -> list[str]:
                 )
     try:
         store()
+    except ValueError as error:
+        # Reached Qdrant, but the collection there is unusable; say which way.
+        problems.append(str(error))
     except Exception:
         problems.append(
             f"Qdrant is not reachable at {qdrant_url()}. Start it with: docker compose up -d"

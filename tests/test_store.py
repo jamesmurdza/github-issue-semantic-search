@@ -15,6 +15,10 @@ DIM = 4
 #   GH_ISSUE_TEST_QDRANT_URL=http://localhost:6333 uv run pytest tests/test_store.py
 SERVER_URL = os.environ.get("GH_ISSUE_TEST_QDRANT_URL")
 
+# Never the real collection: the server may be the one holding your index, and
+# these tests drop their collection before and after every test.
+TEST_COLLECTION = f"{COLLECTION}_test"
+
 
 @pytest.fixture
 def store(tmp_path: Path) -> Iterator[Store]:
@@ -22,17 +26,41 @@ def store(tmp_path: Path) -> Iterator[Store]:
 
     Embedded mode locks its directory, so the store has to be closed before the
     next test opens its own. Server mode shares one collection between tests, so
-    each test starts by dropping it.
+    each test drops it first and again when done.
     """
-    if SERVER_URL:
-        admin = QdrantClient(url=SERVER_URL)
-        admin.delete_collection(COLLECTION)
-        admin.close()
-        opened = Store(dim=DIM, url=SERVER_URL)
-    else:
-        opened = Store(dim=DIM, path=str(tmp_path))
+    if not SERVER_URL:
+        opened = Store(dim=DIM, path=str(tmp_path), collection=TEST_COLLECTION)
+        yield opened
+        opened.close()
+        return
+    admin = QdrantClient(url=SERVER_URL)
+    admin.delete_collection(TEST_COLLECTION)
+    opened = Store(dim=DIM, url=SERVER_URL, collection=TEST_COLLECTION)
     yield opened
     opened.close()
+    admin.delete_collection(TEST_COLLECTION)
+    admin.close()
+
+
+def test_a_store_only_touches_its_own_collection(tmp_path: Path) -> None:
+    """What keeps these tests off a real index living in the same Qdrant."""
+    where = {"url": SERVER_URL} if SERVER_URL else {"path": str(tmp_path)}
+    first = Store(dim=DIM, collection=f"{TEST_COLLECTION}_first", **where)
+    first.upsert([_chunk("owner/name#412:body", "h1")])
+    first.close()
+
+    second = Store(dim=DIM, collection=f"{TEST_COLLECTION}_second", **where)
+    assert second.fingerprints_for_issue("owner/name", 412) == {}
+    second.close()
+
+    reopened = Store(dim=DIM, collection=f"{TEST_COLLECTION}_first", **where)
+    assert list(reopened.fingerprints_for_issue("owner/name", 412)) == ["owner/name#412:body"]
+    reopened.close()
+    if SERVER_URL:
+        admin = QdrantClient(url=SERVER_URL)
+        admin.delete_collection(f"{TEST_COLLECTION}_first")
+        admin.delete_collection(f"{TEST_COLLECTION}_second")
+        admin.close()
 
 
 def test_store_needs_exactly_one_of_url_or_path() -> None:
@@ -294,3 +322,28 @@ def test_search_filters(searchable: Store, filters: SearchFilters, expected: lis
 def test_a_since_that_is_not_a_date_is_refused(searchable: Store) -> None:
     with pytest.raises(ValueError, match="since"):
         searchable.search(VECTOR, filters={"since": "last tuesday"})
+
+
+def test_stats_forgets_a_repo_once_its_chunks_are_gone(store: Store) -> None:
+    """Qdrant's server keeps a deleted repo's value in its facet index with a
+    count of zero; `status` must not list it."""
+    store.upsert([_chunk("owner/name#412:body", "h1")])
+    store.delete_by_issue("owner/name", 412)
+    assert store.stats() == {}
+
+
+def test_a_collection_made_for_another_vector_size_is_refused_on_open(tmp_path: Path) -> None:
+    """Otherwise every write fails with a 400 that Inngest retries for minutes,
+    and the run just looks stuck — which is how this was found: a test run had
+    made the real collection with 4-dimension vectors."""
+    where = {"url": SERVER_URL} if SERVER_URL else {"path": str(tmp_path)}
+    name = f"{TEST_COLLECTION}_size"
+    Store(dim=DIM, collection=name, **where).close()
+    try:
+        with pytest.raises(ValueError, match=rf"{name}.*{DIM}.*{DIM * 2}"):
+            Store(dim=DIM * 2, collection=name, **where)
+    finally:
+        if SERVER_URL:
+            admin = QdrantClient(url=SERVER_URL)
+            admin.delete_collection(name)
+            admin.close()

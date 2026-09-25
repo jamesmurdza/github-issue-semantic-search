@@ -287,3 +287,18 @@ def test_qdrant_not_running_says_how_to_start_it(
     (problem,) = ready(production=False)
     assert "Qdrant" in problem
     assert "docker compose up -d" in problem
+
+
+def test_a_collection_of_the_wrong_size_is_reported_as_itself(
+    ready: Callable[..., list[str]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Qdrant is reachable here; saying it is not would send you the wrong way."""
+
+    def wrong_size() -> None:
+        raise ValueError("The Qdrant collection gh_issue_chunks holds 4-dimension vectors")
+
+    monkeypatch.setattr(worker, "store", wrong_size)
+
+    (problem,) = ready(production=False)
+    assert "4-dimension" in problem
+    assert "not reachable" not in problem

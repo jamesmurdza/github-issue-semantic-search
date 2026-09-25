@@ -1,3 +1,6 @@
+from collections.abc import Callable
+
+import httpx
 import pytest
 
 from gh_issue.github import api
@@ -10,6 +13,63 @@ def test_a_missing_token_says_what_to_do(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     with pytest.raises(RuntimeError, match=r"GITHUB_TOKEN is not set.*\.env"):
         api.list_comments("owner/name", 1)
+
+
+def answering(
+    monkeypatch: pytest.MonkeyPatch, handler: Callable[[httpx.Request], httpx.Response]
+) -> list[str]:
+    """Route the GitHub client through a fake transport; returns the paths asked for."""
+    asked: list[str] = []
+
+    def transport(request: httpx.Request) -> httpx.Response:
+        asked.append(request.url.path)
+        return handler(request)
+
+    monkeypatch.setattr(
+        api,
+        "_client",
+        lambda: httpx.Client(base_url=api.API, transport=httpx.MockTransport(transport)),
+    )
+    return asked
+
+
+def test_get_issue_reads_one_issue_fresh(monkeypatch: pytest.MonkeyPatch) -> None:
+    raw = {"number": 412, "title": "t", "state": "closed"}
+    asked = answering(monkeypatch, lambda request: httpx.Response(200, json=raw))
+
+    assert api.get_issue("owner/name", 412) == raw
+    assert asked == ["/repos/owner/name/issues/412"]
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        pytest.param(404, id="never-there"),
+        pytest.param(410, id="deleted"),
+        pytest.param(301, id="transferred-to-another-repo"),
+    ],
+)
+def test_get_issue_of_an_issue_this_repo_no_longer_has_is_none(
+    monkeypatch: pytest.MonkeyPatch, status: int
+) -> None:
+    answering(monkeypatch, lambda request: httpx.Response(status))
+    assert api.get_issue("owner/name", 412) is None
+
+
+def test_get_issue_still_raises_on_real_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A 502 is GitHub having a bad minute, not an answer about the issue."""
+    answering(monkeypatch, lambda request: httpx.Response(502))
+    with pytest.raises(httpx.HTTPStatusError):
+        api.get_issue("owner/name", 412)
+
+
+def test_repo_exists(monkeypatch: pytest.MonkeyPatch) -> None:
+    answering(
+        monkeypatch,
+        lambda request: httpx.Response(200 if request.url.path == "/repos/a/b" else 404),
+    )
+    assert api.repo_exists("a/b")
+    assert not api.repo_exists("a/typo")
 
 
 def test_next_cursor_from_link_header() -> None:

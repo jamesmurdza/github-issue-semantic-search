@@ -32,6 +32,15 @@ class BackfillPage(TypedDict):
     chain: NotRequired[str]
 
 
+def page_event_id(chain: str, cursor: str | None) -> str:
+    """The id of the event that starts one page of one backfill.
+
+    The chain uses it for the page it sends next, and `gh-issue sync` uses it to
+    resume, so both always name a page the same way and Inngest keeps only one.
+    """
+    return f"backfill:{chain}:{cursor or 'start'}"
+
+
 def _record_progress(repo: str, chain: str, next_cursor: str | None) -> BackfillProgress:
     progress: BackfillProgress = {
         "repo": repo,
@@ -108,7 +117,7 @@ def backfill_page(ctx: inngest.ContextSync) -> dict[str, object]:
             "next-page",
             [
                 inngest.Event(
-                    id=f"backfill:{chain}:{page['next']}",
+                    id=page_event_id(chain, page["next"]),
                     name=EVENT_BACKFILL_PAGE,
                     data={"repo": repo, "cursor": page["next"], "chain": chain},
                 )

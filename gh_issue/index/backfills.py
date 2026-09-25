@@ -35,3 +35,7 @@ class Backfills:
 
     def set(self, progress: BackfillProgress) -> None:
         self._files.write(progress)
+
+    def repos(self) -> list[str]:
+        """Every repo a backfill was ever started for."""
+        return self._files.repos()
