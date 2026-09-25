@@ -228,3 +228,21 @@ def test_embedding_is_batched_against_the_step_output_cap(rig: Rig) -> None:
     assert rig.embed_batches == [EMBED_BATCH, 251 - EMBED_BATCH]
     assert output["embedded"] == 251
     assert len(rig.store.fingerprints_for_issue(REPO, 412)) == 251
+
+
+def test_one_run_per_issue_and_the_newest_event_wins() -> None:
+    """Two runs on the same issue at once undo each other's work: the one that
+    finishes last deletes a comment the other just wrote, or puts back a state
+    the other just replaced. Both were reproduced with this function.
+
+    Inngest's singleton, keyed per issue in cancel mode, lets only one run per
+    issue exist and cancels it when a newer event arrives. The mocked harness
+    does not enforce singleton, so this pins the configuration; the behaviour
+    was measured on the dev server — a newer event cancels a run mid-flight and
+    a run waiting to retry, and from 0.2 s apart the newest event always wins.
+    """
+    singleton = mod.index_issue.get_config("http://unused").main.singleton
+
+    assert singleton is not None
+    assert singleton.mode == "cancel"
+    assert singleton.key == 'event.data.repo + "#" + string(event.data.issue.number)'

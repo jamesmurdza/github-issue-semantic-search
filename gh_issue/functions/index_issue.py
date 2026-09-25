@@ -62,6 +62,16 @@ class IssueChanged(TypedDict):
     # calls to four different repos — so keying this on the repo would let two
     # repos spend one budget twice over. 4,500 leaves the backfill's paging room.
     throttle=inngest.Throttle(limit=4500, period=datetime.timedelta(hours=1)),
+    # One run per issue at a time, and a newer event cancels the one in flight.
+    # Two runs on one issue at once undo each other — the last to finish deletes
+    # a comment the other just wrote, or restores a state it just replaced — and
+    # the backfill, the sweep and a second `sync` can all hand off the same issue.
+    # A cancelled run loses nothing: what it wrote stays, and the newer run's
+    # hash check skips it. `concurrency` would not do: it counts executing steps,
+    # so two runs still interleave between them.
+    singleton=inngest.Singleton(
+        key='event.data.repo + "#" + string(event.data.issue.number)', mode="cancel"
+    ),
 )
 def index_issue(ctx: inngest.ContextSync) -> dict[str, object]:
     event = cast(IssueChanged, ctx.event.data)

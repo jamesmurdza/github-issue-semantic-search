@@ -1,5 +1,16 @@
-# Qdrant for gh-issue. Pinned to the same minor as the client in pyproject.toml.
+# Local services for gh-issue: Qdrant always, the Inngest dev server for local
+# runs. Qdrant is pinned to the same minor as the client in pyproject.toml.
 services:
+  inngest:
+    image: inngest/inngest:v1.45.1
+    container_name: gh-issue-inngest
+    # No discovery: the worker connects out to the dev server, not the other way.
+    command: inngest dev --no-discovery
+    ports:
+      - "8288:8288"   # API, and the dashboard at http://localhost:8288
+      - "8289:8289"   # connect gateway, where `gh-issue worker` connects
+    restart: unless-stopped
+
   qdrant:
     image: qdrant/qdrant:v1.19.1
     container_name: gh-issue-qdrant
