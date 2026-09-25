@@ -665,6 +665,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },
     { name = "inngest", extra = ["connect"] },
+    { name = "python-dotenv" },
     { name = "qdrant-client" },
 ]
 
@@ -684,6 +685,7 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=4.0.5" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "inngest", extras = ["connect"], specifier = ">=0.5.19" },
+    { name = "python-dotenv", specifier = ">=1.1" },
     { name = "qdrant-client", specifier = ">=1.19.1" },
 ]
 

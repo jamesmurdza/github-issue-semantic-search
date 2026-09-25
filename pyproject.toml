@@ -10,8 +10,12 @@ dependencies = [
     "fastmcp>=4.0.5",
     "httpx>=0.28.1",
     "inngest[connect]>=0.5.19",
+    "python-dotenv>=1.1",
     "qdrant-client>=1.19.1",
 ]
+
+[project.scripts]
+gh-issue = "gh_issue.cli:main"
 
 [build-system]
 requires = ["hatchling"]
