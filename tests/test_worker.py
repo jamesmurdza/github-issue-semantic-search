@@ -7,7 +7,6 @@ where every run would fail, and the shutdown that cleans up after it.
 """
 
 import asyncio
-import datetime
 import os
 import socket
 from collections.abc import Callable
@@ -18,8 +17,9 @@ import pytest
 from inngest.connect import ConnectionState
 
 from gh_issue import worker
+from gh_issue.heartbeat import read_heartbeat
 from gh_issue.index import repo_files
-from gh_issue.worker import Beat, Heartbeat, is_fresh, read_heartbeat
+from gh_issue.worker import Beat
 
 States = ConnectionState
 
@@ -115,30 +115,6 @@ def test_stop_removes_the_heartbeat(tmp_path: Path, clock: FakeClock) -> None:
     beat.stop()
 
     assert read_heartbeat(path) is None
-
-
-def heartbeat(beat_at: str) -> Heartbeat:
-    return {
-        "pid": 1,
-        "host": "h",
-        "mode": "dev",
-        "state": "ACTIVE",
-        "started_at": "2026-09-25T09:00:00Z",
-        "beat_at": beat_at,
-    }
-
-
-def test_no_heartbeat_means_no_worker(tmp_path: Path) -> None:
-    at = datetime.datetime(2026, 9, 25, 10, 0, tzinfo=datetime.UTC)
-    assert read_heartbeat(tmp_path / "worker.json") is None
-    assert not is_fresh(None, at)
-
-
-def test_a_heartbeat_goes_stale_after_thirty_seconds() -> None:
-    """A worker killed outright never removes its file; the age is what tells."""
-    at = datetime.datetime(2026, 9, 25, 10, 0, 30, tzinfo=datetime.UTC)
-    assert is_fresh(heartbeat("2026-09-25T10:00:05Z"), at)
-    assert not is_fresh(heartbeat("2026-09-25T09:59:59Z"), at)
 
 
 # Serving -------------------------------------------------------------------------
@@ -244,7 +220,7 @@ def ready(monkeypatch: pytest.MonkeyPatch) -> Callable[..., list[str]]:
     monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
     monkeypatch.setenv("INNGEST_SIGNING_KEY", "signkey-test")
     monkeypatch.setenv("INNGEST_EVENT_KEY", "evtkey-test")
-    monkeypatch.setattr(worker, "store", lambda: None)
+    monkeypatch.setattr(worker, "index_problem", lambda: None)
     return worker.preflight
 
 
@@ -276,29 +252,10 @@ def test_inngest_cloud_needs_both_keys_and_the_dev_server_needs_neither(
     assert ready(production=False) == []
 
 
-def test_qdrant_not_running_says_how_to_start_it(
+def test_a_problem_with_the_index_is_passed_on(
     ready: Callable[..., list[str]], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def unreachable() -> None:
-        raise ConnectionError("refused")
+    """What the problem says is settings.index_problem's to decide; tested there."""
+    monkeypatch.setattr(worker, "index_problem", lambda: "Qdrant is not reachable")
 
-    monkeypatch.setattr(worker, "store", unreachable)
-
-    (problem,) = ready(production=False)
-    assert "Qdrant" in problem
-    assert "docker compose up -d" in problem
-
-
-def test_a_collection_of_the_wrong_size_is_reported_as_itself(
-    ready: Callable[..., list[str]], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Qdrant is reachable here; saying it is not would send you the wrong way."""
-
-    def wrong_size() -> None:
-        raise ValueError("The Qdrant collection gh_issue_chunks holds 4-dimension vectors")
-
-    monkeypatch.setattr(worker, "store", wrong_size)
-
-    (problem,) = ready(production=False)
-    assert "4-dimension" in problem
-    assert "not reachable" not in problem
+    assert ready(production=False) == ["Qdrant is not reachable"]

@@ -80,3 +80,36 @@ def test_the_store_is_opened_once_and_reused(monkeypatch: pytest.MonkeyPatch) ->
 
     assert settings.store() is settings.store()
     assert opened == [{"dim": DIM, "url": "http://qdrant.internal:6333"}]
+
+
+def test_an_index_that_opens_has_no_problem(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "store", lambda: None)
+    assert settings.index_problem() is None
+
+
+def test_qdrant_not_running_says_how_to_start_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unreachable() -> None:
+        raise ConnectionError("refused")
+
+    monkeypatch.setattr(settings, "store", unreachable)
+
+    problem = settings.index_problem()
+    assert problem is not None
+    assert "Qdrant" in problem
+    assert "docker compose up -d" in problem
+
+
+def test_a_collection_of_the_wrong_size_is_reported_as_itself(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Qdrant is reachable here; saying it is not would send you the wrong way."""
+
+    def wrong_size() -> None:
+        raise ValueError("The Qdrant collection gh_issue_chunks holds 4-dimension vectors")
+
+    monkeypatch.setattr(settings, "store", wrong_size)
+
+    problem = settings.index_problem()
+    assert problem is not None
+    assert "4-dimension" in problem
+    assert "not reachable" not in problem

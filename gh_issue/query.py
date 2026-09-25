@@ -9,8 +9,10 @@ waiting on it wants an answer or an error rather than a retry schedule.
 from typing import TypedDict
 
 from gh_issue.embed import embed_texts
+from gh_issue.heartbeat import WorkerStatus, worker_status
+from gh_issue.index.backfills import BackfillProgress
 from gh_issue.index.store import SearchFilters, SearchHit
-from gh_issue.settings import cursors, store
+from gh_issue.settings import backfills, cursors, failures, store
 
 
 class Post(TypedDict):
@@ -40,6 +42,42 @@ class RepoStatus(TypedDict):
     # has been handed to the indexer. None when the repo was never synced from
     # this machine.
     caught_up_to: str | None
+    # Where the backfill got to; None if none was started from this machine.
+    backfill: BackfillProgress | None
+    # Issues that failed every retry and are waiting for `gh-issue sync`.
+    failed: int
+
+
+class Status(TypedDict):
+    worker: WorkerStatus
+    repos: list[RepoStatus]
+
+
+def make_filters(
+    *,
+    repos: list[str] | None = None,
+    state: str | None = None,
+    labels: list[str] | None = None,
+    author: str | None = None,
+    kind: str | None = None,
+    since: str | None = None,
+) -> SearchFilters:
+    """Search filters from options that were each given or not, the shape both
+    the CLI and the MCP tool take them in. Anything not given is left out."""
+    filters: SearchFilters = {}
+    if repos:
+        filters["repos"] = repos
+    if state:
+        filters["state"] = state
+    if labels:
+        filters["labels"] = labels
+    if author:
+        filters["author"] = author
+    if kind:
+        filters["kind"] = kind
+    if since:
+        filters["since"] = since
+    return filters
 
 
 def search(query: str, filters: SearchFilters | None = None, limit: int = 10) -> list[SearchHit]:
@@ -85,17 +123,23 @@ def get_issue(repo: str, number: int) -> Thread | None:
     }
 
 
-def status() -> list[RepoStatus]:
-    """Every repo that is indexed, tracked, or both."""
+def status() -> Status:
+    """The worker, and every repo that is indexed, tracked, or both."""
     counts = store().stats()
     tracked = cursors()
-    repos = sorted(set(counts) | set(tracked.tracked()))
-    return [
-        {
-            "repo": repo,
-            "issues": counts[repo]["issues"] if repo in counts else 0,
-            "chunks": counts[repo]["chunks"] if repo in counts else 0,
-            "caught_up_to": tracked.get(repo),
-        }
-        for repo in repos
-    ]
+    progress = backfills()
+    repos = sorted(set(counts) | set(tracked.tracked()) | set(progress.repos()))
+    return {
+        "worker": worker_status(),
+        "repos": [
+            {
+                "repo": repo,
+                "issues": counts[repo]["issues"] if repo in counts else 0,
+                "chunks": counts[repo]["chunks"] if repo in counts else 0,
+                "caught_up_to": tracked.get(repo),
+                "backfill": progress.get(repo),
+                "failed": len(failures().for_repo(repo)),
+            }
+            for repo in repos
+        ],
+    }

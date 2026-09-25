@@ -10,14 +10,13 @@ lives inside this process; the file is what other commands can see.
 """
 
 import asyncio
-import datetime
 import os
 import socket
 import time
 from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
-from typing import Any, Protocol, TypedDict, cast
+from typing import Any, Protocol
 
 import inngest
 from inngest.connect import ConnectionState, connect
@@ -28,26 +27,17 @@ from gh_issue.functions.client import client
 from gh_issue.functions.index_issue import index_issue
 from gh_issue.functions.reconcile import reconcile, sweep_repo
 from gh_issue.github.api import MISSING_TOKEN
-from gh_issue.index.repo_files import read_json, write_json
-from gh_issue.settings import data_dir, qdrant_url, store
+from gh_issue.heartbeat import Heartbeat, heartbeat_path
+from gh_issue.index.repo_files import write_json
+from gh_issue.settings import index_problem
 
 FUNCTIONS: list[inngest.Function[Any]] = [index_issue, backfill_page, reconcile, sweep_repo]
 
 # How often the connection state is checked, and how often the heartbeat is
-# rewritten when nothing has changed. A heartbeat older than STALE_AFTER means
-# the worker is gone, even if it never got to remove its file.
+# rewritten when nothing has changed. Readers treat a heartbeat older than
+# heartbeat.STALE_AFTER as a worker that is gone.
 TICK = 1.0
 HEARTBEAT_EVERY = 10.0
-STALE_AFTER = datetime.timedelta(seconds=30)
-
-
-class Heartbeat(TypedDict):
-    pid: int
-    host: str
-    mode: str  # "dev" or "cloud"
-    state: str  # the connection's state, e.g. ACTIVE or RECONNECTING
-    started_at: str
-    beat_at: str
 
 
 class Connection(Protocol):
@@ -56,22 +46,6 @@ class Connection(Protocol):
     def get_state(self) -> ConnectionState: ...
 
     async def start(self) -> None: ...
-
-
-def heartbeat_path() -> Path:
-    return Path(data_dir()) / "worker.json"
-
-
-def read_heartbeat(path: Path | None = None) -> Heartbeat | None:
-    path = path or heartbeat_path()
-    return cast(Heartbeat, read_json(path)) if path.exists() else None
-
-
-def is_fresh(heartbeat: Heartbeat | None, at: datetime.datetime) -> bool:
-    if heartbeat is None:
-        return False
-    beat_at = datetime.datetime.fromisoformat(heartbeat["beat_at"])
-    return at - beat_at <= STALE_AFTER
 
 
 def print_now(message: str) -> None:
@@ -173,15 +147,8 @@ def preflight(production: bool) -> list[str]:
                     f"{key} is not set. Inngest Cloud needs it (see .env.example); "
                     "to use the local dev server instead, set INNGEST_DEV=1."
                 )
-    try:
-        store()
-    except ValueError as error:
-        # Reached Qdrant, but the collection there is unusable; say which way.
-        problems.append(str(error))
-    except Exception:
-        problems.append(
-            f"Qdrant is not reachable at {qdrant_url()}. Start it with: docker compose up -d"
-        )
+    if problem := index_problem():
+        problems.append(problem)
     return problems
 
 

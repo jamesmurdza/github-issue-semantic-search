@@ -5,10 +5,13 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from gh_issue import cli
+from gh_issue import cli, query, settings
+from gh_issue.index.store import SearchFilters
+from gh_issue.query import Status
 
 
 def test_importing_the_cli_does_not_build_the_inngest_client() -> None:
@@ -45,3 +48,86 @@ def test_a_variable_already_set_wins_over_env_file(
     cli.load_env()
 
     assert os.environ["GH_ISSUE_TEST_SETTING"] == "from-shell"
+
+
+# search and status --------------------------------------------------------------
+
+
+def test_search_takes_its_words_unquoted_and_repeatable_filters() -> None:
+    command, bound, _ = cli.app.parse_args(
+        ["search", "event", "key", "--repo", "a/b", "--repo", "c/d", "--label", "bug", "-k", "3"]
+    )
+    assert command is cli.search
+    assert bound.args == ("event", "key")
+    assert bound.kwargs == {"repo": ["a/b", "c/d"], "label": ["bug"], "limit": 3}
+
+
+def test_search_refuses_a_state_that_does_not_exist() -> None:
+    with pytest.raises(Exception, match='Choose from: "open", "closed"'):
+        cli.app.parse_args(
+            ["search", "x", "--state", "shut"], exit_on_error=False, print_error=False
+        )
+
+
+def test_search_hands_the_options_to_the_query_layer(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    asked: list[tuple[str, SearchFilters | None, int]] = []
+
+    def fake_search(text: str, filters: SearchFilters | None = None, limit: int = 10) -> list[Any]:
+        asked.append((text, filters, limit))
+        return []
+
+    monkeypatch.setattr(settings, "index_problem", lambda: None)
+    monkeypatch.setattr(query, "search", fake_search)
+
+    cli.search("event", "key", repo=["a/b"], state="closed", label=["bug"], limit=3)
+
+    assert asked == [("event key", {"repos": ["a/b"], "state": "closed", "labels": ["bug"]}, 3)]
+    assert capsys.readouterr().out.strip() == "No matches."
+
+
+def test_a_bad_filter_value_is_a_message_not_a_traceback(monkeypatch: pytest.MonkeyPatch) -> None:
+    def refusing(text: str, filters: SearchFilters | None = None, limit: int = 10) -> list[Any]:
+        raise ValueError("since must be a date like 2026-01-31, not 'yesterday'")
+
+    monkeypatch.setattr(settings, "index_problem", lambda: None)
+    monkeypatch.setattr(query, "search", refusing)
+
+    with pytest.raises(SystemExit, match="since must be a date"):
+        cli.search("x", since="yesterday")
+
+
+@pytest.mark.parametrize("command", ["search", "status"])
+def test_both_say_what_is_wrong_with_the_index_before_trying(
+    monkeypatch: pytest.MonkeyPatch, command: str
+) -> None:
+    monkeypatch.setattr(settings, "index_problem", lambda: "Qdrant is not reachable")
+    with pytest.raises(SystemExit, match="Qdrant is not reachable"):
+        if command == "search":
+            cli.search("x")
+        else:
+            cli.status()
+
+
+def test_status_prints_the_worker_and_the_repos(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    nothing: Status = {
+        "worker": {
+            "running": False,
+            "connected": False,
+            "state": None,
+            "mode": None,
+            "last_seen": None,
+        },
+        "repos": [],
+    }
+    monkeypatch.setattr(settings, "index_problem", lambda: None)
+    monkeypatch.setattr(query, "status", lambda: nothing)
+
+    cli.status()
+
+    out = capsys.readouterr().out
+    assert out.startswith("Worker: not running.")
+    assert "gh-issue sync owner/name" in out

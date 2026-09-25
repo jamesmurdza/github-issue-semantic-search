@@ -15,7 +15,6 @@ events carry ids wherever sending one twice would do the work twice, so running
 `sync` again while the last one is still going is harmless.
 """
 
-import datetime
 import re
 import uuid
 from collections.abc import Callable
@@ -26,6 +25,7 @@ from gh_issue.clock import now
 from gh_issue.functions.backfill import page_event_id
 from gh_issue.functions.client import client
 from gh_issue.github import api
+from gh_issue.heartbeat import worker_status
 from gh_issue.settings import (
     EVENT_BACKFILL_PAGE,
     EVENT_ISSUE_CHANGED,
@@ -35,7 +35,7 @@ from gh_issue.settings import (
     failures,
     store,
 )
-from gh_issue.worker import is_fresh, preflight, print_now, read_heartbeat
+from gh_issue.worker import preflight, print_now
 
 REPO_NAME = re.compile(r"^[\w.-]+/[\w.-]+$")
 
@@ -70,12 +70,7 @@ def send(events: list[inngest.Event]) -> None:
 
 
 def worker_running() -> bool:
-    heartbeat = read_heartbeat()
-    return (
-        heartbeat is not None
-        and heartbeat["state"] == "ACTIVE"
-        and is_fresh(heartbeat, datetime.datetime.now(datetime.UTC))
-    )
+    return worker_status()["connected"]
 
 
 def known_repos() -> list[str]:

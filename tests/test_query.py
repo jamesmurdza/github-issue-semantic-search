@@ -14,7 +14,10 @@ from gh_issue import query
 from gh_issue.chunking import chunks_for
 from gh_issue.embed import DIM, embed_chunks
 from gh_issue.github.types import Comment, Issue
+from gh_issue.heartbeat import WorkerStatus
+from gh_issue.index.backfills import BackfillProgress, Backfills
 from gh_issue.index.cursors import Cursors
+from gh_issue.index.failures import Failures
 from gh_issue.index.store import Store
 
 REPO = "owner/name"
@@ -47,10 +50,21 @@ LOGIN = issue(7, "Login fails after the token expires", "Getting a 401 every mor
 TYPO = issue(9, "Typo in the README", "It says 'teh' twice.", state="closed")
 
 
+WORKER_UP: WorkerStatus = {
+    "running": True,
+    "connected": True,
+    "state": "ACTIVE",
+    "mode": "dev",
+    "last_seen": "2026-09-25T10:06:00Z",
+}
+
+
 @dataclass
 class Index:
     store: Store
     cursors: Cursors
+    backfills: Backfills
+    failures: Failures
 
     def add(self, item: Issue, comments: list[Comment] | None = None, repo: str = REPO) -> None:
         self.store.upsert(embed_chunks(chunks_for(repo, item, comments or [])))
@@ -61,9 +75,14 @@ def index(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Index]:
     opened = Index(
         store=Store(dim=DIM, path=str(tmp_path / "qdrant")),
         cursors=Cursors(str(tmp_path / "cursors")),
+        backfills=Backfills(str(tmp_path / "backfills")),
+        failures=Failures(str(tmp_path / "failed")),
     )
     monkeypatch.setattr(query, "store", lambda: opened.store)
     monkeypatch.setattr(query, "cursors", lambda: opened.cursors)
+    monkeypatch.setattr(query, "backfills", lambda: opened.backfills)
+    monkeypatch.setattr(query, "failures", lambda: opened.failures)
+    monkeypatch.setattr(query, "worker_status", lambda: WORKER_UP)
     yield opened
     opened.store.close()
 
@@ -165,12 +184,64 @@ def test_status_lists_every_indexed_or_tracked_repo(index: Index) -> None:
     index.cursors.set("queued/repo", "2026-09-25T10:05:00Z")
     index.add(TYPO, repo="untracked/repo")
 
-    assert query.status() == [
-        {"repo": REPO, "issues": 2, "chunks": 3, "caught_up_to": "2026-09-25T10:00:00Z"},
-        {"repo": "queued/repo", "issues": 0, "chunks": 0, "caught_up_to": "2026-09-25T10:05:00Z"},
-        {"repo": "untracked/repo", "issues": 1, "chunks": 1, "caught_up_to": None},
+    repos = query.status()["repos"]
+
+    assert [(r["repo"], r["issues"], r["chunks"], r["caught_up_to"]) for r in repos] == [
+        (REPO, 2, 3, "2026-09-25T10:00:00Z"),
+        ("queued/repo", 0, 0, "2026-09-25T10:05:00Z"),
+        ("untracked/repo", 1, 1, None),
     ]
 
 
+def test_status_carries_each_repos_backfill_and_failures(index: Index) -> None:
+    progress: BackfillProgress = {
+        "repo": REPO,
+        "chain": "c1",
+        "next": "CURSOR-4",
+        "finished": False,
+        "at": "2026-09-25T10:04:00Z",
+    }
+    index.backfills.set(progress)
+    for number in (412, 418):
+        index.failures.add(
+            {"repo": REPO, "number": number, "error": "boom", "run_id": "r", "at": "t"}
+        )
+
+    (repo,) = query.status()["repos"]
+
+    assert repo["backfill"] == progress
+    assert repo["failed"] == 2
+
+
+def test_status_says_whether_a_worker_is_up(index: Index) -> None:
+    assert query.status()["worker"] == WORKER_UP
+
+
 def test_status_of_nothing_is_empty(index: Index) -> None:
-    assert query.status() == []
+    assert query.status()["repos"] == []
+
+
+# make_filters -----------------------------------------------------------------
+
+
+def test_filters_leave_out_whatever_was_not_given() -> None:
+    assert query.make_filters() == {}
+    assert query.make_filters(repos=[], labels=[]) == {}
+
+
+def test_filters_carry_every_option_given() -> None:
+    assert query.make_filters(
+        repos=["a/b"],
+        state="closed",
+        labels=["bug", "p1"],
+        author="ann",
+        kind="comment",
+        since="2026-01-31",
+    ) == {
+        "repos": ["a/b"],
+        "state": "closed",
+        "labels": ["bug", "p1"],
+        "author": "ann",
+        "kind": "comment",
+        "since": "2026-01-31",
+    }

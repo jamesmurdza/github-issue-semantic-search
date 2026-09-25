@@ -43,6 +43,18 @@ def store() -> Store:
     return Store(dim=DIM, url=qdrant_url())
 
 
+def index_problem() -> str | None:
+    """Why the index can't be opened, in words to act on; None if it can."""
+    try:
+        store()
+    except ValueError as error:
+        # Qdrant answered, but the collection there is unusable; say which way.
+        return str(error)
+    except Exception:
+        return f"Qdrant is not reachable at {qdrant_url()}. Start it with: docker compose up -d"
+    return None
+
+
 @lru_cache(maxsize=1)
 def cursors() -> Cursors:
     """Each tracked repo's sweep cursor, one small file per repo."""
