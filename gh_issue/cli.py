@@ -113,6 +113,40 @@ def _check_index() -> None:
         raise SystemExit(problem)
 
 
+mcp = cyclopts.App(
+    name="mcp",
+    help="Serve the index to a coding agent over MCP: search_issues, get_issue, status.",
+)
+app.command(mcp)
+
+
+@mcp.command
+def stdio() -> None:
+    """Over stdio, for an agent that starts the server itself (Claude Code, Cursor...)."""
+    from gh_issue.mcp_server import mcp as server
+
+    # No banner: stdout is the protocol's channel here, and clients show stderr.
+    server.run(transport="stdio", show_banner=False)
+
+
+@mcp.command
+def http(host: str = "127.0.0.1", port: int = 8000, path: str = "/mcp") -> None:
+    """Over streamable HTTP, for an agent that connects to a running server.
+
+    Parameters
+    ----------
+    host
+        Interface to listen on. The default only accepts local connections.
+    port
+        Port to listen on.
+    path
+        URL path the MCP endpoint is served at.
+    """
+    from gh_issue.mcp_server import mcp as server
+
+    server.run(transport="http", host=host, port=port, path=path)
+
+
 def main() -> None:
     load_env()
     app()
