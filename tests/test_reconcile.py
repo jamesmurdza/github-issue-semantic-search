@@ -116,7 +116,7 @@ def rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Rig]:
 
     monkeypatch.setattr(mod, "cursors", lambda: harness.cursors)
     monkeypatch.setattr(api, "list_issues", fake_list_issues)
-    monkeypatch.setattr(mod, "_now", fake_now)
+    monkeypatch.setattr(mod, "now", fake_now)
     yield harness
 
 

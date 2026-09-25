@@ -20,12 +20,12 @@ long run replaying every saved step on each pass, and one slow repo would hold
 up the rest.
 """
 
-import datetime
 import itertools
 from typing import TypedDict, cast
 
 import inngest
 
+from gh_issue.clock import now
 from gh_issue.functions.client import client
 from gh_issue.github import api
 from gh_issue.settings import EVENT_ISSUE_CHANGED, EVENT_SWEEP_REQUESTED, cursors
@@ -33,12 +33,6 @@ from gh_issue.settings import EVENT_ISSUE_CHANGED, EVENT_SWEEP_REQUESTED, cursor
 
 class SweepRequested(TypedDict):
     repo: str
-
-
-def _now() -> str:
-    """GitHub's `since` format, to the second. Truncation rounds down, so the next
-    window overlaps this one slightly rather than leaving a gap."""
-    return datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _tracked() -> list[str]:
@@ -81,7 +75,7 @@ def sweep_repo(ctx: inngest.ContextSync) -> dict[str, object]:
     since = ctx.step.run("read-cursor", _read_cursor, repo)
     if since is None:
         # Listing without `since` returns the entire repo. That is the backfill's
-        # job, and `gh-issue index` sets the cursor when it starts one.
+        # job, and `gh-issue sync` sets the cursor when it starts one.
         return {"repo": repo, "skipped": "no cursor"}
 
     # The new cursor is the moment *before* listing, so anything updated while we
@@ -89,7 +83,7 @@ def sweep_repo(ctx: inngest.ContextSync) -> dict[str, object]:
     # once per step, so a clock read in plain Python would be read again on every
     # pass, and the cursor would land on whatever the final replay saw — after
     # the listing, silently skipping what changed during it.
-    started = ctx.step.run("mark-start", _now)
+    started = ctx.step.run("mark-start", now)
 
     # Usually one page. After downtime it can be several, and each page is a
     # step, so a run that dies partway resumes at the page it was on.

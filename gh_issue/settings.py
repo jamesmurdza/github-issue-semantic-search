@@ -10,6 +10,7 @@ import os
 from functools import lru_cache
 
 from gh_issue.embed import DIM
+from gh_issue.index.backfills import Backfills
 from gh_issue.index.cursors import Cursors
 from gh_issue.index.store import Store
 
@@ -30,7 +31,7 @@ def qdrant_url() -> str:
 
 
 def data_dir() -> str:
-    """Local state that is not vectors — currently just the sweep's cursors."""
+    """Local state that is not vectors: sweep cursors and backfill progress."""
     return os.environ.get("GH_ISSUE_DATA_DIR", DEFAULT_DATA_DIR)
 
 
@@ -44,3 +45,9 @@ def store() -> Store:
 def cursors() -> Cursors:
     """Each tracked repo's sweep cursor, one small file per repo."""
     return Cursors(os.path.join(data_dir(), "cursors"))
+
+
+@lru_cache(maxsize=1)
+def backfills() -> Backfills:
+    """Each repo's backfill progress, one small file per repo."""
+    return Backfills(os.path.join(data_dir(), "backfills"))

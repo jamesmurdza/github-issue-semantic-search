@@ -17,9 +17,11 @@ from typing import NotRequired, TypedDict, cast
 
 import inngest
 
+from gh_issue.clock import now
 from gh_issue.functions.client import client
 from gh_issue.github import api
-from gh_issue.settings import EVENT_BACKFILL_PAGE, EVENT_ISSUE_CHANGED
+from gh_issue.index.backfills import BackfillProgress
+from gh_issue.settings import EVENT_BACKFILL_PAGE, EVENT_ISSUE_CHANGED, backfills
 
 
 class BackfillPage(TypedDict):
@@ -28,6 +30,18 @@ class BackfillPage(TypedDict):
     cursor: NotRequired[str]
     # Identifies one backfill from start to finish; see the next-page send below.
     chain: NotRequired[str]
+
+
+def _record_progress(repo: str, chain: str, next_cursor: str | None) -> BackfillProgress:
+    progress: BackfillProgress = {
+        "repo": repo,
+        "chain": chain,
+        "next": next_cursor,
+        "finished": next_cursor is None,
+        "at": now(),
+    }
+    backfills().set(progress)
+    return progress
 
 
 @client.create_function(
@@ -56,15 +70,29 @@ def backfill_page(ctx: inngest.ContextSync) -> dict[str, object]:
 
     # One event per issue, so each becomes an independent run with its own
     # retries — one issue that fails cannot take the page with it. The issue
-    # rides along, so index-issue never refetches it.
+    # rides along, so index-issue never refetches it. The id means that if this
+    # page ever runs twice in a chain — a resume after a crash — Inngest drops
+    # the repeated hand-offs instead of indexing every issue on it again.
     if issues:
         ctx.step.send_event(
             "fan-out",
             [
-                inngest.Event(name=EVENT_ISSUE_CHANGED, data={"repo": repo, "issue": issue})
+                inngest.Event(
+                    id=f"issue:{chain}:{issue['number']}",
+                    name=EVENT_ISSUE_CHANGED,
+                    data={"repo": repo, "issue": issue},
+                )
                 for issue in issues
             ],
         )
+
+    # Where this backfill got to, for `gh-issue sync` and `status`; the chain
+    # itself never reads it. A step for two reasons: the write happens once
+    # instead of on every replay, and `at` is read once instead of taking
+    # whatever the last replay saw. It comes before the next page is sent, so if
+    # the run dies in between, the record names a page nobody has started and
+    # `sync` resumes there, rather than naming one that already ran.
+    ctx.step.run("record-progress", _record_progress, repo, chain, page["next"])
 
     # The next page is its own run. The event id is what keeps it to exactly
     # one: Inngest ignores a second event with the same id for 24 hours, so if
