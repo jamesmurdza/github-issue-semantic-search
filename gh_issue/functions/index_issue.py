@@ -19,7 +19,7 @@ buy no concurrency and would stall the event loop while pretending otherwise.
 
 import datetime
 from itertools import batched
-from typing import NotRequired, TypedDict, cast
+from typing import Any, NotRequired, TypedDict, cast
 
 import inngest
 
@@ -30,12 +30,14 @@ from gh_issue.chunking import (
     needs_embedding,
     orphaned_ids,
 )
+from gh_issue.clock import now
 from gh_issue.embed import BATCH as EMBED_BATCH
 from gh_issue.embed import embed_chunks
 from gh_issue.functions.client import client
 from gh_issue.github import api
 from gh_issue.github.types import Comment, Issue
-from gh_issue.settings import EVENT_ISSUE_CHANGED, store
+from gh_issue.index.failures import Failure
+from gh_issue.settings import EVENT_ISSUE_CHANGED, failures, store
 
 
 class IssueChanged(TypedDict):
@@ -51,6 +53,44 @@ class IssueChanged(TypedDict):
     # deleted. A deleted *comment* leaves the issue in place, so it is an
     # ordinary reindex and cleanup drops the chunk.
     deleted: NotRequired[bool]
+
+
+class FailedRun(TypedDict):
+    """The parts of Inngest's `inngest/function.failed` read below. Shape
+    checked against what the dev server delivers to a Python handler."""
+
+    event: dict[str, Any]  # the event the failed run started from
+    error: dict[str, Any]
+    run_id: str
+
+
+def _record_failure(repo: str, number: int, error: str, run_id: str) -> Failure:
+    failure: Failure = {
+        "repo": repo,
+        "number": number,
+        "error": error,
+        "run_id": run_id,
+        "at": now(),
+    }
+    failures().add(failure)
+    return failure
+
+
+def on_index_failure(ctx: inngest.ContextSync) -> None:
+    """Runs once an issue has failed every retry, and leaves a marker for
+    `gh-issue sync` to retry it. A run cancelled by a newer event for the same
+    issue does not count as failed and does not come here — checked on the dev
+    server, since that happens routinely."""
+    failed = cast(FailedRun, ctx.event.data)
+    original = cast(IssueChanged, failed["event"]["data"])
+    ctx.step.run(
+        "record-failure",
+        _record_failure,
+        original["repo"],
+        original["issue"]["number"],
+        str(failed["error"].get("message", "unknown error")),
+        failed["run_id"],
+    )
 
 
 @client.create_function(
@@ -72,6 +112,7 @@ class IssueChanged(TypedDict):
     singleton=inngest.Singleton(
         key='event.data.repo + "#" + string(event.data.issue.number)', mode="cancel"
     ),
+    on_failure=on_index_failure,
 )
 def index_issue(ctx: inngest.ContextSync) -> dict[str, object]:
     event = cast(IssueChanged, ctx.event.data)

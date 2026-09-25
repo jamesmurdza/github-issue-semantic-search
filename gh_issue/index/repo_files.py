@@ -16,10 +16,29 @@ from pathlib import Path
 from typing import Any
 
 
-def _filename(repo: str) -> str:
-    """`owner/name` becomes `owner__name.json`. Readable when you go looking, and
-    the real name is stored inside, so nothing depends on reversing this."""
-    return repo.replace("/", "__") + ".json"
+def repo_slug(repo: str) -> str:
+    """`owner/name` becomes `owner__name`. Readable when you go looking, and the
+    real name is stored inside each record, so nothing depends on reversing it."""
+    return repo.replace("/", "__")
+
+
+def write_json(path: Path, record: Mapping[str, Any]) -> None:
+    """Write atomically: a temp file in the same directory, then a rename over
+    the old one. A reader sees the old record or the new one, never half."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8") as file:
+            json.dump(dict(record), file)
+        os.replace(temporary, path)
+    except BaseException:
+        Path(temporary).unlink(missing_ok=True)
+        raise
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    record: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return record
 
 
 class RepoFiles:
@@ -27,34 +46,18 @@ class RepoFiles:
         self._directory = Path(directory)
 
     def read(self, repo: str) -> dict[str, Any] | None:
-        path = self._directory / _filename(repo)
-        if not path.exists():
-            return None
-        return self._load(path)
+        path = self._path(repo)
+        return read_json(path) if path.exists() else None
 
     def write(self, record: Mapping[str, Any]) -> None:
-        """Store `record` under its own `repo` key.
-
-        Atomically: a temp file in the same directory, then a rename over the
-        old one. A reader sees the old record or the new one, never half.
-        """
-        self._directory.mkdir(parents=True, exist_ok=True)
-        handle, temporary = tempfile.mkstemp(dir=self._directory, suffix=".tmp")
-        try:
-            with os.fdopen(handle, "w", encoding="utf-8") as file:
-                json.dump(dict(record), file)
-            os.replace(temporary, self._directory / _filename(record["repo"]))
-        except BaseException:
-            Path(temporary).unlink(missing_ok=True)
-            raise
+        """Store `record` under its own `repo` key."""
+        write_json(self._path(record["repo"]), record)
 
     def repos(self) -> list[str]:
         """Every repo with a record here."""
         if not self._directory.exists():
             return []
-        return sorted(self._load(path)["repo"] for path in self._directory.glob("*.json"))
+        return sorted(read_json(path)["repo"] for path in self._directory.glob("*.json"))
 
-    @staticmethod
-    def _load(path: Path) -> dict[str, Any]:
-        record: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
-        return record
+    def _path(self, repo: str) -> Path:
+        return self._directory / f"{repo_slug(repo)}.json"

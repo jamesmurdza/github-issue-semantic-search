@@ -12,6 +12,7 @@ from functools import lru_cache
 from gh_issue.embed import DIM
 from gh_issue.index.backfills import Backfills
 from gh_issue.index.cursors import Cursors
+from gh_issue.index.failures import Failures
 from gh_issue.index.store import Store
 
 # The backfill, the webhook transform and the hourly sweep all emit this one.
@@ -31,7 +32,8 @@ def qdrant_url() -> str:
 
 
 def data_dir() -> str:
-    """Local state that is not vectors: sweep cursors and backfill progress."""
+    """Local state that is not vectors: sweep cursors, backfill progress and
+    failure markers."""
     return os.environ.get("GH_ISSUE_DATA_DIR", DEFAULT_DATA_DIR)
 
 
@@ -51,3 +53,9 @@ def cursors() -> Cursors:
 def backfills() -> Backfills:
     """Each repo's backfill progress, one small file per repo."""
     return Backfills(os.path.join(data_dir(), "backfills"))
+
+
+@lru_cache(maxsize=1)
+def failures() -> Failures:
+    """Issues that failed every retry, one small file per issue."""
+    return Failures(os.path.join(data_dir(), "failed"))

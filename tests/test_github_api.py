@@ -1,4 +1,15 @@
+import pytest
+
+from gh_issue.github import api
 from gh_issue.github.api import next_cursor_from_link, trim_comment
+
+
+def test_a_missing_token_says_what_to_do(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without this, a run fails with the bare message 'GITHUB_TOKEN' — which is
+    what the dev server showed when the worker ran without a .env."""
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    with pytest.raises(RuntimeError, match=r"GITHUB_TOKEN is not set.*\.env"):
+        api.list_comments("owner/name", 1)
 
 
 def test_next_cursor_from_link_header() -> None:

@@ -63,8 +63,13 @@ def trim_comment(comment: Mapping[str, Any]) -> Comment:
     }
 
 
+MISSING_TOKEN = "GITHUB_TOKEN is not set. Add it to .env (see .env.example)."
+
+
 def _client() -> httpx.Client:
-    token = os.environ["GITHUB_TOKEN"]
+    token = os.environ.get("GITHUB_TOKEN")
+    if not token:
+        raise RuntimeError(MISSING_TOKEN)
     return httpx.Client(
         base_url=API,
         timeout=30.0,

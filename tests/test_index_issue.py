@@ -6,8 +6,8 @@ each one is handed. Only the network and the embedding model are faked — both
 have their own tests, and the model is far too slow to run a few hundred times
 here.
 
-The mocked harness is not the server, so these do not replace the end-to-end run
-in `gh-issue index`. They do catch the things that are painful to notice there.
+The mocked harness is not the server, so these do not replace a real run on the
+dev server. They do catch the things that are painful to notice there.
 """
 
 from collections.abc import Iterator
@@ -25,6 +25,7 @@ from gh_issue.embed import DIM
 from gh_issue.functions import index_issue as mod
 from gh_issue.github import api
 from gh_issue.github.types import Comment, Issue
+from gh_issue.index.failures import Failures
 from gh_issue.index.store import Store
 
 REPO = "owner/name"
@@ -246,3 +247,64 @@ def test_one_run_per_issue_and_the_newest_event_wins() -> None:
     assert singleton is not None
     assert singleton.mode == "cancel"
     assert singleton.key == 'event.data.repo + "#" + string(event.data.issue.number)'
+
+
+# When an issue fails every retry ---------------------------------------------
+
+
+def failed_run_event() -> inngest.Event:
+    """`inngest/function.failed` as the dev server delivered it to a Python
+    on_failure handler, trimmed to the fields that matter here."""
+    return inngest.Event(
+        name="inngest/function.failed",
+        data={
+            "error": {"error": "NonRetriableError", "message": "GitHub said 502"},
+            "event": {
+                "name": "repo/issue.changed",
+                "data": {"repo": REPO, "issue": ISSUE},
+            },
+            "function_id": "gh-issue-index-issue",
+            "run_id": "01M3BWHK2R1YWKPAHSP2A8MGEB",
+        },
+    )
+
+
+def test_index_issue_has_a_failure_handler() -> None:
+    assert mod.index_issue.get_config("http://unused").on_failure is not None
+
+
+def test_a_run_that_fails_every_retry_leaves_a_marker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The marker names the issue, not a copy of it: `sync` reads the issue
+    from GitHub again before retrying, so a retry never carries an old copy.
+
+    The mocked harness only calls a function's main handler, so the failure
+    handler is wrapped as a function of its own here and handed the event the
+    dev server sends it."""
+    failures = Failures(str(tmp_path))
+    ticks: list[str] = []
+
+    def fake_now() -> str:
+        ticks.append(f"2026-09-25T10:00:{len(ticks):02d}Z")
+        return ticks[-1]
+
+    monkeypatch.setattr(mod, "failures", lambda: failures)
+    monkeypatch.setattr(mod, "now", fake_now)
+    handler = CLIENT.create_function(
+        fn_id="failure-handler", trigger=inngest.TriggerEvent(event="inngest/function.failed")
+    )(mod.on_index_failure)
+
+    result = mocked.trigger(handler, failed_run_event(), CLIENT)
+
+    assert result.status is mocked.Status.COMPLETED, result.error
+    assert failures.for_repo(REPO) == [
+        {
+            "repo": REPO,
+            "number": 412,
+            "error": "GitHub said 502",
+            "run_id": "01M3BWHK2R1YWKPAHSP2A8MGEB",
+            "at": "2026-09-25T10:00:00Z",
+        }
+    ]
+    assert ticks == ["2026-09-25T10:00:00Z"]
