@@ -27,12 +27,6 @@ class IssuePage(TypedDict):
     next: str | None
 
 
-class RateLimit(TypedDict):
-    limit: int
-    remaining: int
-    reset: int
-
-
 def next_cursor_from_link(link_header: str | None) -> str | None:
     """Pull the `after` cursor out of GitHub's Link header.
 
@@ -147,15 +141,6 @@ def repo_exists(repo: str) -> bool:
             return False
         response.raise_for_status()
         return True
-
-
-def rate_limit() -> RateLimit:
-    """The token's current core budget. This endpoint does not spend any of it."""
-    with _client() as http:
-        response = http.get("/rate_limit")
-        response.raise_for_status()
-        core: RateLimit = response.json()["resources"]["core"]
-        return core
 
 
 def register_webhook(repo: str, url: str, secret: str) -> dict[str, Any]:

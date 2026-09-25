@@ -25,6 +25,23 @@ def test_importing_the_cli_does_not_build_the_inngest_client() -> None:
     assert result.stdout.strip() == "False"
 
 
+def test_output_piped_elsewhere_is_utf8_whatever_the_system_code_page(tmp_path: Path) -> None:
+    """Issue text is anything people typed. Found in the full run:
+    `gh-issue search ... | grep` crashed on Windows, where Python writes piped
+    output in the system code page (cp1252 here) and a comment held U+276F."""
+    probe = "from gh_issue import cli; cli.app = lambda: print('\\u276f ok'); cli.main()"
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in ("PYTHONIOENCODING", "PYTHONUTF8")
+    }
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, cwd=tmp_path, env=environment
+    )
+    assert result.returncode == 0, result.stderr.decode(errors="replace")
+    assert result.stdout.decode("utf-8").strip() == chr(0x276F) + " ok"
+
+
 def test_env_file_in_the_working_directory_is_loaded(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

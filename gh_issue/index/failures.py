@@ -18,7 +18,7 @@ import shutil
 from pathlib import Path
 from typing import TypedDict, cast
 
-from gh_issue.index.repo_files import read_json, repo_slug, write_json
+from gh_issue.index.repo_files import patiently, read_json, repo_slug, write_json
 
 
 class Failure(TypedDict):
@@ -46,13 +46,14 @@ class Failures:
         return sorted(found, key=lambda failure: failure["number"])
 
     def clear(self, repo: str, number: int) -> None:
-        with contextlib.suppress(FileNotFoundError):
-            self._path(repo, number).unlink()
+        path = self._path(repo, number)
+        patiently(lambda: path.unlink(missing_ok=True))
 
     def clear_repo(self, repo: str) -> None:
         """Every marker for `repo`, for when the repo itself is removed."""
+        folder = self._directory / repo_slug(repo)
         with contextlib.suppress(FileNotFoundError):
-            shutil.rmtree(self._directory / repo_slug(repo))
+            patiently(lambda: shutil.rmtree(folder))
 
     def _path(self, repo: str, number: int) -> Path:
         return self._directory / repo_slug(repo) / f"{number}.json"

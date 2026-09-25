@@ -8,6 +8,8 @@ command imports what it needs when it runs.
 """
 
 import datetime
+import io
+import sys
 from typing import Annotated, Literal
 
 import cyclopts
@@ -172,5 +174,12 @@ def http(host: str = "127.0.0.1", port: int = 8000, path: str = "/mcp") -> None:
 
 
 def main() -> None:
+    # Issue text is whatever people typed. On Windows, Python writes to a pipe
+    # or a file in the system code page, which can't encode most of it, so
+    # `gh-issue search ... | grep` would crash on the first U+276F. A console
+    # already gets UTF-8, so this changes nothing there.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8")
     load_env()
     app()

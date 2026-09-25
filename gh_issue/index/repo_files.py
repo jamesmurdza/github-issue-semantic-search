@@ -6,20 +6,48 @@ One file per repo rather than one shared file is deliberate. The sweep fans out
 a run per repo and a worker runs them concurrently. With a single file, every
 write is a read-modify-write of the whole map, and two racing writes lose one
 repo's update. Separate files mean a write never touches another repo's state.
+
+Every operation on a file here goes through `patiently`, for Windows; see there.
 """
 
 import json
 import os
 import tempfile
-from collections.abc import Mapping
+import time
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
+
+# How long to keep trying a file Windows says is in use: up to 100 x 10 ms.
+_ATTEMPTS = 100
+_PAUSE = 0.01
 
 
 def repo_slug(repo: str) -> str:
     """`owner/name` becomes `owner__name`. Readable when you go looking, and the
     real name is stored inside each record, so nothing depends on reversing it."""
     return repo.replace("/", "__")
+
+
+def patiently[T](action: Callable[[], T]) -> T:
+    """Run a file operation, trying again while the file is briefly in use.
+
+    On Windows a file can't be replaced or deleted while anything has it open,
+    and opening it fails while it is being replaced. The worker reads these
+    records all the time, since every run checks its repo is still synced, so a
+    write or a delete from anywhere else keeps landing on a read that lasts
+    microseconds. Measured with one busy reader, three in four replaces and nine
+    in ten deletes failed. Retried, none did, and the worst needed 13 tries.
+
+    Elsewhere this never comes up, and a real permission problem still raises
+    after the last try.
+    """
+    for _ in range(_ATTEMPTS - 1):
+        try:
+            return action()
+        except PermissionError:
+            time.sleep(_PAUSE)
+    return action()
 
 
 def write_json(path: Path, record: Mapping[str, Any]) -> None:
@@ -30,14 +58,14 @@ def write_json(path: Path, record: Mapping[str, Any]) -> None:
     try:
         with os.fdopen(handle, "w", encoding="utf-8") as file:
             json.dump(dict(record), file)
-        os.replace(temporary, path)
+        patiently(lambda: os.replace(temporary, path))
     except BaseException:
         Path(temporary).unlink(missing_ok=True)
         raise
 
 
 def read_json(path: Path) -> dict[str, Any]:
-    record: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    record: dict[str, Any] = json.loads(patiently(lambda: path.read_text(encoding="utf-8")))
     return record
 
 
@@ -46,15 +74,20 @@ class RepoFiles:
         self._directory = Path(directory)
 
     def read(self, repo: str) -> dict[str, Any] | None:
-        path = self._path(repo)
-        return read_json(path) if path.exists() else None
+        # Asked, not checked first: a record deleted between a check and the
+        # read would otherwise raise instead of reading as absent.
+        try:
+            return read_json(self._path(repo))
+        except FileNotFoundError:
+            return None
 
     def write(self, record: Mapping[str, Any]) -> None:
         """Store `record` under its own `repo` key."""
         write_json(self._path(record["repo"]), record)
 
     def delete(self, repo: str) -> None:
-        self._path(repo).unlink(missing_ok=True)
+        path = self._path(repo)
+        patiently(lambda: path.unlink(missing_ok=True))
 
     def repos(self) -> list[str]:
         """Every repo with a record here."""
