@@ -53,6 +53,9 @@ class RepoFiles:
         """Store `record` under its own `repo` key."""
         write_json(self._path(record["repo"]), record)
 
+    def delete(self, repo: str) -> None:
+        self._path(repo).unlink(missing_ok=True)
+
     def repos(self) -> list[str]:
         """Every repo with a record here."""
         if not self._directory.exists():

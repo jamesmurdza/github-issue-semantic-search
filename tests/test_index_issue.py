@@ -10,7 +10,7 @@ The mocked harness is not the server, so these do not replace a real run on the
 dev server. They do catch the things that are painful to notice there.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -19,6 +19,7 @@ import inngest
 import pytest
 from inngest.experimental import mocked
 
+from gh_issue import settings
 from gh_issue.chunking import Chunk, EmbeddedChunk
 from gh_issue.embed import BATCH as EMBED_BATCH
 from gh_issue.embed import DIM
@@ -29,6 +30,7 @@ from gh_issue.index.failures import Failures
 from gh_issue.index.store import Store
 
 REPO = "owner/name"
+SYNCED_AT = "2026-09-25T09:00:00Z"
 CLIENT = mocked.Inngest(app_id="test")
 
 ISSUE: Issue = {
@@ -63,6 +65,8 @@ class Rig:
     comments: list[Comment]
     comment_fetches: list[int] = field(default_factory=list)
     embed_batches: list[int] = field(default_factory=list)
+    # Runs inside the comment fetch, to change the world partway through a run.
+    during_fetch: Callable[[], None] = lambda: None
 
     @property
     def embedded(self) -> int:
@@ -82,12 +86,21 @@ class Rig:
         return result.output
 
 
+def remove_repo() -> None:
+    """What `gh-issue remove` does to the records the guard reads."""
+    settings.cursors().delete(REPO)
+    settings.backfills().delete(REPO)
+
+
 @pytest.fixture
-def rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Rig]:
+def rig(tmp_path: Path, data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Rig]:
     harness = Rig(store=Store(dim=DIM, path=str(tmp_path)), comments=list(COMMENTS))
+    # Synced, as `gh-issue sync` leaves a repo before any of its issues arrive.
+    settings.cursors().set(REPO, SYNCED_AT)
 
     def fake_list_comments(repo: str, number: int) -> list[Comment]:
         harness.comment_fetches.append(number)
+        harness.during_fetch()
         return list(harness.comments)
 
     def fake_embed_chunks(chunks: list[Chunk]) -> list[EmbeddedChunk]:
@@ -231,6 +244,35 @@ def test_embedding_is_batched_against_the_step_output_cap(rig: Rig) -> None:
     assert len(rig.store.fingerprints_for_issue(REPO, 412)) == 251
 
 
+# A repo removed while its issues are still queued -------------------------------
+
+
+def test_an_issue_of_a_removed_repo_is_skipped_without_calling_github(rig: Rig) -> None:
+    """`gh-issue remove` can't reach events already queued in Inngest, so each
+    run checks the repo is still synced before doing anything."""
+    remove_repo()
+
+    output = rig.run(ISSUE)
+
+    assert output == {"repo": REPO, "issue": 412, "skipped": "not synced"}
+    assert rig.comment_fetches == []
+    assert rig.embedded == 0
+    assert rig.store.fingerprints_for_issue(REPO, 412) == {}
+
+
+def test_a_repo_removed_mid_run_gets_no_more_writes(rig: Rig) -> None:
+    """The check is plain Python, not a step, so it runs again on every replay:
+    a removal takes effect at the next step instead of after the whole run."""
+    rig.during_fetch = remove_repo
+
+    output = rig.run(ISSUE)
+
+    assert output["skipped"] == "not synced"
+    assert rig.comment_fetches == [412]
+    assert rig.embedded == 0
+    assert rig.store.fingerprints_for_issue(REPO, 412) == {}
+
+
 def test_one_run_per_issue_and_the_newest_event_wins() -> None:
     """Two runs on the same issue at once undo each other's work: the one that
     finishes last deletes a comment the other just wrote, or puts back a state
@@ -273,15 +315,24 @@ def test_index_issue_has_a_failure_handler() -> None:
     assert mod.index_issue.get_config("http://unused").on_failure is not None
 
 
+def run_failure_handler() -> None:
+    """The mocked harness only calls a function's main handler, so the failure
+    handler is wrapped as a function of its own here and handed the event the
+    dev server sends it."""
+    handler = CLIENT.create_function(
+        fn_id="failure-handler", trigger=inngest.TriggerEvent(event="inngest/function.failed")
+    )(mod.on_index_failure)
+    result = mocked.trigger(handler, failed_run_event(), CLIENT)
+    assert result.status is mocked.Status.COMPLETED, result.error
+
+
+@pytest.mark.usefixtures("data_dir")
 def test_a_run_that_fails_every_retry_leaves_a_marker(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The marker names the issue, not a copy of it: `sync` reads the issue
-    from GitHub again before retrying, so a retry never carries an old copy.
-
-    The mocked harness only calls a function's main handler, so the failure
-    handler is wrapped as a function of its own here and handed the event the
-    dev server sends it."""
+    from GitHub again before retrying, so a retry never carries an old copy."""
+    settings.cursors().set(REPO, SYNCED_AT)
     failures = Failures(str(tmp_path))
     ticks: list[str] = []
 
@@ -291,13 +342,9 @@ def test_a_run_that_fails_every_retry_leaves_a_marker(
 
     monkeypatch.setattr(mod, "failures", lambda: failures)
     monkeypatch.setattr(mod, "now", fake_now)
-    handler = CLIENT.create_function(
-        fn_id="failure-handler", trigger=inngest.TriggerEvent(event="inngest/function.failed")
-    )(mod.on_index_failure)
 
-    result = mocked.trigger(handler, failed_run_event(), CLIENT)
+    run_failure_handler()
 
-    assert result.status is mocked.Status.COMPLETED, result.error
     assert failures.for_repo(REPO) == [
         {
             "repo": REPO,
@@ -308,3 +355,16 @@ def test_a_run_that_fails_every_retry_leaves_a_marker(
         }
     ]
     assert ticks == ["2026-09-25T10:00:00Z"]
+
+
+@pytest.mark.usefixtures("data_dir")
+def test_a_failure_in_a_removed_repo_leaves_no_marker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Nothing would ever clear it: `sync` only retries repos that are synced."""
+    failures = Failures(str(tmp_path))
+    monkeypatch.setattr(mod, "failures", lambda: failures)
+
+    run_failure_handler()
+
+    assert failures.for_repo(REPO) == []

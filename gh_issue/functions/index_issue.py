@@ -37,7 +37,7 @@ from gh_issue.functions.client import client
 from gh_issue.github import api
 from gh_issue.github.types import Comment, Issue
 from gh_issue.index.failures import Failure
-from gh_issue.settings import EVENT_ISSUE_CHANGED, failures, store
+from gh_issue.settings import EVENT_ISSUE_CHANGED, failures, is_synced, store
 
 
 class IssueChanged(TypedDict):
@@ -83,6 +83,10 @@ def on_index_failure(ctx: inngest.ContextSync) -> None:
     server, since that happens routinely."""
     failed = cast(FailedRun, ctx.event.data)
     original = cast(IssueChanged, failed["event"]["data"])
+    # A marker for a removed repo would never be cleared: `sync` only retries
+    # repos that are synced.
+    if not is_synced(original["repo"]):
+        return
     ctx.step.run(
         "record-failure",
         _record_failure,
@@ -119,6 +123,14 @@ def index_issue(ctx: inngest.ContextSync) -> dict[str, object]:
     repo = event["repo"]
     issue = event["issue"]
     number = issue["number"]
+
+    # `gh-issue remove` deletes the repo's records but can't reach events already
+    # queued for it, so this asks first. Plain Python rather than a step: a step
+    # would remember the first answer for the rest of the run, while this runs
+    # again on every replay, so a removal stops the run at its next step.
+    if not is_synced(repo):
+        return {"repo": repo, "issue": number, "skipped": "not synced"}
+
     index = store()
 
     if event.get("deleted"):

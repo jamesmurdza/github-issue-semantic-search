@@ -14,6 +14,7 @@ the issue from GitHub again before retrying, so a retry never carries old data.
 """
 
 import contextlib
+import shutil
 from pathlib import Path
 from typing import TypedDict, cast
 
@@ -47,6 +48,11 @@ class Failures:
     def clear(self, repo: str, number: int) -> None:
         with contextlib.suppress(FileNotFoundError):
             self._path(repo, number).unlink()
+
+    def clear_repo(self, repo: str) -> None:
+        """Every marker for `repo`, for when the repo itself is removed."""
+        with contextlib.suppress(FileNotFoundError):
+            shutil.rmtree(self._directory / repo_slug(repo))
 
     def _path(self, repo: str, number: int) -> Path:
         return self._directory / repo_slug(repo) / f"{number}.json"

@@ -106,6 +106,30 @@ def status() -> None:
     print(display.format_status(query.status(), now), flush=True)
 
 
+@app.command
+def remove(
+    repo: str,
+    *,
+    yes: Annotated[bool, Parameter(name=["--yes", "-y"], negative="")] = False,
+) -> None:
+    """Take a repo out of the index and stop syncing it.
+
+    Deletes its chunks and its sync records. Work already queued for it in
+    Inngest finds it gone and does nothing.
+
+    Parameters
+    ----------
+    repo
+        The repo to remove, as owner/name.
+    yes
+        Remove without asking first.
+    """
+    from gh_issue import remove
+
+    _check_index()
+    remove.run(repo, yes=yes)
+
+
 def _check_index() -> None:
     from gh_issue import settings
 

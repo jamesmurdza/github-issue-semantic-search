@@ -71,3 +71,13 @@ def backfills() -> Backfills:
 def failures() -> Failures:
     """Issues that failed every retry, one small file per issue."""
     return Failures(os.path.join(data_dir(), "failed"))
+
+
+def is_synced(repo: str) -> bool:
+    """Whether `repo` is synced here: it has a sweep cursor or a backfill record.
+
+    `gh-issue remove` deletes both, and can't reach work already queued in
+    Inngest for the repo. So the functions ask this before doing anything, and
+    whatever was queued for a removed repo finds it gone and stops.
+    """
+    return cursors().get(repo) is not None or backfills().get(repo) is not None

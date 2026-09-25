@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from gh_issue import cli, query, settings
+from gh_issue import cli, query, remove, settings
 from gh_issue.index.store import SearchFilters
 from gh_issue.query import Status
 
@@ -98,16 +98,18 @@ def test_a_bad_filter_value_is_a_message_not_a_traceback(monkeypatch: pytest.Mon
         cli.search("x", since="yesterday")
 
 
-@pytest.mark.parametrize("command", ["search", "status"])
-def test_both_say_what_is_wrong_with_the_index_before_trying(
+@pytest.mark.parametrize("command", ["search", "status", "remove"])
+def test_each_says_what_is_wrong_with_the_index_before_trying(
     monkeypatch: pytest.MonkeyPatch, command: str
 ) -> None:
     monkeypatch.setattr(settings, "index_problem", lambda: "Qdrant is not reachable")
     with pytest.raises(SystemExit, match="Qdrant is not reachable"):
         if command == "search":
             cli.search("x")
-        else:
+        elif command == "status":
             cli.status()
+        else:
+            cli.remove("a/b", yes=True)
 
 
 def test_status_prints_the_worker_and_the_repos(
@@ -131,3 +133,33 @@ def test_status_prints_the_worker_and_the_repos(
     out = capsys.readouterr().out
     assert out.startswith("Worker: not running.")
     assert "gh-issue sync owner/name" in out
+
+
+# remove ------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("flag", ["--yes", "-y"])
+def test_remove_takes_one_repo_and_a_yes_flag(flag: str) -> None:
+    command, bound, _ = cli.app.parse_args(["remove", "a/b", flag])
+    assert command is cli.remove
+    assert bound.args == ("a/b",)
+    assert bound.kwargs == {"yes": True}
+
+
+def test_remove_asks_unless_told_not_to() -> None:
+    _, bound, _ = cli.app.parse_args(["remove", "a/b"])
+    assert bound.kwargs == {}
+
+
+def test_remove_hands_the_repo_and_the_flag_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    handed: list[tuple[str, bool]] = []
+
+    def fake_run(repo: str, *, yes: bool) -> None:
+        handed.append((repo, yes))
+
+    monkeypatch.setattr(settings, "index_problem", lambda: None)
+    monkeypatch.setattr(remove, "run", fake_run)
+
+    cli.remove("a/b", yes=True)
+
+    assert handed == [("a/b", True)]

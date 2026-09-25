@@ -23,6 +23,9 @@ class Cursors:
     def set(self, repo: str, since: str) -> None:
         self._files.write({"repo": repo, "since": since})
 
+    def delete(self, repo: str) -> None:
+        self._files.delete(repo)
+
     def tracked(self) -> list[str]:
         """Every repo with a cursor — which is every repo that has been indexed."""
         return self._files.repos()

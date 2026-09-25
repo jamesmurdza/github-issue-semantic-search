@@ -43,6 +43,23 @@ def test_clearing_what_is_not_there_is_fine(tmp_path: Path) -> None:
     Failures(str(tmp_path)).clear("owner/name", 412)
 
 
+def test_clear_repo_removes_every_marker_for_that_repo_only(tmp_path: Path) -> None:
+    failures = Failures(str(tmp_path))
+    failures.add(failure("a/b", 1))
+    failures.add(failure("a/b", 2))
+    failures.add(failure("c/d", 1))
+
+    failures.clear_repo("a/b")
+
+    assert failures.for_repo("a/b") == []
+    assert failures.for_repo("c/d") == [failure("c/d", 1)]
+    assert not (tmp_path / "a__b").exists()
+
+
+def test_clearing_a_repo_with_no_markers_is_fine(tmp_path: Path) -> None:
+    Failures(str(tmp_path)).clear_repo("owner/name")
+
+
 def test_repos_are_kept_apart(tmp_path: Path) -> None:
     failures = Failures(str(tmp_path))
     failures.add(failure("a/b", 1))

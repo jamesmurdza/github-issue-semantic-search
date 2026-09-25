@@ -285,6 +285,12 @@ class Store:
             points_selector=models.FilterSelector(filter=self._issue_filter(repo, number)),
         )
 
+    def delete_repo(self, repo: str) -> None:
+        """Every chunk of one repo, for `gh-issue remove`. One delete by filter."""
+        self._client.delete(
+            self._collection, points_selector=models.FilterSelector(filter=_match("repo", repo))
+        )
+
     def search(
         self, vector: list[float], limit: int = 10, filters: SearchFilters | None = None
     ) -> list[SearchHit]:

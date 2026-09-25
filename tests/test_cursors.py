@@ -37,6 +37,22 @@ def test_tracked_is_empty_before_anything_is_indexed(tmp_path: Path) -> None:
     assert Cursors(str(tmp_path / "not-created-yet")).tracked() == []
 
 
+def test_delete_forgets_that_repo_only(tmp_path: Path) -> None:
+    cursors = Cursors(str(tmp_path))
+    cursors.set("a/b", "t1")
+    cursors.set("c/d", "t2")
+
+    cursors.delete("a/b")
+
+    assert cursors.get("a/b") is None
+    assert cursors.tracked() == ["c/d"]
+
+
+def test_deleting_what_is_not_there_is_fine(tmp_path: Path) -> None:
+    """`remove` deletes every kind of record, and a repo need not have them all."""
+    Cursors(str(tmp_path)).delete("owner/name")
+
+
 def test_awkward_repo_names_round_trip(tmp_path: Path) -> None:
     cursors = Cursors(str(tmp_path))
     cursors.set("my-org/repo_name.js", "t1")

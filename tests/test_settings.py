@@ -113,3 +113,32 @@ def test_a_collection_of_the_wrong_size_is_reported_as_itself(
     assert problem is not None
     assert "4-dimension" in problem
     assert "not reachable" not in problem
+
+
+# Whether a repo is synced here ----------------------------------------------------
+
+
+@pytest.mark.usefixtures("data_dir")
+def test_a_repo_nothing_was_recorded_for_is_not_synced() -> None:
+    assert settings.is_synced("owner/name") is False
+
+
+@pytest.mark.usefixtures("data_dir")
+def test_a_sweep_cursor_alone_means_synced() -> None:
+    settings.cursors().set("owner/name", "2026-09-25T10:00:00Z")
+    assert settings.is_synced("owner/name") is True
+    assert settings.is_synced("other/repo") is False
+
+
+@pytest.mark.usefixtures("data_dir")
+def test_a_backfill_record_alone_means_synced() -> None:
+    settings.backfills().set(
+        {
+            "repo": "owner/name",
+            "chain": "c1",
+            "next": None,
+            "finished": False,
+            "at": "2026-09-25T10:00:00Z",
+        }
+    )
+    assert settings.is_synced("owner/name") is True

@@ -6,7 +6,7 @@ the cursor. The mocked harness replays the function once per step, the same way
 the server does, which is what makes the clock test below meaningful.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
@@ -68,6 +68,8 @@ class Rig:
     requested: list[tuple[str, str | None, str | None]] = field(default_factory=list)
     ticks: list[str] = field(default_factory=list)
     client: RecordingClient = field(default_factory=RecordingClient)
+    # Runs inside each listing call, to change the world partway through a sweep.
+    during_listing: Callable[[], None] = lambda: None
 
     def sweep(self, repo: str = REPO) -> Any:
         return self._trigger(
@@ -106,6 +108,7 @@ def rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Rig]:
         repo: str, cursor: str | None = None, since: str | None = None
     ) -> IssuePage:
         harness.requested.append((repo, cursor, since))
+        harness.during_listing()
         return harness.pages[cursor]
 
     def fake_now() -> str:
@@ -205,3 +208,39 @@ def test_a_repo_without_a_cursor_is_left_alone(rig: Rig) -> None:
     assert rig.requested == []
     assert rig.client.sent == []
     assert output == {"repo": "never/indexed", "skipped": "no cursor"}
+
+
+# A repo removed, or synced again, while its sweep runs ----------------------
+
+
+def test_a_sweep_does_not_write_back_the_cursor_of_a_removed_repo(rig: Rig) -> None:
+    """The cron sweeps every repo that has a cursor, so writing it back would
+    have the removed repo swept every hour from then on."""
+    rig.cursors.set(REPO, LAST_SWEEP)
+    rig.pages[None] = {"issues": [issue(1)], "next": None}
+    rig.during_listing = lambda: rig.cursors.delete(REPO)
+
+    output = rig.sweep()
+
+    assert rig.cursors.get(REPO) is None
+    assert output["moved"] is False
+
+
+def test_a_sweep_leaves_alone_a_cursor_that_moved_while_it_ran(rig: Rig) -> None:
+    """Another sweep of the repo finished first, or it was removed and synced
+    again. Leaving the newer cursor costs at most a wider window next hour."""
+    rig.cursors.set(REPO, LAST_SWEEP)
+    rig.pages[None] = {"issues": [issue(1)], "next": None}
+    rig.during_listing = lambda: rig.cursors.set(REPO, "2026-09-24T09:30:00Z")
+
+    output = rig.sweep()
+
+    assert rig.cursors.get(REPO) == "2026-09-24T09:30:00Z"
+    assert output["moved"] is False
+
+
+def test_an_ordinary_sweep_says_it_moved_the_cursor(rig: Rig) -> None:
+    rig.cursors.set(REPO, LAST_SWEEP)
+    rig.pages[None] = {"issues": [], "next": None}
+
+    assert rig.sweep()["moved"] is True

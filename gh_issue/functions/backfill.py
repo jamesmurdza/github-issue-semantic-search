@@ -28,8 +28,9 @@ class BackfillPage(TypedDict):
     repo: str
     # Absent on the first page. After that, GitHub's opaque `after` cursor.
     cursor: NotRequired[str]
-    # Identifies one backfill from start to finish; see the next-page send below.
-    chain: NotRequired[str]
+    # Identifies one backfill from start to finish. `gh-issue sync` picks it
+    # and records it before sending the first page; every page carries it on.
+    chain: str
 
 
 def page_event_id(chain: str, cursor: str | None) -> str:
@@ -41,7 +42,20 @@ def page_event_id(chain: str, cursor: str | None) -> str:
     return f"backfill:{chain}:{cursor or 'start'}"
 
 
-def _record_progress(repo: str, chain: str, next_cursor: str | None) -> BackfillProgress:
+def _still_current(repo: str, chain: str) -> bool:
+    """Whether this chain is still the repo's backfill. `gh-issue remove`
+    deletes the record, and syncing again afterwards records a new chain;
+    either way, pages this chain already queued should do nothing."""
+    recorded = backfills().get(repo)
+    return recorded is not None and recorded["chain"] == chain
+
+
+def _record_progress(repo: str, chain: str, next_cursor: str | None) -> BackfillProgress | None:
+    # Only over this chain's own record. A removal can land between the check
+    # at the top of the run and this write, and writing anyway would put the
+    # record back: the next page would then find its chain alive again.
+    if not _still_current(repo, chain):
+        return None
     progress: BackfillProgress = {
         "repo": repo,
         "chain": chain,
@@ -67,9 +81,14 @@ def backfill_page(ctx: inngest.ContextSync) -> dict[str, object]:
     event = cast(BackfillPage, ctx.event.data)
     repo = event["repo"]
     cursor = event.get("cursor")
-    # The first page's run id becomes the backfill's identity, and every page
-    # after it carries that forward.
-    chain = event.get("chain") or ctx.run_id
+    chain = event["chain"]
+
+    # The next page is already queued in Inngest when `gh-issue remove` runs,
+    # and nothing can take it back out, so each page asks first. Plain Python
+    # rather than a step, so it is asked again on every replay and a removal
+    # stops the page at its next step.
+    if not _still_current(repo, chain):
+        return {"repo": repo, "skipped": "no longer this repo's backfill"}
 
     page = ctx.step.run("fetch-page", api.list_issues, repo, cursor)
 
@@ -95,9 +114,9 @@ def backfill_page(ctx: inngest.ContextSync) -> dict[str, object]:
             ],
         )
 
-    # Where this backfill got to, for `gh-issue sync` and `status`; the chain
-    # itself never reads it. A step for two reasons: the write happens once
-    # instead of on every replay, and `at` is read once instead of taking
+    # Where this backfill got to, for `gh-issue sync` and `status`; a page only
+    # ever reads which chain it names. A step for two reasons: the write happens
+    # once instead of on every replay, and `at` is read once instead of taking
     # whatever the last replay saw. It comes before the next page is sent, so if
     # the run dies in between, the record names a page nobody has started and
     # `sync` resumes there, rather than naming one that already ran.

@@ -332,6 +332,20 @@ def test_stats_forgets_a_repo_once_its_chunks_are_gone(store: Store) -> None:
     assert store.stats() == {}
 
 
+def test_delete_repo_removes_that_repo_and_nothing_else(store: Store) -> None:
+    store.upsert(
+        [
+            _chunk("owner/name#412:body", "h1"),
+            _chunk("owner/name#413:comment:1", "h2", number=413),
+            _chunk("other/repo#7:body", "h3", number=7, repo="other/repo"),
+        ]
+    )
+
+    store.delete_repo("owner/name")
+
+    assert store.stats() == {"other/repo": {"chunks": 1, "issues": 1}}
+
+
 def test_a_collection_made_for_another_vector_size_is_refused_on_open(tmp_path: Path) -> None:
     """Otherwise every write fails with a 400 that Inngest retries for minutes,
     and the run just looks stuck — which is how this was found: a test run had

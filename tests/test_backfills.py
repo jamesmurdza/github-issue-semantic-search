@@ -30,6 +30,21 @@ def test_each_repo_keeps_its_own_progress(tmp_path: Path) -> None:
     assert backfills.get("c/d") == progress("c/d", None)
 
 
+def test_delete_forgets_that_repo_only(tmp_path: Path) -> None:
+    backfills = Backfills(str(tmp_path))
+    backfills.set(progress("a/b", "CURSOR-3"))
+    backfills.set(progress("c/d", None))
+
+    backfills.delete("a/b")
+
+    assert backfills.get("a/b") is None
+    assert backfills.repos() == ["c/d"]
+
+
+def test_deleting_what_is_not_there_is_fine(tmp_path: Path) -> None:
+    Backfills(str(tmp_path)).delete("owner/name")
+
+
 def test_repos_lists_every_repo_with_a_backfill(tmp_path: Path) -> None:
     backfills = Backfills(str(tmp_path))
     backfills.set(progress("c/d", None))

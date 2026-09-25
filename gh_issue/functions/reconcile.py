@@ -43,9 +43,18 @@ def _read_cursor(repo: str) -> str | None:
     return cursors().get(repo)
 
 
-def _write_cursor(repo: str, since: str) -> str:
-    cursors().set(repo, since)
-    return since
+def _advance_cursor(repo: str, since: str, started: str) -> bool:
+    """Move the cursor from `since` to `started`, only if it still says `since`.
+
+    Gone means `gh-issue remove` ran while this sweep was listing, and writing
+    it back would have the cron sweep the removed repo every hour. Changed
+    means something else moved it, another sweep or a fresh `sync`, and leaving
+    theirs costs at most a wider window next time.
+    """
+    if cursors().get(repo) != since:
+        return False
+    cursors().set(repo, started)
+    return True
 
 
 @client.create_function(
@@ -107,6 +116,6 @@ def sweep_repo(ctx: inngest.ContextSync) -> dict[str, object]:
 
     # Only after every event is out. Die before this and the next sweep covers
     # the same window again, which is harmless for the same reason as above.
-    ctx.step.run("advance-cursor", _write_cursor, repo, started)
+    moved = ctx.step.run("advance-cursor", _advance_cursor, repo, since, started)
 
-    return {"repo": repo, "changed": changed, "since": since, "until": started}
+    return {"repo": repo, "changed": changed, "since": since, "until": started, "moved": moved}
