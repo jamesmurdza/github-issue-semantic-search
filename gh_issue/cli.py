@@ -1,10 +1,10 @@
 """The `gh-issue` command.
 
-Settings come from the environment, and from a `.env` in the working directory
-for anything the environment does not already set. The `.env` has to be loaded
-before the Inngest client is built, because the client reads INNGEST_DEV once,
-when it is created. So nothing here imports the functions at module level; each
-command imports what it needs when it runs.
+Settings come from ~/.gh-issue/config.toml, and from the environment, which
+wins (see gh_issue/config.py). The file has to be applied before the Inngest
+client is built, because the client reads INNGEST_DEV once, when it is created.
+So nothing here imports the functions at module level; each command imports
+what it needs when it runs.
 """
 
 import datetime
@@ -14,18 +14,13 @@ from typing import Annotated, Literal
 
 import cyclopts
 from cyclopts import Parameter
-from dotenv import find_dotenv, load_dotenv
+
+from gh_issue import config
 
 app = cyclopts.App(
     name="gh-issue",
     help="Semantic search over a GitHub repo's issue history, indexed with Inngest.",
 )
-
-
-def load_env() -> None:
-    """Read `.env` from the working directory (or the nearest parent that has
-    one). A variable already set in the environment wins over the file."""
-    load_dotenv(find_dotenv(usecwd=True), override=False)
 
 
 @app.command
@@ -139,6 +134,55 @@ def _check_index() -> None:
         raise SystemExit(problem)
 
 
+config_app = cyclopts.App(
+    name="config",
+    help="Show the settings, or change one. They are kept in ~/.gh-issue/config.toml, "
+    "and an environment variable for the same setting wins over the file.",
+)
+app.command(config_app)
+
+
+@config_app.default
+def config_show() -> None:
+    """Every setting, its value (secrets masked), and where the value came from."""
+    from gh_issue import display
+
+    print(display.format_config(str(config.config_path()), config.shown()), flush=True)
+
+
+@config_app.command(name="set")
+def config_set(key: str, value: str | None = None) -> None:
+    """Change a setting.
+
+    Parameters
+    ----------
+    key
+        The setting, as `gh-issue config` lists it, e.g. qdrant.url.
+    value
+        The new value. Leave it out to type it in instead: a secret is then not
+        shown as you type, and stays out of your shell's history.
+    """
+    try:
+        config.run_set(key, value)
+    except config.ConfigError as error:
+        raise SystemExit(str(error)) from error
+
+
+@config_app.command(name="unset")
+def config_unset(key: str) -> None:
+    """Remove a setting from the file, so its default (or the environment) applies.
+
+    Parameters
+    ----------
+    key
+        The setting, as `gh-issue config` lists it.
+    """
+    try:
+        config.run_unset(key)
+    except config.ConfigError as error:
+        raise SystemExit(str(error)) from error
+
+
 mcp = cyclopts.App(
     name="mcp",
     help="Serve the index to a coding agent over MCP: search_issues, get_issue, status.",
@@ -181,5 +225,8 @@ def main() -> None:
     for stream in (sys.stdout, sys.stderr):
         if isinstance(stream, io.TextIOWrapper):
             stream.reconfigure(encoding="utf-8")
-    load_env()
+    try:
+        config.apply()
+    except config.ConfigError as error:
+        raise SystemExit(str(error)) from error
     app()

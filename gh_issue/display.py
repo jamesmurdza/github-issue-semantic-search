@@ -1,8 +1,9 @@
-"""The text `gh-issue search` and `gh-issue status` print. Plain ASCII, so it
+"""The text `gh-issue search`, `status` and `config` print. Plain ASCII, so it
 reads the same in any terminal and survives being piped to a file."""
 
 import datetime
 
+from gh_issue.config import SETTINGS, Shown
 from gh_issue.heartbeat import WorkerStatus
 from gh_issue.index.backfills import BackfillProgress
 from gh_issue.index.store import SearchHit
@@ -109,4 +110,18 @@ def format_status(status: Status, now: datetime.datetime) -> str:
     failed = sum(repo["failed"] for repo in repos)
     if failed:
         lines += ["", f"{failed} issue(s) failed every retry; `gh-issue sync` retries them."]
+    return "\n".join(lines)
+
+
+def format_config(path: str, rows: list[Shown]) -> str:
+    """Each setting, its value and where the value came from. A setting that is
+    not set says what it is for instead."""
+    values = [row["value"] or "not set" for row in rows]
+    key_width = max(len(row["key"]) for row in rows) + 3
+    value_width = max(len(value) for value in values) + 2
+    lines = [f"Settings, from {path} and the environment (which wins):", ""]
+    for row, value in zip(rows, values, strict=True):
+        about = row["source"] or SETTINGS[row["key"]]["help"]
+        lines.append(f"  {row['key']:<{key_width}}{value:<{value_width}}{about}")
+    lines += ["", "Change one: gh-issue config set <setting> [value]"]
     return "\n".join(lines)

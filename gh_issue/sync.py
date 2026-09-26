@@ -61,12 +61,12 @@ def send(events: list[inngest.Event]) -> None:
     try:
         client.send_sync(events)
     except Exception as error:
-        hint = (
-            "check INNGEST_EVENT_KEY in .env"
+        where = (
+            f"Inngest Cloud at {client.api_origin} (inngest.event_key)"
             if client.is_production
-            else "is the dev server running? docker compose up -d"
+            else f"the Inngest dev server at {client.api_origin} (inngest.dev)"
         )
-        raise CannotSend(f"Couldn't send to Inngest at {client.api_origin} ({hint}).") from error
+        raise CannotSend(f"Couldn't send events to {where}: {error}") from error
 
 
 def worker_running() -> bool:

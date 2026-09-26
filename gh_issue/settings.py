@@ -9,6 +9,7 @@ instead of three that happen to agree.
 import os
 from functools import lru_cache
 
+from gh_issue.config import home
 from gh_issue.embed import DIM
 from gh_issue.index.backfills import Backfills
 from gh_issue.index.cursors import Cursors
@@ -23,18 +24,18 @@ EVENT_BACKFILL_PAGE = "repo/backfill.page"
 EVENT_SWEEP_REQUESTED = "repo/sweep.requested"
 
 DEFAULT_QDRANT_URL = "http://localhost:6333"
-DEFAULT_DATA_DIR = "./.gh-issue"
 
 
 def qdrant_url() -> str:
-    """Where the index lives. The default matches this project's compose file."""
+    """Where the index lives: the qdrant.url setting."""
     return os.environ.get("QDRANT_URL", DEFAULT_QDRANT_URL)
 
 
 def data_dir() -> str:
-    """Local state that is not vectors: sweep cursors, backfill progress and
-    failure markers."""
-    return os.environ.get("GH_ISSUE_DATA_DIR", DEFAULT_DATA_DIR)
+    """Local state that is not vectors: sweep cursors, backfill progress,
+    failure markers and the worker's heartbeat. Beside the settings file, so
+    every command finds it whatever directory it runs from."""
+    return str(home())
 
 
 @lru_cache(maxsize=1)
@@ -51,7 +52,7 @@ def index_problem() -> str | None:
         # Qdrant answered, but the collection there is unusable; say which way.
         return str(error)
     except Exception:
-        return f"Qdrant is not reachable at {qdrant_url()}. Start it with: docker compose up -d"
+        return f"Can't connect to Qdrant at {qdrant_url()} (qdrant.url)."
     return None
 
 

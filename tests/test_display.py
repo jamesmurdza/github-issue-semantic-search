@@ -5,7 +5,8 @@ from typing import Literal
 
 import pytest
 
-from gh_issue.display import ago, format_hits, format_status
+from gh_issue.config import Shown
+from gh_issue.display import ago, format_config, format_hits, format_status
 from gh_issue.heartbeat import WorkerStatus
 from gh_issue.index.backfills import BackfillProgress
 from gh_issue.index.store import SearchHit
@@ -216,3 +217,24 @@ def test_a_backfill_waiting_for_its_first_page() -> None:
 def test_failures_are_counted_and_the_fix_named() -> None:
     text = format_status({"worker": worker(), "repos": [repo("a/b", failed=2)]}, NOW)
     assert text.splitlines()[-1] == "2 issue(s) failed every retry; `gh-issue sync` retries them."
+
+
+# config ------------------------------------------------------------------------
+
+
+def test_config_lists_every_setting_with_its_value_and_where_it_came_from() -> None:
+    rows: list[Shown] = [
+        {"key": "github.token", "value": "****1234", "source": "config file"},
+        {"key": "inngest.event_key", "value": None, "source": None},
+        {"key": "qdrant.url", "value": "http://q:6333", "source": "environment (QDRANT_URL)"},
+    ]
+
+    assert format_config("/home/me/.gh-issue/config.toml", rows) == (
+        "Settings, from /home/me/.gh-issue/config.toml and the environment (which wins):\n"
+        "\n"
+        "  github.token        ****1234       config file\n"
+        "  inngest.event_key   not set        Inngest Cloud's event key\n"
+        "  qdrant.url          http://q:6333  environment (QDRANT_URL)\n"
+        "\n"
+        "Change one: gh-issue config set <setting> [value]"
+    )

@@ -172,7 +172,7 @@ itself. Syncing pydantic-ai takes about 45 minutes, most of it embedding.
 ```bash
 # 1. An index of its own, so your own stays untouched
 docker run -d --name gh-issue-bench -p 6343:6333 qdrant/qdrant:v1.19.1
-export QDRANT_URL=http://localhost:6343 GH_ISSUE_DATA_DIR=./.gh-issue-bench
+export QDRANT_URL=http://localhost:6343 GH_ISSUE_HOME=./.gh-issue-bench
 export GITHUB_TOKEN=$(gh auth token) INNGEST_DEV=1
 
 # 2. Index both repos: start a worker, sync, and wait until `gh-issue status`

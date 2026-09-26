@@ -6,6 +6,7 @@ events that bring the repo up to date. So every test here is about which events
 go out, with which ids, and what is recorded afterwards.
 """
 
+import socket
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -250,6 +251,25 @@ def test_markers_stay_when_sending_fails(rig: Rig, monkeypatch: pytest.MonkeyPat
     with pytest.raises(ConnectionError):
         rig.sync()
     assert [f["number"] for f in rig.failures.for_repo(REPO)] == [412]
+
+
+def test_sending_to_a_dev_server_that_is_not_there_names_it_and_its_setting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        origin = f"http://127.0.0.1:{probe.getsockname()[1]}"
+    absent = inngest.Inngest(
+        app_id="probe", is_production=False, api_base_url=origin, event_api_base_url=origin
+    )
+    monkeypatch.setattr(mod, "client", absent)
+
+    with pytest.raises(mod.CannotSend) as raised:
+        mod.send([inngest.Event(name="probe")])
+
+    assert str(raised.value).startswith(
+        f"Couldn't send events to the Inngest dev server at {origin} (inngest.dev):"
+    )
 
 
 def test_starting_over_clears_old_failure_markers(rig: Rig) -> None:

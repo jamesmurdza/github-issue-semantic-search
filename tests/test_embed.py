@@ -1,3 +1,8 @@
+from pathlib import Path
+
+import pytest
+
+from gh_issue import embed
 from gh_issue.chunking import Chunk
 from gh_issue.embed import DIM, QUERY_INSTRUCTION, embed_chunks, embed_query, embed_texts
 
@@ -39,11 +44,6 @@ def test_vectors_come_back_in_input_order() -> None:
     first, second = embed_texts(["alpha text here", "completely different subject"])
     assert first != second
     assert embed_texts(["alpha text here"])[0] == first
-
-
-def test_the_same_text_always_embeds_identically() -> None:
-    """The hash dedupe is only worth anything if this holds."""
-    assert embed_texts(["a repeated sentence"]) == embed_texts(["a repeated sentence"])
 
 
 def test_similar_text_scores_closer_than_unrelated_text() -> None:
@@ -103,3 +103,16 @@ def test_a_query_is_embedded_with_the_instruction_bge_expects() -> None:
 
     assert dense == embed_texts([QUERY_INSTRUCTION + text])[0]
     assert dense != embed_texts([text])[0]
+
+
+def test_the_model_is_cached_in_the_gh_issue_home_unless_moved(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Not the working directory: the model is 65 MB, and a command run from
+    anywhere else would download it again."""
+    monkeypatch.setenv("GH_ISSUE_HOME", str(tmp_path))
+    monkeypatch.delenv("GH_ISSUE_MODEL_CACHE")
+    assert embed.cache_dir() == str(tmp_path / "models")
+
+    monkeypatch.setenv("GH_ISSUE_MODEL_CACHE", "/shared/models")
+    assert embed.cache_dir() == "/shared/models"

@@ -57,7 +57,7 @@ def trim_comment(comment: Mapping[str, Any]) -> Comment:
     }
 
 
-MISSING_TOKEN = "GITHUB_TOKEN is not set. Add it to .env (see .env.example)."
+MISSING_TOKEN = "github.token is not set. Set it with: gh-issue config set github.token"
 
 
 def _client() -> httpx.Client:

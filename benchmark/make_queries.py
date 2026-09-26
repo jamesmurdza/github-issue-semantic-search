@@ -22,8 +22,8 @@ It takes two commands, because an agent writes queries in between:
       duplicates from GitHub, titles from the index and the written queries,
       into queries.json.
 
-Both read the index at QDRANT_URL, which must hold REPOS, synced by
-`gh-issue sync`. `build` also needs GITHUB_TOKEN.
+Both read the index at the qdrant.url setting, which must hold REPOS, synced
+by `gh-issue sync`. `build` also needs github.token.
 """
 
 import json
@@ -36,6 +36,7 @@ import cyclopts
 import httpx
 from qdrant_client import QdrantClient, models
 
+from gh_issue import config
 from gh_issue.index.store import COLLECTION
 from gh_issue.settings import qdrant_url
 
@@ -236,4 +237,5 @@ def build() -> None:
 
 
 if __name__ == "__main__":
+    config.apply()
     app()

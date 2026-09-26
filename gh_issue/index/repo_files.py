@@ -51,13 +51,21 @@ def patiently[T](action: Callable[[], T]) -> T:
 
 
 def write_json(path: Path, record: Mapping[str, Any]) -> None:
+    write_text(path, json.dumps(dict(record)))
+
+
+def write_text(path: Path, text: str) -> None:
     """Write atomically: a temp file in the same directory, then a rename over
-    the old one. A reader sees the old record or the new one, never half."""
+    the old one. A reader sees the old contents or the new, never half.
+
+    The temp file, and so the file, can be read by its owner only, which is
+    what the settings file needs: it holds the GitHub token.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     handle, temporary = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
     try:
         with os.fdopen(handle, "w", encoding="utf-8") as file:
-            json.dump(dict(record), file)
+            file.write(text)
         patiently(lambda: os.replace(temporary, path))
     except BaseException:
         Path(temporary).unlink(missing_ok=True)

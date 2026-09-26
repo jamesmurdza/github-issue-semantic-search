@@ -1,6 +1,6 @@
 from collections.abc import Iterator
+from pathlib import Path
 
-import inngest
 import pytest
 
 from gh_issue import settings
@@ -10,9 +10,12 @@ from gh_issue.functions.client import client
 
 @pytest.fixture(autouse=True)
 def clean_caches() -> Iterator[None]:
-    settings.store.cache_clear()
+    # Held on to, because a test may still have a stand-in in its place when
+    # this runs again at the end.
+    store = settings.store
+    store.cache_clear()
     yield
-    settings.store.cache_clear()
+    store.cache_clear()
 
 
 def test_the_three_event_names_are_distinct() -> None:
@@ -36,30 +39,16 @@ def test_qdrant_url_honours_the_environment(monkeypatch: pytest.MonkeyPatch) -> 
     assert settings.qdrant_url() == "http://qdrant.internal:6333"
 
 
-def test_data_dir_defaults_beside_the_project(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("GH_ISSUE_DATA_DIR", raising=False)
-    assert settings.data_dir() == "./.gh-issue"
+def test_the_records_live_in_the_gh_issue_home(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Beside the config file, so every command finds them from any directory."""
+    monkeypatch.setenv("GH_ISSUE_HOME", str(tmp_path))
+    assert settings.data_dir() == str(tmp_path)
 
 
 def test_the_inngest_app_is_named() -> None:
     assert client.app_id == "gh-issue"
-
-
-def test_the_client_talks_to_cloud_unless_inngest_dev_is_set(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """`is_production` is deliberately not passed. Leaving it to the SDK is what
-    lets the same code run against the dev server locally and cloud in
-    production, by setting INNGEST_DEV rather than editing the source."""
-    monkeypatch.delenv("INNGEST_DEV", raising=False)
-    cloud = inngest.Inngest(app_id="probe")
-    assert cloud.is_production is True
-    assert "api.inngest.com" in cloud.api_origin
-
-    monkeypatch.setenv("INNGEST_DEV", "1")
-    dev = inngest.Inngest(app_id="probe")
-    assert dev.is_production is False
-    assert "8288" in dev.api_origin
 
 
 def test_the_store_is_opened_once_and_reused(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -87,16 +76,21 @@ def test_an_index_that_opens_has_no_problem(monkeypatch: pytest.MonkeyPatch) -> 
     assert settings.index_problem() is None
 
 
-def test_qdrant_not_running_says_how_to_start_it(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_qdrant_out_of_reach_says_where_it_looked_and_which_setting_that_is(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Whatever runs Qdrant is the user's business; what they need to know is
+    the address that failed and the setting that holds it."""
+
     def unreachable() -> None:
         raise ConnectionError("refused")
 
     monkeypatch.setattr(settings, "store", unreachable)
+    monkeypatch.setenv("QDRANT_URL", "http://qdrant.internal:6333")
 
-    problem = settings.index_problem()
-    assert problem is not None
-    assert "Qdrant" in problem
-    assert "docker compose up -d" in problem
+    assert settings.index_problem() == (
+        "Can't connect to Qdrant at http://qdrant.internal:6333 (qdrant.url)."
+    )
 
 
 def test_a_collection_of_the_wrong_size_is_reported_as_itself(

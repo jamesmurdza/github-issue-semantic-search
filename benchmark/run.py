@@ -2,8 +2,10 @@
 
   uv run python -m benchmark.run [queries.json]
 
-Reads benchmark/queries.json (see make_queries.py) and the index at QDRANT_URL,
-which must hold the repos those queries are about, synced by `gh-issue sync`.
+Reads benchmark/queries.json (see make_queries.py) and the index at the
+qdrant.url setting, which must hold the repos those queries are about, synced
+by `gh-issue sync`. Settings come from `gh-issue config` and the environment,
+as for gh-issue itself.
 Prints Markdown tables; README.md shows the last run's.
 
 Each method is one Qdrant query per benchmark query: the query `gh-issue search`
@@ -24,6 +26,7 @@ from qdrant_client import QdrantClient, models
 
 from benchmark.make_queries import QUERIES, Query
 from benchmark.scoring import Rank, difference_interval, macro, rank_of, summarise
+from gh_issue import config
 from gh_issue.embed import embed_query, embed_texts
 from gh_issue.index.store import CANDIDATES, COLLECTION, DENSE, KEYWORDS, best_first
 from gh_issue.settings import qdrant_url, store
@@ -217,4 +220,5 @@ def main(path: Path = QUERIES) -> None:
 
 
 if __name__ == "__main__":
+    config.apply()
     main(*map(Path, sys.argv[1:2]))

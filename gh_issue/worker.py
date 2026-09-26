@@ -18,6 +18,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any, Protocol
 
+import httpx
 import inngest
 from inngest.connect import ConnectionState, connect
 
@@ -141,15 +142,34 @@ def preflight(production: bool) -> list[str]:
     if not os.environ.get("GITHUB_TOKEN"):
         problems.append(MISSING_TOKEN)
     if production:
-        for key in ("INNGEST_SIGNING_KEY", "INNGEST_EVENT_KEY"):
-            if not os.environ.get(key):
+        for key, env in (
+            ("inngest.signing_key", "INNGEST_SIGNING_KEY"),
+            ("inngest.event_key", "INNGEST_EVENT_KEY"),
+        ):
+            if not os.environ.get(env):
                 problems.append(
-                    f"{key} is not set. Inngest Cloud needs it (see .env.example); "
-                    "to use the local dev server instead, set INNGEST_DEV=1."
+                    f"{key} is not set, and Inngest Cloud needs it. Set it with: "
+                    f"gh-issue config set {key} (or, to use a local dev server "
+                    "instead: gh-issue config set inngest.dev 1)"
                 )
+    if problem := inngest_problem(client.api_origin, production):
+        problems.append(problem)
     if problem := index_problem():
         problems.append(problem)
     return problems
+
+
+def inngest_problem(origin: str, production: bool) -> str | None:
+    """Whether anything answers at `origin`; any answer will do. Without this a
+    worker that can't reach Inngest waits in silence, since the SDK keeps trying
+    to connect and says nothing while it does."""
+    try:
+        httpx.get(origin, timeout=5.0)
+    except httpx.TransportError:
+        if production:
+            return f"Can't connect to Inngest Cloud at {origin}."
+        return f"Can't connect to the Inngest dev server at {origin} (inngest.dev)."
+    return None
 
 
 def run(say: Callable[[str], None] = print_now) -> None:

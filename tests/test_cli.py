@@ -1,5 +1,6 @@
-"""The CLI's start-up: `.env` has to be loaded before the Inngest client exists,
-because the client reads INNGEST_DEV once, when it is built."""
+"""The CLI: its start-up, where the settings file has to be applied before the
+Inngest client exists, because the client reads INNGEST_DEV once, when it is
+built; and each command's handling of its arguments."""
 
 import os
 import subprocess
@@ -9,14 +10,14 @@ from typing import Any
 
 import pytest
 
-from gh_issue import cli, query, remove, settings
+from gh_issue import cli, config, query, remove, settings
 from gh_issue.index.store import SearchFilters
 from gh_issue.query import Status
 
 
 def test_importing_the_cli_does_not_build_the_inngest_client() -> None:
-    """If it did, a `.env` saying INNGEST_DEV=1 would be read too late and the
-    worker would try Inngest Cloud. A fresh interpreter, so nothing earlier in
+    """If it did, a config file saying inngest.dev = "1" would be read too late
+    and the worker would try Inngest Cloud. A fresh interpreter, so nothing earlier in
     the test run has imported the client already."""
     probe = "import sys, gh_issue.cli; print('gh_issue.functions.client' in sys.modules)"
     result = subprocess.run(
@@ -42,29 +43,172 @@ def test_output_piped_elsewhere_is_utf8_whatever_the_system_code_page(tmp_path: 
     assert result.stdout.decode("utf-8").strip() == chr(0x276F) + " ok"
 
 
-def test_env_file_in_the_working_directory_is_loaded(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize(
+    ("config_file", "production"),
+    [
+        pytest.param('[inngest]\ndev = "1"\n', False, id="the-file-says-dev-server"),
+        pytest.param(None, True, id="nothing-set-means-cloud"),
+    ],
+)
+def test_the_inngest_client_uses_the_dev_server_only_when_a_setting_says_so(
+    tmp_path: Path, config_file: str | None, production: bool
 ) -> None:
-    (tmp_path / ".env").write_text("GH_ISSUE_TEST_SETTING=from-dotenv\n", encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv("GH_ISSUE_TEST_SETTING", raising=False)
+    """The client reads INNGEST_DEV once, when it is built, so the file has to
+    be applied before anything builds it. And the client is left to decide for
+    itself: one built for the dev server would still pass the first case. A
+    fresh interpreter, with INNGEST_DEV out of the environment."""
+    if config_file is not None:
+        (tmp_path / "config.toml").write_text(config_file, encoding="utf-8")
+    probe = (
+        "from gh_issue import cli\n"
+        "def app():\n"
+        "    from gh_issue.functions.client import client\n"
+        "    print(client.is_production)\n"
+        "cli.app = app\n"
+        "cli.main()"
+    )
+    environment = {key: value for key, value in os.environ.items() if key != "INNGEST_DEV"}
+    environment["GH_ISSUE_HOME"] = str(tmp_path)
 
-    cli.load_env()
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, env=environment
+    )
 
-    assert os.environ["GH_ISSUE_TEST_SETTING"] == "from-dotenv"
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == str(production)
 
 
-def test_a_variable_already_set_wins_over_env_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def test_a_broken_config_file_is_a_message_not_a_traceback(tmp_path: Path) -> None:
+    (tmp_path / "config.toml").write_text("[inngest\n", encoding="utf-8")
+    probe = "from gh_issue import cli; cli.app = lambda: None; cli.main()"
+    environment = {**os.environ, "GH_ISSUE_HOME": str(tmp_path)}
+
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, env=environment
+    )
+
+    assert result.returncode == 1
+    assert "config.toml is not valid TOML" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+# config ------------------------------------------------------------------------
+
+
+@pytest.fixture
+def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    monkeypatch.setenv("GH_ISSUE_HOME", str(tmp_path))
+    for name in ("GITHUB_TOKEN", "INNGEST_DEV", "INNGEST_EVENT_KEY", "INNGEST_SIGNING_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.delenv("QDRANT_URL", raising=False)
+    return tmp_path
+
+
+def test_config_with_no_subcommand_shows_the_settings(
+    home: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """So `INNGEST_DEV=1 gh-issue worker` works without editing .env."""
-    (tmp_path / ".env").write_text("GH_ISSUE_TEST_SETTING=from-dotenv\n", encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("GH_ISSUE_TEST_SETTING", "from-shell")
+    command, _, _ = cli.app.parse_args(["config"])
+    command()
+    out = capsys.readouterr().out
+    assert "github.token" in out
+    assert "http://localhost:6333  default" in out
 
-    cli.load_env()
 
-    assert os.environ["GH_ISSUE_TEST_SETTING"] == "from-shell"
+def test_config_set_saves_a_value_given_on_the_command_line(
+    home: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    command, bound, _ = cli.app.parse_args(["config", "set", "qdrant.url", "http://q:6333"])
+    command(*bound.args, **bound.kwargs)
+
+    assert config.read() == {"qdrant.url": "http://q:6333"}
+    assert "Saved qdrant.url" in capsys.readouterr().out
+
+
+def test_config_set_asks_for_a_secret_without_echoing_it(
+    home: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """So the token stays out of the shell's history, and off the screen."""
+    asked: list[str] = []
+
+    def hidden(prompt: str) -> str:
+        asked.append(prompt)
+        return "ghp_typed_in_1234"
+
+    monkeypatch.setattr(config, "ask_secret", hidden)
+
+    cli.config_set("github.token")
+
+    assert asked == ["github.token (not shown as you type): "]
+    assert config.read() == {"github.token": "ghp_typed_in_1234"}
+    assert "ghp_typed_in_1234" not in capsys.readouterr().out
+
+
+def test_config_set_asks_for_a_plain_value_in_the_open(
+    home: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(config, "ask", lambda prompt: "1")
+    monkeypatch.setattr(config, "ask_secret", lambda prompt: pytest.fail("hid a plain value"))
+
+    cli.config_set("inngest.dev")
+
+    assert config.read() == {"inngest.dev": "1"}
+
+
+def test_config_set_with_nothing_typed_changes_nothing(
+    home: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config.set_value("github.token", "ghp_kept_12345678")
+    monkeypatch.setattr(config, "ask_secret", lambda prompt: "  ")
+
+    with pytest.raises(SystemExit, match=r"github.token is unchanged"):
+        cli.config_set("github.token")
+
+    assert config.read() == {"github.token": "ghp_kept_12345678"}
+
+
+def test_config_set_of_an_unknown_setting_lists_the_real_ones(home: Path) -> None:
+    with pytest.raises(SystemExit, match=r"qdrant\.host.*qdrant\.url"):
+        cli.config_set("qdrant.host", "x")
+
+
+def test_config_set_says_when_the_environment_still_wins(
+    home: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("QDRANT_URL", "http://from-env:6333")
+
+    cli.config_set("qdrant.url", "http://from-file:6333")
+
+    assert "QDRANT_URL is set in the environment" in capsys.readouterr().out
+
+
+def test_config_set_does_not_mistake_the_files_own_value_for_the_environment(
+    home: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Start-up copies the file into the environment, so the old value is
+    there by the time `config set` runs; it is not a variable that wins."""
+    config.set_value("qdrant.url", "http://old:6333")
+    config.apply()
+
+    cli.config_set("qdrant.url", "http://new:6333")
+
+    assert "Note" not in capsys.readouterr().out
+
+
+def test_config_unset_removes_a_setting(home: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    config.set_value("qdrant.url", "http://q:6333")
+
+    command, bound, _ = cli.app.parse_args(["config", "unset", "qdrant.url"])
+    command(*bound.args, **bound.kwargs)
+
+    assert config.read() == {}
+    assert "Removed qdrant.url" in capsys.readouterr().out
+
+
+def test_config_unset_of_a_setting_the_file_lacks_says_so(
+    home: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    cli.config_unset("qdrant.url")
+    assert "qdrant.url is not in" in capsys.readouterr().out
 
 
 # search and status --------------------------------------------------------------

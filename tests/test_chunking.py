@@ -1,10 +1,7 @@
-from gh_issue.chunking import (
-    chunks_for,
-    issue_meta,
-    metadata_outdated,
-    needs_embedding,
-    orphaned_ids,
-)
+"""Turning an issue into chunks. Which chunks a run re-embeds, deletes or
+refreshes is tested through the run itself, in test_index_issue.py."""
+
+from gh_issue.chunking import chunks_for, issue_meta, metadata_outdated
 from gh_issue.github.types import Comment, Issue
 
 REPO = "owner/name"
@@ -91,13 +88,6 @@ def test_id_is_stable_across_edits_but_hash_is_not() -> None:
     assert before["content_hash"] != after["content_hash"]
 
 
-def test_identical_text_hashes_identically() -> None:
-    assert (
-        chunks_for(REPO, ISSUE, COMMENTS)[0]["content_hash"]
-        == (chunks_for(REPO, ISSUE, COMMENTS)[0]["content_hash"])
-    )
-
-
 def test_missing_body_does_not_crash() -> None:
     chunks = chunks_for(REPO, {**ISSUE, "body": None}, [])
     assert chunks[0]["text"].strip() == "App freezes when I scroll fast"
@@ -108,61 +98,10 @@ def test_an_issue_with_no_labels_still_produces_a_labels_field() -> None:
     assert chunks[0]["meta"]["labels"] == []
 
 
-def test_needs_embedding_skips_unchanged_chunks() -> None:
-    chunks = chunks_for(REPO, ISSUE, COMMENTS)
-    existing = {c["id"]: c["content_hash"] for c in chunks}
-    assert needs_embedding(chunks, existing) == []
-
-
-def test_needs_embedding_returns_only_the_changed_chunk() -> None:
-    chunks = chunks_for(REPO, ISSUE, COMMENTS)
-    existing = {
-        chunks[0]["id"]: chunks[0]["content_hash"],
-        chunks[1]["id"]: "stale-hash",
-    }
-    assert [c["id"] for c in needs_embedding(chunks, existing)] == [chunks[1]["id"]]
-
-
-def test_needs_embedding_returns_everything_when_nothing_stored() -> None:
-    chunks = chunks_for(REPO, ISSUE, COMMENTS)
-    assert len(needs_embedding(chunks, {})) == 2
-
-
-def test_orphaned_ids_finds_a_deleted_comment() -> None:
-    chunks = chunks_for(REPO, {**ISSUE, "comments": 0}, [])
-    existing = {"owner/name#412:body": "h1", "owner/name#412:comment:9981": "h2"}
-    assert orphaned_ids(chunks, existing) == ["owner/name#412:comment:9981"]
-
-
-def test_orphaned_ids_is_empty_when_nothing_was_removed() -> None:
-    chunks = chunks_for(REPO, ISSUE, COMMENTS)
-    existing = {c["id"]: c["content_hash"] for c in chunks}
-    assert orphaned_ids(chunks, existing) == []
-
-
-def test_an_edited_comment_is_re_embedded_but_never_orphaned() -> None:
-    """The two ids do different jobs: edits change the hash, not the id."""
-    chunks = chunks_for(REPO, ISSUE, COMMENTS)
-    existing = {c["id"]: c["content_hash"] for c in chunks}
-
-    edited: list[Comment] = [{**COMMENTS[0], "body": "Actually it was a debounce bug."}]
-    after = chunks_for(REPO, ISSUE, edited)
-
-    assert [c["id"] for c in needs_embedding(after, existing)] == ["owner/name#412:comment:9981"]
-    assert orphaned_ids(after, existing) == []
-
-
-def test_metadata_is_current_when_every_stored_copy_matches() -> None:
-    assert not metadata_outdated(issue_meta(ISSUE), [issue_meta(ISSUE), issue_meta(ISSUE)])
-
-
-def test_nothing_stored_is_not_outdated() -> None:
-    """A first index writes fresh metadata with every chunk; there is nothing to fix."""
-    assert not metadata_outdated(issue_meta(ISSUE), [])
-
-
 def test_closing_relabelling_or_retitling_is_outdated() -> None:
-    """None of these change any chunk's text, so the content hash cannot see them."""
+    """None of these change any chunk's text, so the content hash cannot see them.
+    Each on its own, which the indexing run's tests do not do: they close and
+    relabel together."""
     stored = issue_meta(ISSUE)
     assert metadata_outdated({**stored, "state": "open"}, [stored])
     assert metadata_outdated({**stored, "labels": ["bug"]}, [stored])

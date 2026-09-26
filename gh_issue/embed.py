@@ -26,6 +26,7 @@ from typing import TypedDict
 from fastembed import SparseEmbedding, SparseTextEmbedding, TextEmbedding
 
 from gh_issue.chunking import Chunk, EmbeddedChunk, SparseVector
+from gh_issue.config import home
 
 MODEL = "BAAI/bge-small-en-v1.5"
 DIM = 384
@@ -37,9 +38,6 @@ SPARSE_MODEL = "Qdrant/bm25"
 # scored 0.513 instead of 0.569.
 QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 
-# fastembed defaults to the system temp directory, which gets cleaned — and then
-# the next run pays for the 90 MB download again. Keep it next to the project.
-DEFAULT_CACHE = "./.fastembed_cache"
 
 # Inngest caps a step's return value at 4 MiB. One 384-dim vector is roughly 8 KB
 # once it is JSON, so the caller embeds in batches of this size, leaving a run
@@ -52,26 +50,28 @@ class QueryVectors(TypedDict):
     sparse: SparseVector
 
 
+def cache_dir() -> str:
+    """Where the models are downloaded to. fastembed defaults to the system temp
+    directory, which gets cleaned, and then the next run pays for the 65 MB
+    download again. GH_ISSUE_MODEL_CACHE moves it, which the tests use to share
+    one download."""
+    return os.environ.get("GH_ISSUE_MODEL_CACHE") or str(home() / "models")
+
+
 @lru_cache(maxsize=1)
 def _model() -> TextEmbedding:
     """Loaded once per process, on first use.
 
-    The first call ever downloads about 90 MB into the cache. Keeping it lazy
+    The first call ever downloads about 65 MB into the cache. Keeping it lazy
     means a run with nothing new to embed never pays for it.
     """
-    return TextEmbedding(
-        model_name=MODEL,
-        cache_dir=os.environ.get("GH_ISSUE_MODEL_CACHE", DEFAULT_CACHE),
-    )
+    return TextEmbedding(model_name=MODEL, cache_dir=cache_dir())
 
 
 @lru_cache(maxsize=1)
 def _sparse_model() -> SparseTextEmbedding:
     """BM25's tokenizer, stemmer and stopword list. A small download, no model."""
-    return SparseTextEmbedding(
-        model_name=SPARSE_MODEL,
-        cache_dir=os.environ.get("GH_ISSUE_MODEL_CACHE", DEFAULT_CACHE),
-    )
+    return SparseTextEmbedding(model_name=SPARSE_MODEL, cache_dir=cache_dir())
 
 
 def _sparse(embedding: SparseEmbedding) -> SparseVector:

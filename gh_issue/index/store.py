@@ -1,7 +1,7 @@
 """The vector index.
 
-Qdrant runs as a server, started by the `docker-compose.yml` in this repo and
-reached through `QDRANT_URL`. The client also has an embedded mode — pass `path`
+Qdrant runs as a server, at the qdrant.url setting; the `docker-compose.yml` in
+this repo starts one. The client also has an embedded mode — pass `path`
 instead of `url` and it keeps everything in a local directory with no daemon —
 and the test suite uses it so that running the tests needs nothing running.
 

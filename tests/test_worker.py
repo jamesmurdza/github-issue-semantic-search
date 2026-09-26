@@ -7,8 +7,10 @@ where every run would fail, and the shutdown that cleans up after it.
 """
 
 import asyncio
+import http.server
 import os
 import socket
+import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -176,7 +178,7 @@ class BriefConnection(FakeConnection):
 def test_run_keeps_a_heartbeat_while_up_and_removes_it_on_the_way_out(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GH_ISSUE_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("GH_ISSUE_HOME", str(tmp_path))
     monkeypatch.setattr(worker, "preflight", lambda production: [])
     connection = BriefConnection(tmp_path / "worker.json")
     monkeypatch.setattr(worker, "connect", lambda apps: connection)
@@ -221,6 +223,7 @@ def ready(monkeypatch: pytest.MonkeyPatch) -> Callable[..., list[str]]:
     monkeypatch.setenv("INNGEST_SIGNING_KEY", "signkey-test")
     monkeypatch.setenv("INNGEST_EVENT_KEY", "evtkey-test")
     monkeypatch.setattr(worker, "index_problem", lambda: None)
+    monkeypatch.setattr(worker, "inngest_problem", lambda origin, production: None)
     return worker.preflight
 
 
@@ -233,8 +236,7 @@ def test_a_missing_github_token_is_named(
 ) -> None:
     monkeypatch.delenv("GITHUB_TOKEN")
     (problem,) = ready(production=False)
-    assert "GITHUB_TOKEN" in problem
-    assert ".env" in problem
+    assert problem == "github.token is not set. Set it with: gh-issue config set github.token"
 
 
 def test_inngest_cloud_needs_both_keys_and_the_dev_server_needs_neither(
@@ -245,10 +247,14 @@ def test_inngest_cloud_needs_both_keys_and_the_dev_server_needs_neither(
 
     problems = ready(production=True)
 
-    assert len(problems) == 2
-    assert any("INNGEST_SIGNING_KEY" in p for p in problems)
-    assert any("INNGEST_EVENT_KEY" in p for p in problems)
-    assert all("INNGEST_DEV=1" in p for p in problems)
+    assert problems == [
+        "inngest.signing_key is not set, and Inngest Cloud needs it. Set it with: "
+        "gh-issue config set inngest.signing_key (or, to use a local dev server "
+        "instead: gh-issue config set inngest.dev 1)",
+        "inngest.event_key is not set, and Inngest Cloud needs it. Set it with: "
+        "gh-issue config set inngest.event_key (or, to use a local dev server "
+        "instead: gh-issue config set inngest.dev 1)",
+    ]
     assert ready(production=False) == []
 
 
@@ -259,3 +265,56 @@ def test_a_problem_with_the_index_is_passed_on(
     monkeypatch.setattr(worker, "index_problem", lambda: "Qdrant is not reachable")
 
     assert ready(production=False) == ["Qdrant is not reachable"]
+
+
+def test_inngest_out_of_reach_is_passed_on(
+    ready: Callable[..., list[str]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(worker, "inngest_problem", lambda origin, production: "no Inngest")
+    assert ready(production=False) == ["no Inngest"]
+
+
+def closed_port() -> int:
+    """A port nothing listens on: bound, noted, and let go."""
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port: int = probe.getsockname()[1]
+    return port
+
+
+def test_a_dev_server_that_does_not_answer_is_named_with_its_setting() -> None:
+    """Without this the worker waits in silence: the SDK keeps trying to
+    connect and says nothing while it does."""
+    origin = f"http://127.0.0.1:{closed_port()}"
+    assert worker.inngest_problem(origin, production=False) == (
+        f"Can't connect to the Inngest dev server at {origin} (inngest.dev)."
+    )
+
+
+def test_inngest_cloud_out_of_reach_is_named_too() -> None:
+    origin = f"http://127.0.0.1:{closed_port()}"
+    assert worker.inngest_problem(origin, production=True) == (
+        f"Can't connect to Inngest Cloud at {origin}."
+    )
+
+
+def test_any_answer_from_inngest_will_do() -> None:
+    """Even a 404: all the check is for is that something is there."""
+
+    class Answering(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            self.send_response(404)
+            self.end_headers()
+
+        def log_message(self, *args: Any) -> None:
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Answering)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        origin = f"http://127.0.0.1:{server.server_address[1]}"
+        assert worker.inngest_problem(origin, production=False) is None
+    finally:
+        server.shutdown()
+        server.server_close()

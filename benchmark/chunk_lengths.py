@@ -13,6 +13,7 @@ from typing import Any
 from tokenizers import Tokenizer
 
 from benchmark.make_queries import REPOS, indexed_chunks
+from gh_issue import config
 from gh_issue.embed import _model
 
 LIMIT = 512
@@ -40,4 +41,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    config.apply()
     main()
