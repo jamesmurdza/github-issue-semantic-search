@@ -222,7 +222,7 @@ def test_failures_are_counted_and_the_fix_named() -> None:
 # config ------------------------------------------------------------------------
 
 
-def test_config_lists_every_setting_with_its_value_and_where_it_came_from() -> None:
+def test_config_lists_each_setting_its_value_where_that_came_from_and_what_it_is() -> None:
     rows: list[Shown] = [
         {"key": "github.token", "value": "****1234", "source": "config file"},
         {"key": "inngest.event_key", "value": None, "source": None},
@@ -233,8 +233,11 @@ def test_config_lists_every_setting_with_its_value_and_where_it_came_from() -> N
         "Settings, from /home/me/.gh-issue/config.toml and the environment (which wins):\n"
         "\n"
         "  github.token        ****1234       config file\n"
-        "  inngest.event_key   not set        Inngest Cloud's event key\n"
+        "      A GitHub token; for public repos, the public_repo scope is enough.\n"
+        "  inngest.event_key   not set\n"
+        "      Inngest Cloud's event key.\n"
         "  qdrant.url          http://q:6333  environment (QDRANT_URL)\n"
+        "      Where Qdrant is.\n"
         "\n"
         "Change one: gh-issue config set <setting> [value]"
     )

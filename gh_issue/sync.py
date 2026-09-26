@@ -15,7 +15,6 @@ events carry ids wherever sending one twice would do the work twice, so running
 `sync` again while the last one is still going is harmless.
 """
 
-import re
 import uuid
 from collections.abc import Callable
 
@@ -36,8 +35,6 @@ from gh_issue.settings import (
     store,
 )
 from gh_issue.worker import preflight, print_now
-
-REPO_NAME = re.compile(r"^[\w.-]+/[\w.-]+$")
 
 NO_WORKER = (
     "No worker is running here. The work above is queued in Inngest and starts "
@@ -150,11 +147,7 @@ def sync_repo(repo: str) -> list[str]:
 
 
 def run(repos: list[str], say: Callable[[str], None] = print_now) -> None:
-    malformed = [repo for repo in repos if not REPO_NAME.match(repo)]
-    if malformed:
-        raise SystemExit(
-            f"Not a repo name: {', '.join(malformed)}. Use owner/name, e.g. inngest/inngest."
-        )
+    """The repos are owner/name; the command line checked them."""
     targets = repos or known_repos()
     if not targets:
         raise SystemExit("Nothing has been synced yet. Name a repo: gh-issue sync owner/name")

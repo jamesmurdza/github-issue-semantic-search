@@ -38,31 +38,31 @@ SETTINGS: dict[str, Setting] = {
         "env": "GITHUB_TOKEN",
         "secret": True,
         "default": None,
-        "help": "a GitHub token; for public repos, the public_repo scope is enough",
+        "help": "A GitHub token; for public repos, the public_repo scope is enough.",
     },
     "inngest.dev": {
         "env": "INNGEST_DEV",
         "secret": False,
         "default": None,
-        "help": "1 for a local Inngest dev server, or its URL; unset means Inngest Cloud",
+        "help": "1 for a local Inngest dev server, or its URL; unset means Inngest Cloud.",
     },
     "inngest.event_key": {
         "env": "INNGEST_EVENT_KEY",
         "secret": True,
         "default": None,
-        "help": "Inngest Cloud's event key",
+        "help": "Inngest Cloud's event key.",
     },
     "inngest.signing_key": {
         "env": "INNGEST_SIGNING_KEY",
         "secret": True,
         "default": None,
-        "help": "Inngest Cloud's signing key",
+        "help": "Inngest Cloud's signing key.",
     },
     "qdrant.url": {
         "env": "QDRANT_URL",
         "secret": False,
         "default": "http://localhost:6333",
-        "help": "where Qdrant is",
+        "help": "Where Qdrant is.",
     },
 }
 

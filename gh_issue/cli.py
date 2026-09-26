@@ -9,11 +9,12 @@ what it needs when it runs.
 
 import datetime
 import io
+import re
 import sys
 from typing import Annotated, Literal
 
 import cyclopts
-from cyclopts import Parameter
+from cyclopts import Parameter, validators
 
 from gh_issue import config
 
@@ -21,6 +22,17 @@ app = cyclopts.App(
     name="gh-issue",
     help="Semantic search over a GitHub repo's issue history, indexed with Inngest.",
 )
+
+REPO_NAME = re.compile(r"^[\w.-]+/[\w.-]+$")
+
+
+def _owner_slash_name(type_: object, name: str) -> None:
+    if not REPO_NAME.match(name):
+        raise ValueError("Use owner/name, e.g. inngest/inngest.")
+
+
+# A repo named on the command line, checked as the line is read.
+Repo = Annotated[str, Parameter(validator=_owner_slash_name)]
 
 
 @app.command
@@ -32,7 +44,7 @@ def worker() -> None:
 
 
 @app.command
-def sync(*repos: str) -> None:
+def sync(repos: list[Repo] | None = None, /) -> None:
     """Index a repo, or bring it up to date. Safe to run again at any time.
 
     The first sync of a repo starts a backfill. After that, sync checks for
@@ -45,19 +57,21 @@ def sync(*repos: str) -> None:
     """
     from gh_issue.sync import run
 
-    run(list(repos))
+    run(repos or [])
 
 
 @app.command
 def search(
-    *words: str,
-    repo: list[str] | None = None,
+    *words: Annotated[str, Parameter(required=True)],
+    repo: list[Repo] | None = None,
     state: Literal["open", "closed"] | None = None,
     label: list[str] | None = None,
     author: str | None = None,
     kind: Literal["body", "comment"] | None = None,
-    since: str | None = None,
-    limit: Annotated[int, Parameter(name=["--limit", "-k"])] = 10,
+    since: datetime.date | None = None,
+    limit: Annotated[
+        int, Parameter(name=["--limit", "-k"], validator=validators.Number(gte=1, lte=50))
+    ] = 10,
 ) -> None:
     """Search issue history by meaning and by wording, across every synced repo.
 
@@ -78,13 +92,18 @@ def search(
     since
         Only posts written on or after this date, e.g. 2026-01-31.
     limit
-        How many results to show.
+        How many results to show, 1 to 50.
     """
     from gh_issue import display, query
 
     _check_index()
     filters = query.make_filters(
-        repos=repo, state=state, labels=label, author=author, kind=kind, since=since
+        repos=repo,
+        state=state,
+        labels=label,
+        author=author,
+        kind=kind,
+        since=since.isoformat() if since else None,
     )
     try:
         hits = query.search(" ".join(words), filters, limit)
@@ -105,7 +124,8 @@ def status() -> None:
 
 @app.command
 def remove(
-    repo: str,
+    repo: Repo,
+    /,
     *,
     yes: Annotated[bool, Parameter(name=["--yes", "-y"], negative="")] = False,
 ) -> None:
@@ -136,28 +156,52 @@ def _check_index() -> None:
 
 config_app = cyclopts.App(
     name="config",
-    help="Show the settings, or change one. They are kept in ~/.gh-issue/config.toml, "
+    help="See and change the settings. They are kept in ~/.gh-issue/config.toml, "
     "and an environment variable for the same setting wins over the file.",
 )
 app.command(config_app)
 
+# A setting's name, checked as the line is read: a typo is refused with the
+# closest real name.
+Setting = Annotated[str, Parameter(choices=list(config.SETTINGS))]
 
-@config_app.default
-def config_show() -> None:
-    """Every setting, its value (secrets masked), and where the value came from."""
+
+def config_list() -> None:
+    """Every setting: its value (secrets masked), where the value came from, and
+    what the setting is for."""
     from gh_issue import display
 
     print(display.format_config(str(config.config_path()), config.shown()), flush=True)
 
 
+config_app.default(config_list)
+config_app.command(config_list, name="list")
+
+
+@config_app.command(name="get")
+def config_get(key: Setting, /) -> None:
+    """Print one setting's value, as `config list` shows it: masked if it is a
+    secret, the default if nothing sets it.
+
+    Parameters
+    ----------
+    key
+        The setting.
+    """
+    [row] = [row for row in config.shown() if row["key"] == key]
+    if row["value"] is None:
+        raise SystemExit(f"{key} is not set.")
+    print(row["value"], flush=True)
+
+
 @config_app.command(name="set")
-def config_set(key: str, value: str | None = None) -> None:
+def config_set(key: Setting, value: str | None = None, /) -> None:
     """Change a setting.
 
     Parameters
     ----------
     key
-        The setting, as `gh-issue config` lists it, e.g. qdrant.url.
+        The setting.
     value
         The new value. Leave it out to type it in instead: a secret is then not
         shown as you type, and stays out of your shell's history.
@@ -169,13 +213,13 @@ def config_set(key: str, value: str | None = None) -> None:
 
 
 @config_app.command(name="unset")
-def config_unset(key: str) -> None:
+def config_unset(key: Setting, /) -> None:
     """Remove a setting from the file, so its default (or the environment) applies.
 
     Parameters
     ----------
     key
-        The setting, as `gh-issue config` lists it.
+        The setting.
     """
     try:
         config.run_unset(key)
@@ -200,7 +244,11 @@ def stdio() -> None:
 
 
 @mcp.command
-def http(host: str = "127.0.0.1", port: int = 8000, path: str = "/mcp") -> None:
+def http(
+    host: str = "127.0.0.1",
+    port: Annotated[int, Parameter(validator=validators.Number(gte=1, lte=65535))] = 8000,
+    path: str = "/mcp",
+) -> None:
     """Over streamable HTTP, for an agent that connects to a running server.
 
     Parameters

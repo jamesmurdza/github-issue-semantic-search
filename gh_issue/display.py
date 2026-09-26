@@ -114,14 +114,14 @@ def format_status(status: Status, now: datetime.datetime) -> str:
 
 
 def format_config(path: str, rows: list[Shown]) -> str:
-    """Each setting, its value and where the value came from. A setting that is
-    not set says what it is for instead."""
+    """Each setting, its value and where the value came from, and under it what
+    the setting is for."""
     values = [row["value"] or "not set" for row in rows]
     key_width = max(len(row["key"]) for row in rows) + 3
     value_width = max(len(value) for value in values) + 2
     lines = [f"Settings, from {path} and the environment (which wins):", ""]
     for row, value in zip(rows, values, strict=True):
-        about = row["source"] or SETTINGS[row["key"]]["help"]
-        lines.append(f"  {row['key']:<{key_width}}{value:<{value_width}}{about}")
+        line = f"  {row['key']:<{key_width}}{value:<{value_width}}{row['source'] or ''}"
+        lines += [line.rstrip(), "      " + SETTINGS[row["key"]]["help"]]
     lines += ["", "Change one: gh-issue config set <setting> [value]"]
     return "\n".join(lines)

@@ -2,12 +2,14 @@
 Inngest client exists, because the client reads INNGEST_DEV once, when it is
 built; and each command's handling of its arguments."""
 
+import datetime
 import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
+import cyclopts
 import pytest
 
 from gh_issue import cli, config, query, remove, settings
@@ -104,14 +106,36 @@ def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return tmp_path
 
 
-def test_config_with_no_subcommand_shows_the_settings(
-    home: Path, capsys: pytest.CaptureFixture[str]
+@pytest.mark.parametrize("argv", [["config", "list"], ["config"]])
+def test_config_list_shows_every_setting_and_what_it_is_for(
+    home: Path, capsys: pytest.CaptureFixture[str], argv: list[str]
 ) -> None:
-    command, _, _ = cli.app.parse_args(["config"])
+    command, _, _ = cli.app.parse_args(argv)
     command()
     out = capsys.readouterr().out
-    assert "github.token" in out
     assert "http://localhost:6333  default" in out
+    for key, setting in config.SETTINGS.items():
+        assert key in out
+        assert setting["help"] in out
+
+
+def test_config_get_prints_a_value_as_config_list_shows_it(
+    home: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Masked if it is a secret, and the default if nothing sets it."""
+    config.set_value("github.token", "ghp_abcdefgh5678")
+
+    for key in ("github.token", "qdrant.url"):
+        command, bound, _ = cli.app.parse_args(["config", "get", key])
+        command(*bound.args, **bound.kwargs)
+
+    assert capsys.readouterr().out.splitlines() == ["****5678", "http://localhost:6333"]
+
+
+def test_config_get_of_a_setting_nothing_sets_says_so(home: Path) -> None:
+    command, bound, _ = cli.app.parse_args(["config", "get", "inngest.event_key"])
+    with pytest.raises(SystemExit, match=r"inngest\.event_key is not set"):
+        command(*bound.args, **bound.kwargs)
 
 
 def test_config_set_saves_a_value_given_on_the_command_line(
@@ -166,11 +190,6 @@ def test_config_set_with_nothing_typed_changes_nothing(
     assert config.read() == {"github.token": "ghp_kept_12345678"}
 
 
-def test_config_set_of_an_unknown_setting_lists_the_real_ones(home: Path) -> None:
-    with pytest.raises(SystemExit, match=r"qdrant\.host.*qdrant\.url"):
-        cli.config_set("qdrant.host", "x")
-
-
 def test_config_set_says_when_the_environment_still_wins(
     home: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -211,6 +230,53 @@ def test_config_unset_of_a_setting_the_file_lacks_says_so(
     assert "qdrant.url is not in" in capsys.readouterr().out
 
 
+# mistakes on the command line ---------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("argv", "says"),
+    [
+        pytest.param(["search"], "WORDS requires an argument", id="search-with-no-words"),
+        pytest.param(
+            ["search", "x", "--state", "shut"], 'Choose from: "open", "closed"', id="state"
+        ),
+        pytest.param(
+            ["search", "x", "--since", "yesterday"], "--since", id="since-that-is-not-a-date"
+        ),
+        pytest.param(["search", "x", "-k", "0"], "Must be >= 1", id="no-results-asked-for"),
+        pytest.param(
+            ["search", "x", "-k", "51"], "Must be <= 50", id="more-results-than-mcp-allows"
+        ),
+        pytest.param(["mcp", "http", "--port", "99999"], "Must be <= 65535", id="no-such-port"),
+        pytest.param(["sync", "a/b", "inngest"], '"inngest" for REPOS. Use owner/name', id="sync"),
+        pytest.param(["remove", "inngest"], '"inngest" for REPO. Use owner/name', id="remove"),
+        pytest.param(
+            ["search", "x", "--repo", "inngest"],
+            '"inngest" for --repo. Use owner/name',
+            id="search-repo",
+        ),
+        pytest.param(["remove"], "REPO requires an argument", id="remove-with-no-repo"),
+        pytest.param(
+            ["config", "set", "qdrant.host", "x"],
+            'Did you mean "qdrant.url"?',
+            id="no-such-setting",
+        ),
+        pytest.param(
+            ["config", "unset", "github.tokn"], 'Did you mean "github.token"?', id="unset-typo"
+        ),
+        pytest.param(["config", "set"], "KEY requires an argument", id="set-with-no-setting"),
+    ],
+)
+def test_a_mistake_on_the_command_line_is_refused_before_anything_runs(
+    argv: list[str], says: str
+) -> None:
+    """Refused while the command line is read, so the refusal names the
+    argument, and nothing has connected to Qdrant or loaded the model yet."""
+    with pytest.raises(cyclopts.CycloptsError) as refused:
+        cli.app.parse_args(argv, exit_on_error=False, print_error=False)
+    assert says in str(refused.value)
+
+
 # search and status --------------------------------------------------------------
 
 
@@ -221,13 +287,6 @@ def test_search_takes_its_words_unquoted_and_repeatable_filters() -> None:
     assert command is cli.search
     assert bound.args == ("event", "key")
     assert bound.kwargs == {"repo": ["a/b", "c/d"], "label": ["bug"], "limit": 3}
-
-
-def test_search_refuses_a_state_that_does_not_exist() -> None:
-    with pytest.raises(Exception, match='Choose from: "open", "closed"'):
-        cli.app.parse_args(
-            ["search", "x", "--state", "shut"], exit_on_error=False, print_error=False
-        )
 
 
 def test_search_hands_the_options_to_the_query_layer(
@@ -242,21 +301,35 @@ def test_search_hands_the_options_to_the_query_layer(
     monkeypatch.setattr(settings, "index_problem", lambda: None)
     monkeypatch.setattr(query, "search", fake_search)
 
-    cli.search("event", "key", repo=["a/b"], state="closed", label=["bug"], limit=3)
+    cli.search(
+        "event",
+        "key",
+        repo=["a/b"],
+        state="closed",
+        label=["bug"],
+        since=datetime.date(2026, 1, 31),
+        limit=3,
+    )
 
-    assert asked == [("event key", {"repos": ["a/b"], "state": "closed", "labels": ["bug"]}, 3)]
+    assert asked == [
+        (
+            "event key",
+            {"repos": ["a/b"], "state": "closed", "labels": ["bug"], "since": "2026-01-31"},
+            3,
+        )
+    ]
     assert capsys.readouterr().out.strip() == "No matches."
 
 
-def test_a_bad_filter_value_is_a_message_not_a_traceback(monkeypatch: pytest.MonkeyPatch) -> None:
-    def refusing(text: str, filters: SearchFilters | None = None, limit: int = 10) -> list[Any]:
-        raise ValueError("since must be a date like 2026-01-31, not 'yesterday'")
-
+def test_words_that_are_only_spaces_are_a_message_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The one refusal the query layer still makes that the command line can't:
+    `gh-issue search "  "` has words, but nothing to search for."""
     monkeypatch.setattr(settings, "index_problem", lambda: None)
-    monkeypatch.setattr(query, "search", refusing)
 
-    with pytest.raises(SystemExit, match="since must be a date"):
-        cli.search("x", since="yesterday")
+    with pytest.raises(SystemExit, match="query is empty"):
+        cli.search("  ")
 
 
 @pytest.mark.parametrize("command", ["search", "status", "remove"])

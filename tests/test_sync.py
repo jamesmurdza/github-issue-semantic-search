@@ -301,12 +301,6 @@ def test_with_nothing_synced_yet_it_says_how_to_start(rig: Rig) -> None:
         rig.run()
 
 
-def test_a_name_that_is_not_owner_slash_repo_is_refused_up_front(rig: Rig) -> None:
-    with pytest.raises(SystemExit, match="inngest"):
-        rig.run(REPO, "just-a-name")
-    assert rig.sent == []
-
-
 def test_an_unknown_repo_is_reported_and_the_rest_still_sync(rig: Rig) -> None:
     rig.finished_and_indexed()
 
