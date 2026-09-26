@@ -117,20 +117,22 @@ at `http://127.0.0.1:8000/mcp`.
 
 | command | what it does |
 |---|---|
-| `gh-issue sync owner/name` | Index a repo, or bring it up to date. With no repo named, it syncs every repo synced before. Safe to run again at any time. |
+| `gh-issue config` | `config list` shows the settings and `config get` one of them; `config set` and `config unset` change them. |
 | `gh-issue worker` | Run the Inngest functions. Nothing is indexed unless a worker is running. |
+| `gh-issue sync owner/name` | Index a repo, or bring it up to date. With no repo named, it syncs every repo synced before. Safe to run again at any time. |
 | `gh-issue status` | What is synced, how far each backfill has got, whether a worker is up, and how many issues failed. |
-| `gh-issue search <words>` | Search every synced repo. `--repo`, `--state`, `--label`, `--author`, `--kind` and `--since` filter; `-k` sets how many results. |
 | `gh-issue remove owner/name` | Take a repo out of the index and stop syncing it. |
-| `gh-issue config` | Show the settings, or change one with `config set`. |
-| `gh-issue mcp stdio` | Serve the index over MCP. |
+| `gh-issue search <words>` | Search every synced repo. `--repo` (`-R`), `--state` (`-s`), `--label` (`-l`), `--author` (`-A`), `--kind` and `--since` filter, as in `gh issue list`; `--limit` (`-L`) sets how many results, 1 to 50. |
+| `gh-issue mcp stdio` | Serve the index over MCP, for an agent that starts the server itself. |
+| `gh-issue mcp http` | The same over streamable HTTP, for an agent that connects to a running server. |
 
-`gh-issue <command> --help` has the details.
+`gh-issue <command> --help` has the details, and examples.
 
 ## Settings
 
-`gh-issue config` shows every setting, its value (secrets masked) and where the
-value came from.
+`gh-issue config list` shows every setting, its value (secrets masked), where
+the value came from and what it is for; `gh-issue config get <setting>` prints
+one value.
 
 | setting | what it is | default |
 |---|---|---|

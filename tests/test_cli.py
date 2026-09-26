@@ -4,8 +4,11 @@ built; and each command's handling of its arguments."""
 
 import datetime
 import os
+import re
+import shlex
 import subprocess
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -265,6 +268,13 @@ def test_config_unset_of_a_setting_the_file_lacks_says_so(
             ["config", "unset", "github.tokn"], 'Did you mean "github.token"?', id="unset-typo"
         ),
         pytest.param(["config", "set"], "KEY requires an argument", id="set-with-no-setting"),
+        # Names people reach for, from other tools, pointed at the command here.
+        pytest.param(["rm", "a/b"], 'Did you mean "remove"?', id="rm"),
+        pytest.param(["delete", "a/b"], 'Did you mean "remove"?', id="delete"),
+        pytest.param(["find", "x"], 'Did you mean "search"?', id="find"),
+        pytest.param(["query", "x"], 'Did you mean "search"?', id="query"),
+        pytest.param(["index", "a/b"], 'Did you mean "sync"?', id="index"),
+        pytest.param(["add", "a/b"], 'Did you mean "sync"?', id="add"),
     ],
 )
 def test_a_mistake_on_the_command_line_is_refused_before_anything_runs(
@@ -277,6 +287,69 @@ def test_a_mistake_on_the_command_line_is_refused_before_anything_runs(
     assert says in str(refused.value)
 
 
+# help ---------------------------------------------------------------------------
+
+
+def help_for(argv: list[str], capsys: pytest.CaptureFixture[str]) -> str:
+    with pytest.raises(SystemExit) as done:
+        cli.app([*argv, "--help"])
+    assert done.value.code == 0
+    return capsys.readouterr().out
+
+
+def test_help_groups_the_commands_in_the_order_you_use_them(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    text = help_for([], capsys)
+
+    groups = re.findall(r"^\W+ (Set up|Index|Search|Help) \W", text, re.MULTILINE)
+    rows = re.findall(r"^\W (\w[\w-]*) {2,}\S", text, re.MULTILINE)
+    assert groups == ["Set up", "Index", "Search", "Help"]
+    assert rows[:7] == ["config", "worker", "sync", "status", "remove", "search", "mcp"]
+    assert "Start here" in text
+    assert "Start here" not in help_for(["status"], capsys)
+
+
+def commands(app: cyclopts.App, path: tuple[str, ...] = ()) -> Iterator[tuple[str, ...]]:
+    """Every command's path, e.g. ("config", "set"), the root's as ()."""
+    yield path
+    for name in app:
+        if not name.startswith("-"):
+            yield from commands(app[name], (*path, name))
+
+
+def command_at(path: tuple[str, ...]) -> cyclopts.App:
+    command = cli.app
+    for name in path:
+        command = command[name]
+    return command
+
+
+def examples(path: tuple[str, ...]) -> list[str]:
+    return re.findall(r"`(gh-issue [^`]+)`", command_at(path).help_epilogue or "")
+
+
+EXAMPLES = [line for path in commands(cli.app) for line in examples(path)]
+
+
+def test_the_commands_with_options_to_learn_show_examples_in_their_help() -> None:
+    shown = {path for path in commands(cli.app) if examples(path)}
+    assert {("sync",), ("search",), ("remove",), ("config",), ("mcp",)} <= shown
+
+
+@pytest.mark.parametrize("line", EXAMPLES)
+def test_every_example_in_the_help_is_a_command_line_that_works(line: str) -> None:
+    """So an example can't go stale when an option changes."""
+    words = shlex.split(line.split("  #")[0])
+    cli.app.parse_args(words[1:], exit_on_error=False, print_error=False)
+
+
+def test_list_options_offer_no_empty_variants(capsys: pytest.CaptureFixture[str]) -> None:
+    """cyclopts adds --empty-repo beside --repo unless told not to; it only
+    clutters the help."""
+    assert "--empty" not in help_for(["search"], capsys)
+
+
 # search and status --------------------------------------------------------------
 
 
@@ -287,6 +360,19 @@ def test_search_takes_its_words_unquoted_and_repeatable_filters() -> None:
     assert command is cli.search
     assert bound.args == ("event", "key")
     assert bound.kwargs == {"repo": ["a/b", "c/d"], "label": ["bug"], "limit": 3}
+
+
+def test_search_takes_the_short_flags_gh_issue_list_does() -> None:
+    _, bound, _ = cli.app.parse_args(
+        ["search", "x", "-R", "a/b", "-s", "closed", "-l", "bug", "-A", "ann", "-L", "5"]
+    )
+    assert bound.kwargs == {
+        "repo": ["a/b"],
+        "state": "closed",
+        "label": ["bug"],
+        "author": "ann",
+        "limit": 5,
+    }
 
 
 def test_search_hands_the_options_to_the_query_layer(

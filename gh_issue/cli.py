@@ -14,14 +14,40 @@ import sys
 from typing import Annotated, Literal
 
 import cyclopts
-from cyclopts import Parameter, validators
+from cyclopts import Group, Parameter, validators
 
 from gh_issue import config
+
+# The help lists the commands in the order you first use them.
+SET_UP = Group("Set up", sort_key=1)
+INDEX = Group("Index", sort_key=2)
+SEARCH = Group("Search", sort_key=3)
+HELP = Group("Help", sort_key=4)
+
+START_HERE = """\nStart here, with Qdrant and the Inngest dev server running (the README has more):
+
+1. `gh-issue config set inngest.dev 1`
+2. `gh-issue config set github.token`
+3. `gh-issue worker  # in a terminal of its own`
+4. `gh-issue sync inngest/inngest`
+5. `gh-issue search cannot run the dev server on windows`
+"""
 
 app = cyclopts.App(
     name="gh-issue",
     help="Semantic search over a GitHub repo's issue history, indexed with Inngest.",
+    help_epilogue=START_HERE,
+    # A list option is only ever given, never "given as empty": no --empty-repo.
+    default_parameter=Parameter(negative=()),
 )
+app["--help"].group = HELP
+app["--version"].group = HELP
+
+
+def _examples(*lines: str) -> str:
+    """A command's examples, shown at the end of its help."""
+    return "Examples:\n\n" + "\n".join(f"- {line}" for line in lines)
+
 
 REPO_NAME = re.compile(r"^[\w.-]+/[\w.-]+$")
 
@@ -35,7 +61,7 @@ def _owner_slash_name(type_: object, name: str) -> None:
 Repo = Annotated[str, Parameter(validator=_owner_slash_name)]
 
 
-@app.command
+@app.command(group=SET_UP, sort_key=2, help_epilogue="")
 def worker() -> None:
     """Run the Inngest functions. Keep it running while anything is syncing; Ctrl+C stops it."""
     from gh_issue.worker import run
@@ -43,7 +69,15 @@ def worker() -> None:
     run()
 
 
-@app.command
+@app.command(
+    group=INDEX,
+    sort_key=1,
+    synonym=("index", "add"),
+    help_epilogue=_examples(
+        "`gh-issue sync inngest/inngest  # index a repo, or bring it up to date`",
+        "`gh-issue sync  # bring every repo synced before up to date`",
+    ),
+)
 def sync(repos: list[Repo] | None = None, /) -> None:
     """Index a repo, or bring it up to date. Safe to run again at any time.
 
@@ -60,17 +94,26 @@ def sync(repos: list[Repo] | None = None, /) -> None:
     run(repos or [])
 
 
-@app.command
+@app.command(
+    group=SEARCH,
+    sort_key=1,
+    synonym=("find", "query"),
+    help_epilogue=_examples(
+        "`gh-issue search event key not recognized`",
+        "`gh-issue search worker crashes on start -R inngest/inngest -s closed`",
+        "`gh-issue search timeout -l bug --since 2026-01-01 --kind comment`",
+    ),
+)
 def search(
     *words: Annotated[str, Parameter(required=True)],
-    repo: list[Repo] | None = None,
-    state: Literal["open", "closed"] | None = None,
-    label: list[str] | None = None,
-    author: str | None = None,
+    repo: Annotated[list[Repo] | None, Parameter(name=["--repo", "-R"])] = None,
+    state: Annotated[Literal["open", "closed"] | None, Parameter(name=["--state", "-s"])] = None,
+    label: Annotated[list[str] | None, Parameter(name=["--label", "-l"])] = None,
+    author: Annotated[str | None, Parameter(name=["--author", "-A"])] = None,
     kind: Literal["body", "comment"] | None = None,
     since: datetime.date | None = None,
     limit: Annotated[
-        int, Parameter(name=["--limit", "-k"], validator=validators.Number(gte=1, lte=50))
+        int, Parameter(name=["--limit", "-L", "-k"], validator=validators.Number(gte=1, lte=50))
     ] = 10,
 ) -> None:
     """Search issue history by meaning and by wording, across every synced repo.
@@ -112,7 +155,7 @@ def search(
     print(display.format_hits(hits), flush=True)
 
 
-@app.command
+@app.command(group=INDEX, sort_key=2, help_epilogue="")
 def status() -> None:
     """What is synced, how far each backfill has got, and whether a worker is up."""
     from gh_issue import display, query
@@ -122,7 +165,12 @@ def status() -> None:
     print(display.format_status(query.status(), now), flush=True)
 
 
-@app.command
+@app.command(
+    group=INDEX,
+    sort_key=3,
+    synonym=("rm", "delete"),
+    help_epilogue=_examples("`gh-issue remove inngest/inngest --yes  # without asking first`"),
+)
 def remove(
     repo: Repo,
     /,
@@ -156,8 +204,16 @@ def _check_index() -> None:
 
 config_app = cyclopts.App(
     name="config",
-    help="See and change the settings. They are kept in ~/.gh-issue/config.toml, "
-    "and an environment variable for the same setting wins over the file.",
+    help="See and change the settings.\n\nThey are kept in ~/.gh-issue/config.toml, and "
+    "an environment variable for the same setting wins over the file.",
+    group=SET_UP,
+    sort_key=1,
+    help_epilogue=_examples(
+        "`gh-issue config set github.token  # asks for it, and hides it as you type`",
+        "`gh-issue config set qdrant.url http://qdrant.internal:6333`",
+        "`gh-issue config get qdrant.url`",
+        "`gh-issue config unset inngest.dev  # back to Inngest Cloud`",
+    ),
 )
 app.command(config_app)
 
@@ -230,6 +286,12 @@ def config_unset(key: Setting, /) -> None:
 mcp = cyclopts.App(
     name="mcp",
     help="Serve the index to a coding agent over MCP: search_issues, get_issue, status.",
+    group=SEARCH,
+    sort_key=2,
+    help_epilogue=_examples(
+        "`claude mcp add --scope user gh-issue -- gh-issue mcp stdio  # for Claude Code`",
+        "`gh-issue mcp http --port 8001  # at http://127.0.0.1:8001/mcp`",
+    ),
 )
 app.command(mcp)
 
