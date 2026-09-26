@@ -4,6 +4,7 @@ __pycache__/
 .env
 .qdrant/
 .gh-issue/
+.gh-issue-bench/
 .fastembed_cache/
 .pytest_cache/
 .mypy_cache/

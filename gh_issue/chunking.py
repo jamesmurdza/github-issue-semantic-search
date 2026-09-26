@@ -54,10 +54,22 @@ class Chunk(TypedDict):
     content_hash: str
 
 
+class SparseVector(TypedDict):
+    """BM25's view of a text: an id per word stem it contains, and a weight for
+    each. Only the stems present are listed."""
+
+    indices: list[int]
+    values: list[float]
+
+
 class EmbeddedChunk(Chunk):
-    """A chunk once it has a vector. This is what the store writes."""
+    """A chunk once it has its vectors. This is what the store writes.
+
+    Two, because search runs two ways at once: `vector` finds text that means
+    the same, `sparse` finds text that uses the same words."""
 
     vector: list[float]
+    sparse: SparseVector
 
 
 def _hash(text: str) -> str:

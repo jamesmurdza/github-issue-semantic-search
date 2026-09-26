@@ -3,9 +3,9 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 
-from gh_issue.chunking import EmbeddedChunk
+from gh_issue.chunking import EmbeddedChunk, SparseVector
 from gh_issue.index.store import COLLECTION, SearchFilters, Store
 
 DIM = 4
@@ -71,6 +71,9 @@ def test_store_needs_exactly_one_of_url_or_path() -> None:
 
 
 VECTOR = [0.1, 0.2, 0.3, 0.4]
+# Every test chunk contains word 1 unless told otherwise, and so does the
+# default query, so both halves of a search always see every chunk.
+KEYWORDS: SparseVector = {"indices": [1], "values": [1.0]}
 
 
 def _chunk(
@@ -83,6 +86,8 @@ def _chunk(
     labels: list[str] | None = None,
     author: str = "reporter",
     created_at: str = "2026-01-01T00:00:00Z",
+    vector: list[float] | None = None,
+    words: list[int] | None = None,
 ) -> EmbeddedChunk:
     return {
         "id": chunk_id,
@@ -98,7 +103,8 @@ def _chunk(
             "author": author,
             "created_at": created_at,
         },
-        "vector": VECTOR,
+        "vector": VECTOR if vector is None else vector,
+        "sparse": {"indices": words or [1], "values": [1.0] * len(words or [1])},
     }
 
 
@@ -165,13 +171,13 @@ def test_hashes_are_scoped_to_one_repo(store: Store) -> None:
 
 def test_search_returns_the_stored_text_and_metadata(store: Store) -> None:
     store.upsert([_chunk("owner/name#412:body", "h1")])
-    hits = store.search(VECTOR, limit=5)
+    hits = store.search(VECTOR, KEYWORDS, limit=5)
     assert hits[0]["id"] == "owner/name#412:body"
     assert hits[0]["title"] == "App freezes when I scroll fast"
     assert hits[0]["text"] == "some text"
     assert hits[0]["repo"] == "owner/name"
     assert hits[0]["labels"] == ["bug"]
-    assert hits[0]["score"] == pytest.approx(1.0)
+    assert hits[0]["score"] > 0
 
 
 def test_chunks_for_issue_returns_the_whole_thread(store: Store) -> None:
@@ -315,13 +321,21 @@ def searchable(store: Store) -> Store:
     ],
 )
 def test_search_filters(searchable: Store, filters: SearchFilters, expected: list[str]) -> None:
-    hits = searchable.search(VECTOR, limit=10, filters=filters)
-    assert sorted(hit["id"] for hit in hits) == sorted(expected)
+    """Every chunk matches both halves of the query, so a filter applied to
+    only one half would let chunks it excludes back in through the other."""
+    hits = searchable.search(VECTOR, KEYWORDS, limit=10, filters=filters)
+    issues = [(hit["repo"], hit["issue_number"]) for hit in hits]
+    assert sorted(issues) == sorted({_issue_of(chunk_id) for chunk_id in expected})
+
+
+def _issue_of(chunk_id: str) -> tuple[str, int]:
+    repo, rest = chunk_id.split("#")
+    return repo, int(rest.split(":")[0])
 
 
 def test_a_since_that_is_not_a_date_is_refused(searchable: Store) -> None:
     with pytest.raises(ValueError, match="since"):
-        searchable.search(VECTOR, filters={"since": "last tuesday"})
+        searchable.search(VECTOR, KEYWORDS, filters={"since": "last tuesday"})
 
 
 def test_stats_forgets_a_repo_once_its_chunks_are_gone(store: Store) -> None:
@@ -359,5 +373,121 @@ def test_a_collection_made_for_another_vector_size_is_refused_on_open(tmp_path: 
     finally:
         if SERVER_URL:
             admin = QdrantClient(url=SERVER_URL)
+            admin.delete_collection(name)
+            admin.close()
+
+
+# Hybrid search: meaning and words together, one hit per issue ----------------
+
+FAR = [0.4, -0.3, 0.2, -0.1]
+
+
+def test_a_shared_rare_word_lifts_a_chunk_the_meaning_side_ranks_lower(store: Store) -> None:
+    """The case dense search alone misses: the words match exactly, the
+    meaning only roughly. Here #2 is a little further from the query in
+    meaning than #1, but it is the only chunk with the query's word 7."""
+    store.upsert(
+        [
+            _chunk("owner/name#1:body", number=1, vector=VECTOR),
+            _chunk("owner/name#2:body", number=2, vector=[0.1, 0.2, 0.3, 0.3], words=[1, 7]),
+            _chunk("owner/name#3:body", number=3, vector=FAR),
+            _chunk("owner/name#4:body", number=4, vector=[-0.1, 0.1, 0.4, -0.2]),
+        ]
+    )
+
+    with_word = store.search(VECTOR, {"indices": [7], "values": [1.0]}, limit=4)
+    without = store.search(VECTOR, {"indices": [99], "values": [1.0]}, limit=4)
+
+    assert with_word[0]["issue_number"] == 2
+    assert without[0]["issue_number"] == 1
+
+
+def test_a_query_with_no_usable_words_still_searches_by_meaning(store: Store) -> None:
+    """A query of only stopwords ("how do I") leaves BM25 nothing to match."""
+    store.upsert(
+        [
+            _chunk("owner/name#1:body", number=1, vector=FAR),
+            _chunk("owner/name#2:body", number=2, vector=VECTOR),
+        ]
+    )
+
+    hits = store.search(VECTOR, {"indices": [], "values": []}, limit=2)
+
+    assert [hit["issue_number"] for hit in hits] == [2, 1]
+
+
+def test_each_issue_appears_once_as_its_best_matching_chunk(store: Store) -> None:
+    """Otherwise one thread with many matching comments fills the results."""
+    store.upsert(
+        [
+            _chunk("owner/name#1:body", number=1, vector=FAR),
+            _chunk("owner/name#1:comment:11", number=1, vector=VECTOR, words=[1, 7]),
+            _chunk("owner/name#1:comment:12", number=1, vector=[0.1, 0.2, 0.3, 0.3]),
+            _chunk("owner/name#2:body", number=2, vector=[0.1, 0.2, 0.2, 0.4]),
+        ]
+    )
+
+    hits = store.search(VECTOR, {"indices": [7], "values": [1.0]}, limit=10)
+
+    assert [hit["id"] for hit in hits] == ["owner/name#1:comment:11", "owner/name#2:body"]
+
+
+def test_equal_scores_are_listed_by_repo_then_issue_number(store: Store) -> None:
+    """Identical text scores identically (the same bare link posted on two
+    issues), and Qdrant lists equal scores in any order, so the same search
+    could list them differently each time it ran."""
+    store.upsert(
+        [_chunk(f"owner/name#{n}:body", number=n) for n in (5, 2, 9, 1, 7)]
+        + [_chunk("a/repo#8:body", number=8, repo="a/repo")]
+        + [_chunk("owner/name#3:body", number=3, vector=FAR, words=[2])]
+    )
+
+    hits = store.search(VECTOR, KEYWORDS, limit=10)
+
+    assert [(hit["repo"], hit["issue_number"]) for hit in hits] == [
+        ("a/repo", 8),
+        ("owner/name", 1),
+        ("owner/name", 2),
+        ("owner/name", 5),
+        ("owner/name", 7),
+        ("owner/name", 9),
+        ("owner/name", 3),
+    ]
+
+
+def test_the_limit_counts_issues_not_chunks(store: Store) -> None:
+    store.upsert(
+        [_chunk(f"owner/name#1:comment:{i}", number=1) for i in range(5)]
+        + [_chunk("owner/name#2:body", number=2, vector=[0.1, 0.2, 0.3, 0.3])]
+        + [_chunk("other/repo#1:body", number=1, repo="other/repo", vector=FAR)]
+    )
+
+    hits = store.search(VECTOR, KEYWORDS, limit=2)
+
+    assert [(hit["repo"], hit["issue_number"]) for hit in hits] == [
+        ("owner/name", 1),
+        ("owner/name", 2),
+    ]
+
+
+def test_a_collection_from_before_keyword_search_is_refused_with_what_to_do(
+    tmp_path: Path,
+) -> None:
+    """Qdrant fixes a collection's vectors when it is created, so an index made
+    before the keyword half existed has to be rebuilt; the store says how."""
+    name = f"{TEST_COLLECTION}_layout"
+    admin = QdrantClient(url=SERVER_URL) if SERVER_URL else QdrantClient(path=str(tmp_path))
+    admin.delete_collection(name)
+    admin.create_collection(
+        name, vectors_config=models.VectorParams(size=DIM, distance=models.Distance.COSINE)
+    )
+    if not SERVER_URL:
+        admin.close()
+    where = {"url": SERVER_URL} if SERVER_URL else {"path": str(tmp_path)}
+    try:
+        with pytest.raises(ValueError, match=rf"{name}.*keyword.*gh-issue sync"):
+            Store(dim=DIM, collection=name, **where)
+    finally:
+        if SERVER_URL:
             admin.delete_collection(name)
             admin.close()

@@ -1,0 +1,602 @@
+[
+ {
+  "repo": "inngest/inngest",
+  "issue": 340,
+  "paraphrase": "login middleware redirects my handler route so local sync silently fails",
+  "specific": "SDK redirects /api/inngest during dev registration"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2093,
+  "paraphrase": "local server caps parallel tasks at a couple dozen, how to raise",
+  "specific": "local concurrency limit 25 steps throttling"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3557,
+  "paraphrase": "my own hosted server setup still registers apps with the cloud",
+  "specific": "INNGEST_DEV=0 INNGEST_BASE_URL registration still goes to cloud"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3693,
+  "paraphrase": "loop of a dozen sequential tasks gets stuck forever on the tenth",
+  "specific": "function 10 steps 10th step endless Execution local dev"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 303,
+  "paraphrase": "web UI from another machine calls local address instead of VM IP",
+  "specific": "inngest-cli dev --host coreapi localhost:8300/gql"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 762,
+  "paraphrase": "run timeline hides name and data of events emitted mid-function",
+  "specific": "dev server step.sendEvent details missing"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4709,
+  "paraphrase": "running several server copies, jobs randomly fail to reach connected worker",
+  "specific": "failed to route request to gateway connect mode 127.0.0.1"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4151,
+  "paraphrase": "local data warehouse fake container dies from memory during long test loops",
+  "specific": "bigquery-emulator OOMKilled lookup bq no such host"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2833,
+  "paraphrase": "pause a workflow from code instead of clicking in the UI",
+  "specific": "API endpoint to pause functions like /cancellations"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4444,
+  "paraphrase": "test helper shows only final state when polling for run times out",
+  "specific": "WaitForRunStatus didn't get expected status: COMPLETED, got RUNNING"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4083,
+  "paraphrase": "after upgrading, run trace lost my step names, shows generic internal entries",
+  "specific": "error unmarshalling metadata span kind, no attributes"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3482,
+  "paraphrase": "send raw binary data instead of text in events and step results",
+  "specific": "arbitrary bytes event step payloads Protobuf MessagePack"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4627,
+  "paraphrase": "can't change the name of a prod workspace in the web app",
+  "specific": "rename environment app.inngest.com/env"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3107,
+  "paraphrase": "manually triggering a function locally, have to retype test data every time",
+  "specific": "Invoke Function modal default JSON payload per event type"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 875,
+  "paraphrase": "sending same event with duplicate id still runs handler three times",
+  "specific": "inngest.send id idempotency key not deduplicating local dev server"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 77,
+  "paraphrase": "command line way to show all deployed workflows and their details",
+  "specific": "inngest functions list --json inspect command"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4909,
+  "paraphrase": "own deployment's memory and CPU climb for days until restarted",
+  "specific": "waitForEvent timeout pauses never removed expression aggregator leak"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 224,
+  "paraphrase": "how to write tests for my workflows with mocked steps",
+  "specific": "unit testing individual functions mock driver"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 319,
+  "paraphrase": "no ready multi-container config to try running the whole platform myself",
+  "specific": "docker compose file self hosting"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 1814,
+  "paraphrase": "sending succeeds silently even when the app isn't connected to the server",
+  "specific": "inngest.send returns event ids while unsynchronized no error"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 282,
+  "paraphrase": "wait until the same event arrives several times before continuing",
+  "specific": "pause count wait for event N times"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3172,
+  "paraphrase": "database logs complain about bad characters when inserting ids on my deployment",
+  "specific": "invalid byte sequence for encoding UTF8 0x9a ULID"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 92,
+  "paraphrase": "new scaffolded function test run gives random placeholder text as event type",
+  "specific": "inngest run event.name lorem ipsum inngest init"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2025,
+  "paraphrase": "can't include a password in the cache connection string when starting server",
+  "specific": "--redis-uri too many colons in address"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 615,
+  "paraphrase": "workflows sleeping for months, how to make them pick up updated code",
+  "specific": "sleepUntil cancel and reload step.run with new version"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2631,
+  "paraphrase": "scheduled job runs on weekends even though I restricted it to weekdays",
+  "specific": "cron */10 * 1-5 day-of-month day-of-week OR"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 1113,
+  "paraphrase": "let outside services post raw body with event name in path",
+  "specific": "/e/{key}/{event_name} ingest endpoint event name from URL"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2307,
+  "paraphrase": "duplicate runs still happen in cloud with dedupe key set, fine locally",
+  "specific": "idempotency event.data function config not working production"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2384,
+  "paraphrase": "deleting two workflows from my code breaks the resync with server error",
+  "specific": "Error registering functions: mismatched param and argument count"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2523,
+  "paraphrase": "server crashes on restart after adding only-one-at-a-time option to scheduled job",
+  "specific": "singleton mode skip panic nil pointer dereference executor Schedule"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 216,
+  "paraphrase": "how to access the management back office",
+  "specific": "ADM administração"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2236,
+  "paraphrase": "runs page stays empty when server started on a different port",
+  "specific": "traces export localhost:8288/dev/traces connection refused inngest start -p"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 228,
+  "paraphrase": "local run command freezes forever when container start command is invalid",
+  "specific": "invalid ENTRYPOINT Dockerfile inngest run hangs"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4179,
+  "paraphrase": "limit how many memory-heavy tasks execute on one machine at once",
+  "specific": "per-step memory requirement worker limit concurrency"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4042,
+  "paraphrase": "API lookup of a still-executing job returns server error until it completes",
+  "specific": "GET /v1/runs/{runID} 500 Unable to load function run"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 1916,
+  "paraphrase": "container crashes on boot when I set the cache connection url",
+  "specific": "INNGEST_REDIS_URI panic invalid memory address nil pointer dereference"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3197,
+  "paraphrase": "run details page blank on my own deployment after upgrading",
+  "specific": "spans.trace_id must appear in the GROUP BY clause"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 361,
+  "paraphrase": "runs list doesn't show new entries unless I reload the browser",
+  "specific": "function run screen does not poll refresh button"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4471,
+  "paraphrase": "building the container image from repo root fails to compile",
+  "specific": "docker build cmd/main.go undefined: execute"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2016,
+  "paraphrase": "returning a big response from a step throws an error",
+  "specific": "PayloadTooLargeError: request entity too large step.run"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 113,
+  "paraphrase": "make local server listen on other addresses so containers can reach it",
+  "specific": "dev server bind custom IPs"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2491,
+  "paraphrase": "verbose output always printed in edge worker local mode despite errors-only",
+  "specific": "debug logs wrangler dev logLevel error DEBUG="
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2455,
+  "paraphrase": "every sync says something changed even though my code is identical",
+  "specific": "registered inngest functions modified: true every sync"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3211,
+  "paraphrase": "sending several events at once, they get processed in a different order",
+  "specific": "step.sendEvent array order preserve concurrency limit 1"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2892,
+  "paraphrase": "clicking into a run to see its timeline sometimes throws database error",
+  "specific": "SQLSTATE 42803 GROUP BY trace details self-host"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 229,
+  "paraphrase": "local run crashes instead of failing cleanly when container exits with error",
+  "specific": "panic: runtime error: index out of range [1] with length 1"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 2634,
+  "paraphrase": "deploy an AI tools server that communicates through standard input and output",
+  "specific": "MCP STDIO protocol services deployment"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4558,
+  "paraphrase": "run fails when step data contains accented foreign text from scanned files",
+  "specific": "error transforming request with JCS: Unexpected non-ASCII character"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 4150,
+  "paraphrase": "delayed-until-quiet function fires several seconds later than configured",
+  "specific": "debounce ErrDebounceInProgress 750ms retry latency"
+ },
+ {
+  "repo": "inngest/inngest",
+  "issue": 3555,
+  "paraphrase": "CLI package install script crashes after upgrading archive library for security fix",
+  "specific": "postinstall TypeError: Cannot read properties of undefined (reading 'extract')"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 1237,
+  "paraphrase": "typed response comes all at once instead of incrementally when streaming",
+  "specific": "Gemini stream_structured returns full output not chunks"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2990,
+  "paraphrase": "have to import from private module to request JSON schema output directly",
+  "specific": "OutputObjectDefinition private import pydantic_ai._output"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 4972,
+  "paraphrase": "save each model request and response to plain files for local debugging",
+  "specific": "agent cassettes VCR-like request response files"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 5111,
+  "paraphrase": "tool hook also fires on final answer and breaks the result type",
+  "specific": "after_tool_execute hook output tool result.output ToolReturn"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6907,
+  "paraphrase": "tools re-run with side effects on workflow retry instead of cached result",
+  "specific": "Prefect call_tool_task cache key ToolsetTool cloudpickle retry"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 1124,
+  "paraphrase": "docs pages show raw diagram source code instead of pictures",
+  "specific": "mermaid diagrams not rendering multi-agent-applications docs"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2077,
+  "paraphrase": "synchronous run call crashes inside a notebook but works as a script",
+  "specific": "run_sync RuntimeError This event loop is already running"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6331,
+  "paraphrase": "per-run tools from a function vanish when overriding built-in tools",
+  "specific": "override(native_tools=...) DynamicCapability for_run native tools dropped"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6610,
+  "paraphrase": "stream ends early and cut-off reply returned as if finished",
+  "specific": "missing finish_reason stream ModelAPIError truncated"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 5722,
+  "paraphrase": "log of automated bot runs flagged for security concerns",
+  "specific": "threat detection continue-on-error safe-outputs parse_error"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3969,
+  "paraphrase": "smaller model listed in autocomplete gives not found error from the API",
+  "specific": "gpt-5.1-mini ModelHTTPError 404 model_not_found"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8367,
+  "paraphrase": "saving conversation history fails when a tool returns binary data",
+  "specific": "ToolReturnPart bytes PydanticSerializationError invalid utf-8 ser_json_bytes"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 5909,
+  "paraphrase": "missing documentation for recently merged features and edge cases",
+  "specific": "docs backfill UploadedFile EvaluatorFailure forced tool choice"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 5617,
+  "paraphrase": "require human sign-off for a tool only for certain argument values",
+  "specific": "requires_approval callable ApprovalRequired metadata"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7756,
+  "paraphrase": "show partial typed result in the frontend while still generating",
+  "specific": "VercelAIAdapter partial structured output on_complete"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8293,
+  "paraphrase": "vectors not recorded in telemetry spans even though content logging is on",
+  "specific": "Embedder include_content=True embeddings span attribute missing"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8205,
+  "paraphrase": "CI bot workflows fail because API key suddenly rejected as forbidden",
+  "specific": "CLAUDE_CODE_API_KEY gateway HTTP 403 structured_output"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 4785,
+  "paraphrase": "newly released small and tiny versions of the latest model not supported",
+  "specific": "GPT-5.4 mini nano KnownModels support"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7996,
+  "paraphrase": "parameter flagged missing description though it's set in the type hint",
+  "specific": "require_parameter_descriptions Annotated Field Missing parameter descriptions"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8247,
+  "paraphrase": "tool-returned images show as encoded text in tracing UI, not preview",
+  "specific": "BinaryImage tool return Logfire image preview otel_message_parts"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6102,
+  "paraphrase": "provider hints on generated files lost when frontend sends chat history back",
+  "specific": "Vercel AI adapter FilePart vendor_metadata dropped round-trip"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 4182,
+  "paraphrase": "rebuild conversation history from exported trace messages to replay in evals",
+  "specific": "invert messages_to_otel_messages back to message history"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2256,
+  "paraphrase": "agent stops right after a tool call and returns nothing",
+  "specific": "empty TextPart before ToolCallPart ends run_stream ollama"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 110,
+  "paraphrase": "reusable bundles of tools and connecting to external API schemas",
+  "specific": "toolsets OpenAPI Model Context Protocol MCP"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6517,
+  "paraphrase": "model capabilities detected wrong when model name has a provider prefix",
+  "specific": "openai_model_profile vendor-prefixed openai.gpt-5.6-sol Bedrock Mantle"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 916,
+  "paraphrase": "switch to the vendor's official async SDK instead of custom client",
+  "specific": "google-genai async support replace Gemini integration"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 1182,
+  "paraphrase": "use provider's built-in JSON mode instead of forced function call",
+  "specific": "native structured output tool_choice required final_result"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2687,
+  "paraphrase": "reasoning models crash the frontend event stream with empty thinking chunks",
+  "specific": "ThinkingTextMessageContentEvent Delta must not be an empty string"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8748,
+  "paraphrase": "automated PR review bot finished but posted nothing",
+  "specific": "CI Review No Safe Outputs Generated"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 1082,
+  "paraphrase": "sending a picture link to the model fails with bad request error",
+  "specific": "ImageUrl gemini 400 Request contains an invalid argument"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 4301,
+  "paraphrase": "bots to automatically review pull requests and sort incoming issues",
+  "specific": "review bot triage bot AGENTS.md auto-review label"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 169,
+  "paraphrase": "hosted endpoint rejects the setting for simultaneous tool calls",
+  "specific": "Unrecognized request argument supplied: parallel_tool_calls Azure"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8717,
+  "paraphrase": "type checker loses generic result type after upgrading, returns Any",
+  "specific": "mypy OutputSpec[T] AgentRunResult[Any] 2.49.0"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7250,
+  "paraphrase": "get notified in code when cache hit rate suddenly drops",
+  "specific": "on_cache_bust hook warn_on_cache_busts"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 4773,
+  "paraphrase": "remember what the user said in earlier sessions without saving history myself",
+  "specific": "AbstractMemoryStore cross-run memory session_id"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7211,
+  "paraphrase": "reloading saved history fails when a tool lookup result has an error",
+  "specific": "ModelMessagesTypeAdapter tool-search return ValidationError round-trip"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2944,
+  "paraphrase": "merged fix for streaming crash seems missing from main branch",
+  "specific": "assert chunk.candidates is not None google streaming"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 1982,
+  "paraphrase": "passing endpoint and key as arguments ignored, only works with env vars",
+  "specific": "AzureProvider Must provide one of the azure_endpoint argument"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3723,
+  "paraphrase": "prevent invalid tool call sequences across different model vendors up front",
+  "specific": "DeterministicToolContract tool-calling contract"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 2360,
+  "paraphrase": "calling several tools at once fails, some calls missing responses",
+  "specific": "ToolReturn content tool_call_ids did not have response messages"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3241,
+  "paraphrase": "can one agent instance handle multiple requests at the same time safely",
+  "specific": "Agent.run concurrently same agent safe"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3321,
+  "paraphrase": "serve my agent as an HTTP endpoint compatible with chat completion clients",
+  "specific": "OpenResponses API /v1/chat/completions /v1/responses"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 8610,
+  "paraphrase": "custom typed model refuses the schema-based output mode",
+  "specific": "TypeSafeModel NativeOutput Native structured output is not supported"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3531,
+  "paraphrase": "cloud model client blocks the event loop when loading credentials, causing timeouts",
+  "specific": "Vertex AI blocking credentials durable agent"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7932,
+  "paraphrase": "workflow that finds old inactive tickets crashed with pricing error",
+  "specific": "MiniMax-M3 unknown_model_ai_credits defaultAiCreditsPricing"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 5133,
+  "paraphrase": "tool that writes and publishes research papers from an agent",
+  "specific": "PaperClaw generate_scientific_paper integration"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 6805,
+  "paraphrase": "automated workflow for catching breakages died midway after connection dropped",
+  "specific": "Regression Detector claude engine terminated unexpectedly"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 895,
+  "paraphrase": "switching providers mid-conversation breaks because earlier tool calls have no id",
+  "specific": "AssertionError: OpenAI requires tool_call_id to be set"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 7670,
+  "paraphrase": "blank tool description still sends the function's doc comment to model",
+  "specific": "Tool description empty string falls back to docstring"
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "issue": 3179,
+  "paraphrase": "auto-tune agent prompts to improve performance",
+  "specific": "GEPA TextGrad MIPRO optimizers"
+ }
+]

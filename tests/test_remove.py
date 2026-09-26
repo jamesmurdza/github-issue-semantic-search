@@ -36,6 +36,7 @@ def chunk(repo: str, number: int, kind: str = "body") -> EmbeddedChunk:
             "created_at": "2026-01-01T00:00:00Z",
         },
         "vector": [0.1, 0.2, 0.3, 0.4],
+        "sparse": {"indices": [1], "values": [1.0]},
     }
 
 

@@ -16,6 +16,13 @@ of the size this example is written for. Measured on the same machine, same data
 
 Embedded grows with the collection. The server does not — past a few thousand
 chunks it is just the round trip.
+
+Each chunk is stored with two vectors, and a search asks both at once: the
+dense one finds text that means the same, BM25 finds text that uses the same
+words. Qdrant fuses the two lists with DBSF, which rescales each list's scores
+by their spread before adding them. Chosen on 620 queries over two repos
+(MRR@10): dense alone 0.57, BM25 alone 0.58, RRF 0.63, DBSF 0.64. The
+benchmark, and how to rerun it, is in benchmark/.
 """
 
 import datetime
@@ -25,9 +32,18 @@ from typing import Any, Literal, TypedDict
 
 from qdrant_client import QdrantClient, models
 
-from gh_issue.chunking import EmbeddedChunk, IssueMeta
+from gh_issue.chunking import EmbeddedChunk, IssueMeta, SparseVector
 
 COLLECTION = "gh_issue_chunks"
+
+# The collection's two named vectors.
+DENSE = "dense"
+KEYWORDS = "bm25"
+
+# How many chunks each half of a search contributes before fusing. DBSF
+# rescales by the spread of each list, so the count matters a little: on the
+# benchmark, 25 scored 0.637, and 50, 100 and 200 all about 0.64.
+CANDIDATES = 100
 
 # Any fixed UUID works; it only has to stay the same across runs so that the
 # same chunk id always maps to the same point.
@@ -58,6 +74,8 @@ class StoredChunk(TypedDict):
 
 
 class SearchHit(StoredChunk):
+    # The fused score of the issue's best chunk. Higher is better, and it only
+    # orders one search's results: it is not a similarity and has no fixed range.
     score: float
 
 
@@ -149,24 +167,24 @@ class Store:
         treats an index that already exists as a no-op, so a collection made
         before a field was added picks the new index up without a reindex.
 
-        A collection that already exists must hold vectors of this model's size.
-        If it does not, every write would fail with a 400 that Inngest retries
-        for minutes, and the runs would just look stuck; better to say so here.
+        A collection that already exists must have this layout, and hold vectors
+        of this model's size. If it does not, every write would fail with a 400
+        that Inngest retries for minutes, and the runs would just look stuck;
+        better to say so here.
         """
         if not self._client.collection_exists(self._collection):
             self._client.create_collection(
                 self._collection,
-                vectors_config=models.VectorParams(size=self._dim, distance=models.Distance.COSINE),
+                vectors_config={
+                    DENSE: models.VectorParams(size=self._dim, distance=models.Distance.COSINE)
+                },
+                # IDF, so that a word most chunks contain counts for little.
+                sparse_vectors_config={
+                    KEYWORDS: models.SparseVectorParams(modifier=models.Modifier.IDF)
+                },
             )
         else:
-            vectors = self._client.get_collection(self._collection).config.params.vectors
-            size = vectors.size if isinstance(vectors, models.VectorParams) else None
-            if size != self._dim:
-                raise ValueError(
-                    f"The Qdrant collection {self._collection} holds {size}-dimension vectors, "
-                    f"but the embedding model makes {self._dim}. Something else made it (another "
-                    "model, or a test run). Delete the collection and run `gh-issue sync` again."
-                )
+            self._check_layout()
         if not self._server:
             return
         for field in _KEYWORD_INDEXES:
@@ -183,6 +201,24 @@ class Store:
             field_name="created_at",
             field_schema=models.PayloadSchemaType.DATETIME,
         )
+
+    def _check_layout(self) -> None:
+        params = self._client.get_collection(self._collection).config.params
+        vectors = params.vectors
+        dense = vectors.get(DENSE) if isinstance(vectors, dict) else None
+        if dense is None or KEYWORDS not in (params.sparse_vectors or {}):
+            raise ValueError(
+                f"The Qdrant collection {self._collection} was made before keyword search was "
+                "added, and Qdrant cannot add vectors to an existing collection. Delete it "
+                "(from Qdrant's dashboard, or: curl -X DELETE <qdrant url>/collections/"
+                f"{self._collection}) and run `gh-issue sync` to index every repo again."
+            )
+        if dense.size != self._dim:
+            raise ValueError(
+                f"The Qdrant collection {self._collection} holds {dense.size}-dimension vectors, "
+                f"but the embedding model makes {self._dim}. Something else made it (another "
+                "model, or a test run). Delete the collection and run `gh-issue sync` again."
+            )
 
     @staticmethod
     def _issue_filter(repo: str, number: int) -> models.Filter:
@@ -243,7 +279,12 @@ class Store:
             points=[
                 models.PointStruct(
                     id=point_id(chunk["id"]),
-                    vector=chunk["vector"],
+                    vector={
+                        DENSE: chunk["vector"],
+                        KEYWORDS: models.SparseVector(
+                            indices=chunk["sparse"]["indices"], values=chunk["sparse"]["values"]
+                        ),
+                    },
                     payload={
                         "chunk_id": chunk["id"],
                         "content_hash": chunk["content_hash"],
@@ -292,25 +333,60 @@ class Store:
         )
 
     def search(
-        self, vector: list[float], limit: int = 10, filters: SearchFilters | None = None
+        self,
+        dense: list[float],
+        keywords: SparseVector,
+        limit: int = 10,
+        filters: SearchFilters | None = None,
     ) -> list[SearchHit]:
-        """Nearest chunks to `vector`, among those the filters allow.
+        """The best-matching issues, each as its best-matching chunk.
 
-        The filters run inside Qdrant alongside the vector search, not on its
-        results afterwards, so asking for ten closed issues returns ten rather
-        than whichever of the top ten happened to be closed.
+        Both halves of the search run inside Qdrant and are fused there. The
+        filters go into each half, not onto the fused results, so asking for ten
+        closed issues returns ten rather than whichever of the top ten happened
+        to be closed; and a filter on only one half would let the other half
+        bring back what it excludes.
+
+        One hit per issue is picked here, from the fused list, rather than with
+        Qdrant's grouped query: with rank-based fusion that query ranks later
+        groups over different lists depending on the limit asked for.
         """
-        hits = self._client.query_points(
+        where = _search_filter(filters or {})
+        # A long thread can take many places, so fetch enough to find `limit`
+        # distinct issues.
+        candidates = max(CANDIDATES, 4 * limit)
+        fused = self._client.query_points(
             self._collection,
-            query=vector,
-            query_filter=_search_filter(filters or {}),
-            limit=limit,
-            with_payload=True,
+            prefetch=[
+                models.Prefetch(query=dense, using=DENSE, limit=candidates, filter=where),
+                models.Prefetch(
+                    query=models.SparseVector(
+                        indices=keywords["indices"], values=keywords["values"]
+                    ),
+                    using=KEYWORDS,
+                    limit=candidates,
+                    filter=where,
+                ),
+            ],
+            query=models.FusionQuery(fusion=models.Fusion.DBSF),
+            limit=2 * candidates,
+            with_payload=["repo", "issue_number"],
         ).points
+
+        best: dict[tuple[str, int], models.ScoredPoint] = {}
+        for point in best_first(fused):
+            best.setdefault(_issue_of(point), point)
+            if len(best) == limit:
+                break
+        # Only now the full payloads, for the handful of chunks being returned.
+        records = self._client.retrieve(
+            self._collection, ids=[point.id for point in best.values()], with_payload=True
+        )
+        payloads = {record.id: record.payload for record in records if record.payload}
         return [
-            {**_stored_from_payload(hit.payload), "score": hit.score}
-            for hit in hits
-            if hit.payload is not None
+            {**_stored_from_payload(payloads[point.id]), "score": point.score}
+            for point in best.values()
+            if point.id in payloads
         ]
 
     def stats(self) -> dict[str, RepoStats]:
@@ -332,6 +408,24 @@ class Store:
         # The server keeps a value in its payload index after the last point
         # carrying it is deleted, and reports it with a count of zero.
         return {str(hit.value): hit.count for hit in hits if hit.count > 0}
+
+
+def best_first(points: list[models.ScoredPoint]) -> list[models.ScoredPoint]:
+    """Highest score first; equal scores by repo, then issue number.
+
+    Qdrant lists equal scores in any order, and identical text (the same bare
+    link posted on two issues) scores identically, so without this the same
+    search could list those issues differently each time it ran.
+    """
+    return sorted(
+        (point for point in points if point.payload is not None),
+        key=lambda point: (-point.score, *_issue_of(point), str(point.id)),
+    )
+
+
+def _issue_of(point: models.ScoredPoint) -> tuple[str, int]:
+    payload = point.payload or {}
+    return payload["repo"], payload["issue_number"]
 
 
 def _match(key: str, value: str) -> models.Filter:

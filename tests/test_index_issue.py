@@ -106,7 +106,11 @@ def rig(tmp_path: Path, data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iter
     def fake_embed_chunks(chunks: list[Chunk]) -> list[EmbeddedChunk]:
         harness.embed_batches.append(len(chunks))
         return [
-            {**chunk, "vector": [float(i + 1)] + [0.0] * (DIM - 1)}
+            {
+                **chunk,
+                "vector": [float(i + 1)] + [0.0] * (DIM - 1),
+                "sparse": {"indices": [i + 1], "values": [1.0]},
+            }
             for i, chunk in enumerate(chunks)
         ]
 

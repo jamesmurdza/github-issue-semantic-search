@@ -8,7 +8,7 @@ waiting on it wants an answer or an error rather than a retry schedule.
 
 from typing import TypedDict
 
-from gh_issue.embed import embed_texts
+from gh_issue.embed import embed_query
 from gh_issue.heartbeat import WorkerStatus, worker_status
 from gh_issue.index.backfills import BackfillProgress
 from gh_issue.index.store import SearchFilters, SearchHit
@@ -81,13 +81,14 @@ def make_filters(
 
 
 def search(query: str, filters: SearchFilters | None = None, limit: int = 10) -> list[SearchHit]:
-    """Chunks closest in meaning to `query`, across every indexed repo unless
-    the filters say otherwise."""
+    """The issues that best match `query` by meaning and by wording, each as its
+    best-matching post, across every indexed repo unless the filters say
+    otherwise."""
     text = query.strip()
     if not text:
         raise ValueError("query is empty")
-    [vector] = embed_texts([text])
-    return store().search(vector, limit=limit, filters=filters)
+    vectors = embed_query(text)
+    return store().search(vectors["dense"], vectors["sparse"], limit=limit, filters=filters)
 
 
 def get_issue(repo: str, number: int) -> Thread | None:

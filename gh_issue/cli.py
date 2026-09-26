@@ -64,7 +64,7 @@ def search(
     since: str | None = None,
     limit: Annotated[int, Parameter(name=["--limit", "-k"])] = 10,
 ) -> None:
-    """Search issue history by meaning, across every synced repo.
+    """Search issue history by meaning and by wording, across every synced repo.
 
     Parameters
     ----------

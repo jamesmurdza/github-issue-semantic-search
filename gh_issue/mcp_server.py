@@ -1,7 +1,7 @@
 """The index as MCP tools, for a coding agent.
 
 Three read-only tools over the same query layer the CLI uses: `search_issues`
-to find threads by meaning, `get_issue` to read one in full, and `status` to see
+to find threads by meaning and by wording, `get_issue` to read one in full, and `status` to see
 what is synced. Syncing stays a human action on the command line; an agent reads.
 
 The descriptions below are what the agent sees when deciding what to call and
@@ -25,7 +25,8 @@ mcp = FastMCP(
     instructions=(
         "Search the issue history of GitHub repos synced with gh-issue: bug reports, "
         "the discussion under them, and how they were resolved. Start with "
-        "search_issues in the user's own words; open a promising hit with get_issue "
+        "search_issues in the user's own words, or with an exact error message; open "
+        "a promising hit with get_issue "
         "to read the whole thread. status lists which repos are synced."
     ),
 )
@@ -72,13 +73,16 @@ def search_issues(
     ] = None,
     limit: Annotated[int, Field(ge=1, le=50, description="How many results.")] = 10,
 ) -> list[SearchHit]:
-    """Search GitHub issues and their comments by meaning.
+    """Search GitHub issues and their comments, by meaning and by exact wording.
 
     Use this before answering anything about a bug, an error message or odd
     behaviour in a synced repo: someone has often reported it, and the fix or
-    workaround is usually in a comment rather than the issue itself. Each hit is
-    one post (an issue body or a comment) with its issue's number, title, state
-    and labels. Call get_issue on a hit to read the whole thread.
+    workaround is usually in a comment rather than the issue itself. Describe the
+    problem in plain words, or paste an error message, name or version as it
+    appears. Each hit is one issue, shown as its best-matching post (the body or
+    a comment) with the issue's number, title, state and labels; `score` only
+    orders the hits, higher first. Call get_issue on a hit to read the whole
+    thread.
     """
     _check_index()
     filters = reads.make_filters(

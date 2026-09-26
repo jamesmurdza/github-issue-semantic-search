@@ -54,11 +54,13 @@ def hit(
 
 
 def test_a_hit_names_the_issue_says_who_wrote_what_and_links_it() -> None:
+    """No score: the fused score only orders one search's results, and a number
+    like 1.87 would read as something it is not. The order already says it."""
     lines = format_hits([hit()]).splitlines()
 
     assert lines == [
         "1. owner/name#412 (closed) App freezes when I scroll fast",
-        "   comment by maintainer on 2026-01-02, score 0.83",
+        "   comment by maintainer on 2026-01-02",
         "   It was an IntersectionObserver race condition.",
         "   https://github.com/owner/name/issues/412",
     ]

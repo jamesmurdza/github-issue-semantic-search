@@ -1,0 +1,5482 @@
+[
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "No routes matched location \"/.redwood/functions/inngest\"",
+  "target": 654,
+  "hide": {
+   "issue": 654,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Unable to start inngest in prod mode",
+  "target": 2819,
+  "hide": {
+   "issue": 2819,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Publish the runtime image on a minimal base: Debian userspace contributes unfixable CVEs (perl-base) around a fully static binary",
+  "target": 4730,
+  "hide": {
+   "issue": 4730,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "HTTP events to branch environments are sent to Production",
+  "target": 558,
+  "hide": {
+   "issue": 558,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Cron not working in dev server",
+  "target": 2105,
+  "hide": {
+   "issue": 2105,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "We need retry immediately, no point to have backoff delay, It makes our performance slow",
+  "target": 3737,
+  "hide": {
+   "issue": 3737,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Inngest Spans Cross-Run Query Issue",
+  "target": 4656,
+  "hide": {
+   "issue": 4656,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Inngest dev server: http: panic serving 127.0.0.1:48622: runtime error",
+  "target": 4051,
+  "hide": {
+   "issue": 4051,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Not clear how to detect whether a function run is rate-limited",
+  "target": 2226,
+  "hide": {
+   "issue": 2226,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Support dot env files for development env",
+  "target": 93,
+  "hide": {
+   "issue": 93,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Bug: signing-key must be a valid hexadecimal string",
+  "target": 2756,
+  "hide": {
+   "issue": 2756,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Add debounce as an option for function configuration",
+  "target": 344,
+  "hide": {
+   "issue": 344,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Delay event",
+  "target": 368,
+  "hide": {
+   "issue": 368,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Add App in dev mode not working",
+  "target": 930,
+  "hide": {
+   "issue": 930,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Postgres: inngest.spans.attributes stored as JSON string (jsonb_typeof='string'); trace_runs.is_debounce never true (can't audit debounced runs)",
+  "target": 3632,
+  "hide": {
+   "issue": 3632,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Search events",
+  "target": 360,
+  "hide": {
+   "issue": 360,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Edge runtime stoped working in 3.31.3",
+  "target": 2138,
+  "hide": {
+   "issue": 2138,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Plan: Add Redis state store",
+  "target": 108,
+  "hide": {
+   "issue": 108,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Runs view very slow on large data sets",
+  "target": 3612,
+  "hide": {
+   "issue": 3612,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Show/link the parent run from child runs triggered by `step.invoke`",
+  "target": 4068,
+  "hide": {
+   "issue": 4068,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Inngest start event key not recognized",
+  "target": 3129,
+  "hide": {
+   "issue": 3129,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "UI Enhancement: Better visual distinction for local dev server",
+  "target": 2293,
+  "hide": {
+   "issue": 2293,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Environment variable configuration for connect gRPC does not work",
+  "target": 3095,
+  "hide": {
+   "issue": 3095,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "(Cancel running functions)  This method disable.",
+  "target": 1275,
+  "hide": {
+   "issue": 1275,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Local server not running when entering command",
+  "target": 562,
+  "hide": {
+   "issue": 562,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "How to completely delete an Inngest app and stop all its calls?",
+  "target": 1953,
+  "hide": {
+   "issue": 1953,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dev server not showing failed step name",
+  "target": 774,
+  "hide": {
+   "issue": 774,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Newest docker image causes _actual sync_ of invalid docker url to whatever env is pointed to by your env vars",
+  "target": 1464,
+  "hide": {
+   "issue": 1464,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Remix + serve and INNGEST_SIGNING_KEY",
+  "target": 1552,
+  "hide": {
+   "issue": 1552,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[Docs/SDK] Self-hosting documentation is misleading - INNGEST_DEV=0 with INNGEST_BASE_URL does not work",
+  "target": 3557,
+  "hide": {
+   "issue": 3557,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Sending an event while unsynchronized doesn't throw an error",
+  "target": 1814,
+  "hide": {
+   "issue": 1814,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "your signing key is invalid",
+  "target": 3289,
+  "hide": {
+   "issue": 3289,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Can't sync an app if multiple functions are removed at once",
+  "target": 2384,
+  "hide": {
+   "issue": 2384,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "CEL evaluation returns incorrect type for variables on nodejs",
+  "target": 4908,
+  "hide": {
+   "issue": 4908,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Log an error if the SDK redirects from /api/inngest during dev registration",
+  "target": 340,
+  "hide": {
+   "issue": 340,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Order-preserving batched enqueueing of events",
+  "target": 3211,
+  "hide": {
+   "issue": 3211,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "`step.waitForEvent` does not get resolved if events are issued in quick succession",
+  "target": 1433,
+  "hide": {
+   "issue": 1433,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Event source webhook emulator does not allow you to enter an incoming event",
+  "target": 357,
+  "hide": {
+   "issue": 357,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "\"run\" get into a zombie state",
+  "target": 2531,
+  "hide": {
+   "issue": 2531,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Inngest debug logs always print in Cloudflare local dev",
+  "target": 2491,
+  "hide": {
+   "issue": 2491,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Unable to directly invoke function",
+  "target": 1006,
+  "hide": {
+   "issue": 1006,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Over-limit sleep/wait-for-event can lose its terminal timeout failure if finalization event publishing fails",
+  "target": 4652,
+  "hide": {
+   "issue": 4652,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "\"All syncs\" list is incorrect",
+  "target": 2154,
+  "hide": {
+   "issue": 2154,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Throttle for smaller intervals than one second",
+  "target": 401,
+  "hide": {
+   "issue": 401,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "PostgreSQL GROUP BY errors when viewing trace details in Inngest self-host server",
+  "target": 2892,
+  "hide": {
+   "issue": 2892,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "sql: no rows in result set",
+  "target": 3185,
+  "hide": {
+   "issue": 3185,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Spans did not display at all in the dashboard",
+  "target": 3197,
+  "hide": {
+   "issue": 3197,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[SelfHost] panic: runtime error: invalid memory address or nil pointer dereference  (1.7.0 & 1.7.1)",
+  "target": 2584,
+  "hide": {
+   "issue": 2584,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Scheduled event throws:`error creating run state: context canceled`",
+  "target": 1260,
+  "hide": {
+   "issue": 1260,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Add benchmarks and profiling for each config setup",
+  "target": 156,
+  "hide": {
+   "issue": 156,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "No Queued status, always show Running status",
+  "target": 3186,
+  "hide": {
+   "issue": 3186,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[BUG] CEL support incomplete",
+  "target": 1704,
+  "hide": {
+   "issue": 1704,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dev server shows incorrect batch event information",
+  "target": 1573,
+  "hide": {
+   "issue": 1573,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dev Server Failing Locally with panic: runtime error: invalid memory address or nil pointer derefer",
+  "target": 2170,
+  "hide": {
+   "issue": 2170,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": " Health Check Endpoint for Self-Hosted Inngest Setup with Docker",
+  "target": 2019,
+  "hide": {
+   "issue": 2019,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Make function failures more obvious",
+  "target": 358,
+  "hide": {
+   "issue": 358,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Problem in timeout finish parsing",
+  "target": 1967,
+  "hide": {
+   "issue": 1967,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Go client with Inngest start command report error but event can be executed",
+  "target": 2605,
+  "hide": {
+   "issue": 2605,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Panic when using singleton",
+  "target": 2523,
+  "hide": {
+   "issue": 2523,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Idempotency key does not work on function definition during production",
+  "target": 2307,
+  "hide": {
+   "issue": 2307,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Simple Observability and Retry Protection",
+  "target": 369,
+  "hide": {
+   "issue": 369,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Renaming environments",
+  "target": 4627,
+  "hide": {
+   "issue": 4627,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "1.5.8 broke intra container communication",
+  "target": 2362,
+  "hide": {
+   "issue": 2362,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "In dev server CEL queries are not applied",
+  "target": 3315,
+  "hide": {
+   "issue": 3315,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Can we support the deployment of MCP STDIO protocol services",
+  "target": 2634,
+  "hide": {
+   "issue": 2634,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "test: capture WaitForRunStatus status-transition history on timeout",
+  "target": 4444,
+  "hide": {
+   "issue": 4444,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[CLI] `--json=false` has no effect",
+  "target": 4379,
+  "hide": {
+   "issue": 4379,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Rerunning a batch does not replay all events",
+  "target": 2427,
+  "hide": {
+   "issue": 2427,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "`inngest dev` Force normal output (disable --json)",
+  "target": 810,
+  "hide": {
+   "issue": 810,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "step.run fails when data returned is too large",
+  "target": 2016,
+  "hide": {
+   "issue": 2016,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Use string type for id columns in pg",
+  "target": 2544,
+  "hide": {
+   "issue": 2544,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Postgres: runs list hangs at scale — GetSpansByRunIDsAndName self-join seq-scans spans (no index on dynamic_span_id)",
+  "target": 4690,
+  "hide": {
+   "issue": 4690,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "`RetryAfterError` retry-after ignored on step errors when checkpointing is enabled (uses default `BackoffTable` instead)",
+  "target": 4126,
+  "hide": {
+   "issue": 4126,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Error: Inngest API Error: 401 Event key not found",
+  "target": 2400,
+  "hide": {
+   "issue": 2400,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[Connect] \"Could not find a healthy connection\" at Finalization — intermittent conn: store heartbeat write misses",
+  "target": 3725,
+  "hide": {
+   "issue": 3725,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "mcpServers integration breaks with Zod v4 — @dmitryrechkin/json-schema-to-zod imports removed ZodSchema export",
+  "target": 3764,
+  "hide": {
+   "issue": 3764,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[CLI] Add support for bun",
+  "target": 628,
+  "hide": {
+   "issue": 628,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Allow for future scheduling via the `ts` field in events",
+  "target": 376,
+  "hide": {
+   "issue": 376,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Running `inngest-cli dev` on remote server",
+  "target": 303,
+  "hide": {
+   "issue": 303,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Unable to sync app using Inngest development docker image",
+  "target": 3809,
+  "hide": {
+   "issue": 3809,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "step.waitForEvent extremely high latency",
+  "target": 2423,
+  "hide": {
+   "issue": 2423,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Run order is not preserved when triggered from events?",
+  "target": 3050,
+  "hide": {
+   "issue": 3050,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Event / Function Run screen does not update with new items",
+  "target": 361,
+  "hide": {
+   "issue": 361,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Version v1.11.2 cannot be started",
+  "target": 2784,
+  "hide": {
+   "issue": 2784,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "redis-uri doesn't allow setting password \"too many colons in address\"",
+  "target": 2025,
+  "hide": {
+   "issue": 2025,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dev server not starting with inngest-cli@1.4.8",
+  "target": 2213,
+  "hide": {
+   "issue": 2213,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Memory leak in self-hosted Inngest - RSS grows indefinitely, never freed",
+  "target": 3892,
+  "hide": {
+   "issue": 3892,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Tracing (Runs Dashboard) only works when using port 8288",
+  "target": 2236,
+  "hide": {
+   "issue": 2236,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Custom event ids are not supported in Dev Server",
+  "target": 629,
+  "hide": {
+   "issue": 629,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Throttling (only run N functions over a specific time)",
+  "target": 372,
+  "hide": {
+   "issue": 372,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "v1.11.2 dev server doesn't discover apps on docker",
+  "target": 2787,
+  "hide": {
+   "issue": 2787,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[SelfHosting][Postgres] Can't register functions/apps anymore",
+  "target": 2139,
+  "hide": {
+   "issue": 2139,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Next.js Functions Never Complete [Dev]",
+  "target": 3161,
+  "hide": {
+   "issue": 3161,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Postinstall fails behind HTTP proxy",
+  "target": 2503,
+  "hide": {
+   "issue": 2503,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Burstable keyed concurrency: a guaranteed-minimum `limit` plus an optional burstable `maxLimit`",
+  "target": 4345,
+  "hide": {
+   "issue": 4345,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Cannot cancel run if self-hosted with pg",
+  "target": 2543,
+  "hide": {
+   "issue": 2543,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Feature flags endpoint returns 404 in self-hosted mode",
+  "target": 3600,
+  "hide": {
+   "issue": 3600,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Replay/replay with edit not working locally (nextjs client side exception.",
+  "target": 1242,
+  "hide": {
+   "issue": 1242,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Display logs per function/step in the dev server UI",
+  "target": 2515,
+  "hide": {
+   "issue": 2515,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Large amount of rows in dashboard UI leads to PostgreSQL backend error",
+  "target": 2351,
+  "hide": {
+   "issue": 2351,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Support arbitrary bytes in event/step payloads",
+  "target": 3482,
+  "hide": {
+   "issue": 3482,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[Feature Request] Bulk upload invoke events in dashboard",
+  "target": 2971,
+  "hide": {
+   "issue": 2971,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Wait For Event if filtering broken",
+  "target": 2030,
+  "hide": {
+   "issue": 2030,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Supporting distributed Job processor",
+  "target": 556,
+  "hide": {
+   "issue": 556,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Add multiple events support to waitForEvent",
+  "target": 1046,
+  "hide": {
+   "issue": 1046,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Missing types for onFailure",
+  "target": 825,
+  "hide": {
+   "issue": 825,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Downtime on redeployments",
+  "target": 4505,
+  "hide": {
+   "issue": 4505,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "ADM administração ",
+  "target": 216,
+  "hide": {
+   "issue": 216,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Gripe: Having to redeclare the event name twice is annoying",
+  "target": 425,
+  "hide": {
+   "issue": 425,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Cron schedule day-of-month and day-of-week odd interaction",
+  "target": 2631,
+  "hide": {
+   "issue": 2631,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "`in` clause silently stripped from `waitForEvent` condition CEL expression",
+  "target": 3907,
+  "hide": {
+   "issue": 3907,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "`inngest start` does not set `Poll: true`, making `--poll-interval` / `INNGEST_POLL_INTERVAL` ineffective",
+  "target": 3791,
+  "hide": {
+   "issue": 3791,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Error: Inngest CLI binary not found.  in 2025 with node > 24",
+  "target": 3474,
+  "hide": {
+   "issue": 3474,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dev Server Timeout",
+  "target": 1568,
+  "hide": {
+   "issue": 1568,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Flaky tests in SDK E2E: TestEventList panic + trace_run polling family",
+  "target": 4426,
+  "hide": {
+   "issue": 4426,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[Self-Hosted/Dev/Postgres] Run endedAt shows as null in trace view despite run being completed sporadically",
+  "target": 3355,
+  "hide": {
+   "issue": 3355,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Functions that are running step.waitForEvent don't count towards the concurrency limit",
+  "target": 2263,
+  "hide": {
+   "issue": 2263,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[BUG] Closes the server with PNPM 10",
+  "target": 2171,
+  "hide": {
+   "issue": 2171,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "[Bug] Scrollbar thumb not always visible in dev console",
+  "target": 2379,
+  "hide": {
+   "issue": 2379,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "inngest-cli postinstall fails with tar@7 (tar.extract undefined)",
+  "target": 3555,
+  "hide": {
+   "issue": 3555,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Function fails if output is larger than 1MB",
+  "target": 2079,
+  "hide": {
+   "issue": 2079,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Self-hosted server - connect mode does not support HA deployment",
+  "target": 4709,
+  "hide": {
+   "issue": 4709,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "PUT /api/inngest 500",
+  "target": 2748,
+  "hide": {
+   "issue": 2748,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Output tab just appears in the runs detail component, showing no prior clue of its existence",
+  "target": 4029,
+  "hide": {
+   "issue": 4029,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "(Cancel running functions) This method disable",
+  "target": 1276,
+  "hide": {
+   "issue": 1276,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "inngest-cli binary not found",
+  "target": 3475,
+  "hide": {
+   "issue": 3475,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "JCS canonicalization fails with \"Unexpected non-ASCII character\" on OCR'd/non-English text — reproduced on dev-server AND hosted Cloud",
+  "target": 4558,
+  "hide": {
+   "issue": 4558,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Local Concurrency Limit",
+  "target": 2093,
+  "hide": {
+   "issue": 2093,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "MCP InputSchema breaks validation",
+  "target": 3305,
+  "hide": {
+   "issue": 3305,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "1.8.0 + self host + Postgres backend, boot failed and report: failed to init driver with path migrations/postgres: duplicate migration file: 000012_span_tables.down.sql",
+  "target": 2604,
+  "hide": {
+   "issue": 2604,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Self-hosted connect fails across multiple server replicas (gateway advertises 127.0.0.1)",
+  "target": 4528,
+  "hide": {
+   "issue": 4528,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Running server from latest docker image doesn't working",
+  "target": 526,
+  "hide": {
+   "issue": 526,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Connect - The worker stopped responding to the request.",
+  "target": 3549,
+  "hide": {
+   "issue": 3549,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Self-hosted Postgres pool settings are not applied to shared sql.DB",
+  "target": 4123,
+  "hide": {
+   "issue": 4123,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Live refresh of function runs, events etc.",
+  "target": 320,
+  "hide": {
+   "issue": 320,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "inngest connect w/ inngest dev server results in `Signing key is required`",
+  "target": 2758,
+  "hide": {
+   "issue": 2758,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "\"inngest start\" always loads dev config : self-hosted production mode impossible",
+  "target": 3333,
+  "hide": {
+   "issue": 3333,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Quick Start Tutorial \"Triggering your function from the development UI\" does not work",
+  "target": 535,
+  "hide": {
+   "issue": 535,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Dockerfile is broken",
+  "target": 4471,
+  "hide": {
+   "issue": 4471,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "List function failures (Errors Tab)",
+  "target": 359,
+  "hide": {
+   "issue": 359,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Permission denied running npx inngest-cli@latest on Windows",
+  "target": 1742,
+  "hide": {
+   "issue": 1742,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "PostgreSQL UTF-8 encoding errors with ULID fields: invalid byte sequence for encoding \"UTF8\": 0x9a",
+  "target": 3172,
+  "hide": {
+   "issue": 3172,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Cloud register response returns modified:true while the same sync is recorded as status:\"duplicate\"",
+  "target": 4817,
+  "hide": {
+   "issue": 4817,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Support wildcard event triggers e.g. `something/*`",
+  "target": 326,
+  "hide": {
+   "issue": 326,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Step level retries",
+  "target": 3237,
+  "hide": {
+   "issue": 3237,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Multiple throttling limits",
+  "target": 2493,
+  "hide": {
+   "issue": 2493,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Plan: add `ctx` to event structure for metadata such as otel IDs",
+  "target": 107,
+  "hide": {
+   "issue": 107,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Allow specifying N in pauses",
+  "target": 282,
+  "hide": {
+   "issue": 282,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Email verification input does not show caret/text cursor",
+  "target": 4675,
+  "hide": {
+   "issue": 4675,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "title",
+  "text": "Skipped runs with singleton should trigger inngest/function.cancelled or similar event",
+  "target": 2566,
+  "hide": {
+   "issue": 2566,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "login middleware redirects my handler route so local sync silently fails",
+  "target": 340,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "SDK redirects /api/inngest during dev registration",
+  "target": 340,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "local server caps parallel tasks at a couple dozen, how to raise",
+  "target": 2093,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "local concurrency limit 25 steps throttling",
+  "target": 2093,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "my own hosted server setup still registers apps with the cloud",
+  "target": 3557,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "INNGEST_DEV=0 INNGEST_BASE_URL registration still goes to cloud",
+  "target": 3557,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "loop of a dozen sequential tasks gets stuck forever on the tenth",
+  "target": 3693,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "function 10 steps 10th step endless Execution local dev",
+  "target": 3693,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "web UI from another machine calls local address instead of VM IP",
+  "target": 303,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "inngest-cli dev --host coreapi localhost:8300/gql",
+  "target": 303,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "run timeline hides name and data of events emitted mid-function",
+  "target": 762,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "dev server step.sendEvent details missing",
+  "target": 762,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "running several server copies, jobs randomly fail to reach connected worker",
+  "target": 4709,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "failed to route request to gateway connect mode 127.0.0.1",
+  "target": 4709,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "local data warehouse fake container dies from memory during long test loops",
+  "target": 4151,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "bigquery-emulator OOMKilled lookup bq no such host",
+  "target": 4151,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "pause a workflow from code instead of clicking in the UI",
+  "target": 2833,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "API endpoint to pause functions like /cancellations",
+  "target": 2833,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "test helper shows only final state when polling for run times out",
+  "target": 4444,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "WaitForRunStatus didn't get expected status: COMPLETED, got RUNNING",
+  "target": 4444,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "after upgrading, run trace lost my step names, shows generic internal entries",
+  "target": 4083,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "error unmarshalling metadata span kind, no attributes",
+  "target": 4083,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "send raw binary data instead of text in events and step results",
+  "target": 3482,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "arbitrary bytes event step payloads Protobuf MessagePack",
+  "target": 3482,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "can't change the name of a prod workspace in the web app",
+  "target": 4627,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "rename environment app.inngest.com/env",
+  "target": 4627,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "manually triggering a function locally, have to retype test data every time",
+  "target": 3107,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "Invoke Function modal default JSON payload per event type",
+  "target": 3107,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "sending same event with duplicate id still runs handler three times",
+  "target": 875,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "inngest.send id idempotency key not deduplicating local dev server",
+  "target": 875,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "command line way to show all deployed workflows and their details",
+  "target": 77,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "inngest functions list --json inspect command",
+  "target": 77,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "own deployment's memory and CPU climb for days until restarted",
+  "target": 4909,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "waitForEvent timeout pauses never removed expression aggregator leak",
+  "target": 4909,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "how to write tests for my workflows with mocked steps",
+  "target": 224,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "unit testing individual functions mock driver",
+  "target": 224,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "no ready multi-container config to try running the whole platform myself",
+  "target": 319,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "docker compose file self hosting",
+  "target": 319,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "sending succeeds silently even when the app isn't connected to the server",
+  "target": 1814,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "inngest.send returns event ids while unsynchronized no error",
+  "target": 1814,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "wait until the same event arrives several times before continuing",
+  "target": 282,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "pause count wait for event N times",
+  "target": 282,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "database logs complain about bad characters when inserting ids on my deployment",
+  "target": 3172,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "invalid byte sequence for encoding UTF8 0x9a ULID",
+  "target": 3172,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "new scaffolded function test run gives random placeholder text as event type",
+  "target": 92,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "inngest run event.name lorem ipsum inngest init",
+  "target": 92,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "can't include a password in the cache connection string when starting server",
+  "target": 2025,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "--redis-uri too many colons in address",
+  "target": 2025,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "workflows sleeping for months, how to make them pick up updated code",
+  "target": 615,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "sleepUntil cancel and reload step.run with new version",
+  "target": 615,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "scheduled job runs on weekends even though I restricted it to weekdays",
+  "target": 2631,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "cron */10 * 1-5 day-of-month day-of-week OR",
+  "target": 2631,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "let outside services post raw body with event name in path",
+  "target": 1113,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "/e/{key}/{event_name} ingest endpoint event name from URL",
+  "target": 1113,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "duplicate runs still happen in cloud with dedupe key set, fine locally",
+  "target": 2307,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "idempotency event.data function config not working production",
+  "target": 2307,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "deleting two workflows from my code breaks the resync with server error",
+  "target": 2384,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "Error registering functions: mismatched param and argument count",
+  "target": 2384,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "server crashes on restart after adding only-one-at-a-time option to scheduled job",
+  "target": 2523,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "singleton mode skip panic nil pointer dereference executor Schedule",
+  "target": 2523,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "how to access the management back office",
+  "target": 216,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "ADM administração",
+  "target": 216,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "runs page stays empty when server started on a different port",
+  "target": 2236,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "traces export localhost:8288/dev/traces connection refused inngest start -p",
+  "target": 2236,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "local run command freezes forever when container start command is invalid",
+  "target": 228,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "invalid ENTRYPOINT Dockerfile inngest run hangs",
+  "target": 228,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "limit how many memory-heavy tasks execute on one machine at once",
+  "target": 4179,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "per-step memory requirement worker limit concurrency",
+  "target": 4179,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "API lookup of a still-executing job returns server error until it completes",
+  "target": 4042,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "GET /v1/runs/{runID} 500 Unable to load function run",
+  "target": 4042,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "container crashes on boot when I set the cache connection url",
+  "target": 1916,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "INNGEST_REDIS_URI panic invalid memory address nil pointer dereference",
+  "target": 1916,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "run details page blank on my own deployment after upgrading",
+  "target": 3197,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "spans.trace_id must appear in the GROUP BY clause",
+  "target": 3197,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "runs list doesn't show new entries unless I reload the browser",
+  "target": 361,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "function run screen does not poll refresh button",
+  "target": 361,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "building the container image from repo root fails to compile",
+  "target": 4471,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "docker build cmd/main.go undefined: execute",
+  "target": 4471,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "returning a big response from a step throws an error",
+  "target": 2016,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "PayloadTooLargeError: request entity too large step.run",
+  "target": 2016,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "make local server listen on other addresses so containers can reach it",
+  "target": 113,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "dev server bind custom IPs",
+  "target": 113,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "verbose output always printed in edge worker local mode despite errors-only",
+  "target": 2491,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "debug logs wrangler dev logLevel error DEBUG=",
+  "target": 2491,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "every sync says something changed even though my code is identical",
+  "target": 2455,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "registered inngest functions modified: true every sync",
+  "target": 2455,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "sending several events at once, they get processed in a different order",
+  "target": 3211,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "step.sendEvent array order preserve concurrency limit 1",
+  "target": 3211,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "clicking into a run to see its timeline sometimes throws database error",
+  "target": 2892,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "SQLSTATE 42803 GROUP BY trace details self-host",
+  "target": 2892,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "local run crashes instead of failing cleanly when container exits with error",
+  "target": 229,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "panic: runtime error: index out of range [1] with length 1",
+  "target": 229,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "deploy an AI tools server that communicates through standard input and output",
+  "target": 2634,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "MCP STDIO protocol services deployment",
+  "target": 2634,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "run fails when step data contains accented foreign text from scanned files",
+  "target": 4558,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "error transforming request with JCS: Unexpected non-ASCII character",
+  "target": 4558,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "delayed-until-quiet function fires several seconds later than configured",
+  "target": 4150,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "debounce ErrDebounceInProgress 750ms retry latency",
+  "target": 4150,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "paraphrase",
+  "text": "CLI package install script crashes after upgrading archive library for security fix",
+  "target": 3555,
+  "hide": null
+ },
+ {
+  "repo": "inngest/inngest",
+  "kind": "specific",
+  "text": "postinstall TypeError: Cannot read properties of undefined (reading 'extract')",
+  "target": 3555,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Use ollama's structured outputs feature",
+  "target": 582,
+  "hide": {
+   "issue": 242
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Python Code ResultType Validation",
+  "target": 910,
+  "hide": {
+   "issue": 662
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add some kind of mechanism/component for managing state between Agent calls",
+  "target": 695,
+  "hide": {
+   "issue": 676
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add ability to customise model request retry behaviour",
+  "target": 782,
+  "hide": {
+   "issue": 677
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Incompatible with VLLM server",
+  "target": 224,
+  "hide": {
+   "issue": 728
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add support for `reasoning_content` from DeepSeek R1",
+  "target": 907,
+  "hide": {
+   "issue": 731
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Multimodal input / output support",
+  "target": 1126,
+  "hide": {
+   "issue": 760
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Returning pydantic result of tool as final_result",
+  "target": 1189,
+  "hide": {
+   "issue": 847
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "result_type does not work with an OpenAI compatible endpoint/model",
+  "target": 224,
+  "hide": {
+   "issue": 927
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Feature request: Add current messages to UsageLimitExceeded error",
+  "target": 1083,
+  "hide": {
+   "issue": 931
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Unit Test `pydantic_ai_examples`",
+  "target": 1276,
+  "hide": {
+   "issue": 937
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Implementing model from scratch",
+  "target": 582,
+  "hide": {
+   "issue": 964
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Anthropic prompt caching",
+  "target": 138,
+  "hide": {
+   "issue": 1041
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support for Claude 3.7 thinking",
+  "target": 907,
+  "hide": {
+   "issue": 1080
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Response caching",
+  "target": 2452,
+  "hide": {
+   "issue": 1093
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support for model Gemini Flash 2.0 Image Generation",
+  "target": 2140,
+  "hide": {
+   "issue": 1126
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "OpenAI response API",
+  "target": 1099,
+  "hide": {
+   "issue": 1129
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "model do not support tool calls ， How to handle return_type",
+  "target": 582,
+  "hide": {
+   "issue": 1159
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Include Tools Schemas (and eventually result schemas) in Otel Spans",
+  "target": 1125,
+  "hide": {
+   "issue": 1168
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support models' native structured output",
+  "target": 582,
+  "hide": {
+   "issue": 1182
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Responses API: openai 4o search preview model",
+  "target": 1099,
+  "hide": {
+   "issue": 1185
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add Bedrock Reasoning Parameters for Sonnet 3.7 using Bedrock",
+  "target": 907,
+  "hide": {
+   "issue": 1191
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "TypeError: 'NoneType' object cannot be interpreted as an integer",
+  "target": 527,
+  "hide": {
+   "issue": 1208
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Better support for \"composite\" Tool functions",
+  "target": 1973,
+  "hide": {
+   "issue": 1258
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support \"responseMimeType\" as part of generationConfig for Gemini",
+  "target": 582,
+  "hide": {
+   "issue": 1288
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Define tools with a class",
+  "target": 850,
+  "hide": {
+   "issue": 1316
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Implement filtering for MCP tools",
+  "target": 1219,
+  "hide": {
+   "issue": 1432
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Disable tool use while having structured outputs",
+  "target": 582,
+  "hide": {
+   "issue": 1457
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support parsing tool invocations from reponse text instead of tool json",
+  "target": 582,
+  "hide": {
+   "issue": 1466
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Inferred strict=true may cause compatibility issues with OpenAI-compatible servers",
+  "target": 1782,
+  "hide": {
+   "issue": 1561
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Amazon Nova (Bedrock) limitations with tool schema",
+  "target": 1782,
+  "hide": {
+   "issue": 1623
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support Tool Calling with Llama 3.3 on Bedrock",
+  "target": 1782,
+  "hide": {
+   "issue": 1649
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Erratic performance when using nested schemas",
+  "target": 1782,
+  "hide": {
+   "issue": 1659
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "GeminiModel Validation Fails when Gemini sends MALFORMED_FUNCTION_CALL response",
+  "target": 631,
+  "hide": {
+   "issue": 1687
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "support google cloud storage uri with Gemini",
+  "target": 1134,
+  "hide": {
+   "issue": 1718
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Easier way of configuring max_retries for OpenAI and Azure clients/providers",
+  "target": 782,
+  "hide": {
+   "issue": 1732
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Different behaviour with Gemini models using OpenAI+OpenRouter",
+  "target": 1782,
+  "hide": {
+   "issue": 1735
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "strict` mode on function call is currently not supported for grok models",
+  "target": 1782,
+  "hide": {
+   "issue": 1846
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "SSE not working in latest MCP version",
+  "target": 1880,
+  "hide": {
+   "issue": 1878
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "429 (Requests rate limit exceeded) status code from Mistral API are not handled anywhere",
+  "target": 782,
+  "hide": {
+   "issue": 1885
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Deepseek Reasoner - Structured Output?",
+  "target": 582,
+  "hide": {
+   "issue": 1886
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Allow dynamic header creation for MCP Servers - this can be useful for authorization headers",
+  "target": 2331,
+  "hide": {
+   "issue": 1891
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[REOPEN] Original Issue #1860: Error in streaming output from connecting to the MCP server",
+  "target": 1860,
+  "hide": {
+   "issue": 1895
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Do you have plans to support Streamable HTTP transmission functionality? When is it expected to be officially released?",
+  "target": 1632,
+  "hide": {
+   "issue": 1952
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Extract All Tool Calls with Nested Agents",
+  "target": 1978,
+  "hide": {
+   "issue": 1969
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Make hardcoded tool retry/error messages configurable",
+  "target": 3566,
+  "hide": {
+   "issue": 2009
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "More straightforward agent delegation",
+  "target": 1978,
+  "hide": {
+   "issue": 2020
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "OpenAI response timestamp contradicts chronological order of message history",
+  "target": 1996,
+  "hide": {
+   "issue": 2071
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support Anthropic Vertex",
+  "target": 960,
+  "hide": {
+   "issue": 2092
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Best Practice for Streaming Output from Nested Agents",
+  "target": 1978,
+  "hide": {
+   "issue": 2107
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support for Long running / Background Agents",
+  "target": 3268,
+  "hide": {
+   "issue": 2111
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Feature Request: Realtime/Live API integration",
+  "target": 1447,
+  "hide": {
+   "issue": 2113
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Improving Tools: Asking for Permissions",
+  "target": 1995,
+  "hide": {
+   "issue": 2246
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Streaming and Tools does not work on Ollama",
+  "target": 2244,
+  "hide": {
+   "issue": 2284
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Qwen/Qwen3-Coder-480B-A35B-Instruct 1 validation error for list[function-wrap[__log_extra_fields__()]",
+  "target": 2033,
+  "hide": {
+   "issue": 2289
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support serializable object as input to agent run",
+  "target": 1978,
+  "hide": {
+   "issue": 2329
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Evals with message history",
+  "target": 1856,
+  "hide": {
+   "issue": 2336
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Method to serialise an `EvaluationReport` object",
+  "target": 1953,
+  "hide": {
+   "issue": 2384
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Can you make it easier to add the OpenAI built in code interpreter for the OpenAI Responses API?",
+  "target": 840,
+  "hide": {
+   "issue": 2392
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Would you guys be open to add caching with joblib memory?",
+  "target": 2452,
+  "hide": {
+   "issue": 2417
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Error setting gpt 5 'minimal' thinkingeffort",
+  "target": 2476,
+  "hide": {
+   "issue": 2494
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Working MCP client tools with openai azure hosted models",
+  "target": 2476,
+  "hide": {
+   "issue": 2517
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Anthropic requires the thinking block alongside the tool return",
+  "target": 2453,
+  "hide": {
+   "issue": 2621
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Gracefully handling tool failures",
+  "target": 2586,
+  "hide": {
+   "issue": 2671
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Control Usage Limit Exceeded Behaviour",
+  "target": 2605,
+  "hide": {
+   "issue": 2681
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Z.ai models",
+  "target": 4275,
+  "hide": {
+   "issue": 2723
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "AG UI with output_type",
+  "target": 2793,
+  "hide": {
+   "issue": 2841
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Force the agent to call my retrieve tool [RAG Context]",
+  "target": 2799,
+  "hide": {
+   "issue": 2864
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Are Agents Able to Access Resources?",
+  "target": 1783,
+  "hide": {
+   "issue": 2893
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add support for tool annotations & filtering",
+  "target": 2875,
+  "hide": {
+   "issue": 2895
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "tool and agent names in span titles",
+  "target": 2964,
+  "hide": {
+   "issue": 2925
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Better `BuiltinToolReturnPart` content for web search",
+  "target": 2890,
+  "hide": {
+   "issue": 3044
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "How does the framework determine tool calls based on model response format?",
+  "target": 2033,
+  "hide": {
+   "issue": 3204
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Temporal documentation missing package installation instruction",
+  "target": 4717,
+  "hide": {
+   "issue": 3256
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add ability to stream custom events from a tool",
+  "target": 2382,
+  "hide": {
+   "issue": 3334
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Dynamic first content containing think tag cannot be parsed as ThinkingPart",
+  "target": 3007,
+  "hide": {
+   "issue": 3374
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Filter out empty thinking parts from Gemini 3 when sending data to the frontend on integrations like Vercel",
+  "target": 3481,
+  "hide": {
+   "issue": 3479
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "The ag-ui adapter does not use a system prompt.",
+  "target": 3315,
+  "hide": {
+   "issue": 3507
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Tool deferrals with Agent delegation",
+  "target": 3274,
+  "hide": {
+   "issue": 3527
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Allow customization of all prompts sent by the framework to the model",
+  "target": 2009,
+  "hide": {
+   "issue": 3566
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "pydantic evals repeat cases",
+  "target": 2053,
+  "hide": {
+   "issue": 3578
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Add SQLAlchemy and database migration support",
+  "target": 3643,
+  "hide": {
+   "issue": 3642
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Sync history processors break Temporal workflow compatibility due to run_in_executor thread pool usage",
+  "target": 3607,
+  "hide": {
+   "issue": 3701
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support for parameter n (sampling)",
+  "target": 2003,
+  "hide": {
+   "issue": 3740
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Persistence for Graph V2",
+  "target": 3697,
+  "hide": {
+   "issue": 3790
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Skills: Progressive Disclosure for Agent Capabilities",
+  "target": 3781,
+  "hide": {
+   "issue": 3838
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Model Response Healing",
+  "target": 3008,
+  "hide": {
+   "issue": 3840
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Bedrock token usage is incorrect when using CachePoint",
+  "target": 3850,
+  "hide": {
+   "issue": 3879
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support FileID type for anthropic",
+  "target": 2574,
+  "hide": {
+   "issue": 3943
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Wrap workflow/graph as Agent to use adapters?",
+  "target": 3884,
+  "hide": {
+   "issue": 4030
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "System prompt is not taken into account when using `agent.to_web()`",
+  "target": 3315,
+  "hide": {
+   "issue": 4039
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "How can I add lifecycle hooks or callbacks to a PydanticAI Agent?",
+  "target": 2885,
+  "hide": {
+   "issue": 4082
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Be able to invert InstrumentationSettings.messages_to_otel_messages",
+  "target": 2472,
+  "hide": {
+   "issue": 4182
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support Bedrock native JSON output + strict tool calls",
+  "target": 4509,
+  "hide": {
+   "issue": 4209
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Bedrock native structure output support",
+  "target": 4209,
+  "hide": {
+   "issue": 4509
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Control flow exceptions like CallDeferred shouldn't be recorded as errors/exceptions in the running tool span",
+  "target": 4572,
+  "hide": {
+   "issue": 4530
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "ApprovalRequired exception recorded in OpenTelemetry traces as error",
+  "target": 4530,
+  "hide": {
+   "issue": 4572
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Pydantic-AI's Google Model Adapter Sends Unsupported idField to Gemini API, Causing 400 Errors",
+  "target": 5081,
+  "hide": {
+   "issue": 4645
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "pydantic-ai 1.68.0 sends GPT-5.4 + reasoning_effort + output tools to /v1/chat/completions instead of /v1/responses",
+  "target": 4041,
+  "hide": {
+   "issue": 4667
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "CLI orchestration for PydanticAI multi-agent pipelines — patterns and tooling?",
+  "target": 4710,
+  "hide": {
+   "issue": 4711
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Invalid response from openrouter for qwen3.5",
+  "target": 3994,
+  "hide": {
+   "issue": 4916
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "\"Agent cassettes\"",
+  "target": 1046,
+  "hide": {
+   "issue": 4972
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Tool output it overwritten by LLM's response",
+  "target": 127,
+  "hide": {
+   "issue": 5054
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[responses] pydantic AI resubmits user prompt on function call response",
+  "target": 5113,
+  "hide": {
+   "issue": 5110
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Tools can't fail without failing the turn",
+  "target": 2586,
+  "hide": {
+   "issue": 5145
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[roundtrip-sweep] `_clean_message_history`: `ModelRequest.metadata` is dropped on consecutive-request merge",
+  "target": 5731,
+  "hide": {
+   "issue": 5629
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[provider-parity-explore] Provider parity: Usage accounting — Mistral silently drops all usage details beyond token counts",
+  "target": 4818,
+  "hide": {
+   "issue": 5669
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "feat: provider capability introspection API — let users check response_format / tool_calling support at runtime",
+  "target": 5993,
+  "hide": {
+   "issue": 5980
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Streaming from Tools [returning `Iterator`/`AsyncIterator` from tool calls]",
+  "target": 1175,
+  "hide": {
+   "issue": 5998
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[roundtrip-sweep] Vercel AI adapter: FilePart.content.vendor_metadata silently dropped on round-trip (model response side)",
+  "target": 6087,
+  "hide": {
+   "issue": 6102
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Streamed xAI responses always report finish_reason=\"stop\" (map keyed on the wrong strings)",
+  "target": 6812,
+  "hide": {
+   "issue": 6840
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "SSRF redirects: sensitive headers survive an `https` -> `http` downgrade to the same host",
+  "target": 6810,
+  "hide": {
+   "issue": 6879
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "customize_request_parameters transforms both output_tools and output_object, then discards one — and never memoizes the walk",
+  "target": 6939,
+  "hide": {
+   "issue": 6920
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Enum tool parameters render as undefined type names in FunctionSignature ($ref'd enums lose their values)",
+  "target": 7576,
+  "hide": {
+   "issue": 7577
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Manually injected search_tools tool",
+  "target": 6997,
+  "hide": {
+   "issue": 7761
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "stream_text() sometimes surfaces internal thinking/monologue as the final output",
+  "target": 3007,
+  "hide": {
+   "issue": 7865
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Broken links found in docs",
+  "target": 8167,
+  "hide": {
+   "issue": 7924
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "Support `ctx.emit()` from tools and event stream handlers under Temporal",
+  "target": 7971,
+  "hide": {
+   "issue": 8032
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[aw] CI Review produced no safe outputs",
+  "target": 8400,
+  "hide": {
+   "issue": 8626
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "duplicate",
+  "text": "[aw] CI Review hit engine rate limit (HTTP 429)",
+  "target": 8511,
+  "hide": {
+   "issue": 8630
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Is there a way to define Pydantic AI models or agents in a serializable format?",
+  "target": 1303,
+  "hide": {
+   "issue": 1303,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "How does the framework determine tool calls based on model response format?",
+  "target": 3204,
+  "hide": {
+   "issue": 3204,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Lowest-versions CI broken: aiohttp 3.14.0 removed `aiohttp.streams.AsyncStreamReaderMixin`, breaking `vcrpy`",
+  "target": 5751,
+  "hide": {
+   "issue": 5751,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Round-Trip Sweep failed",
+  "target": 5858,
+  "hide": {
+   "issue": 5858,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`wait_retry_after()` ignores valid asctime-form `Retry-After` dates",
+  "target": 7677,
+  "hide": {
+   "issue": 7677,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add option to filter reasoning content from message history",
+  "target": 1157,
+  "hide": {
+   "issue": 1157,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Pydantic Evals report can't be displayed if logfire is not installed",
+  "target": 2209,
+  "hide": {
+   "issue": 2209,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`output_reasoning_tokens` is an undeclared usage attribute, so it can't round-trip or compare cleanly",
+  "target": 7094,
+  "hide": {
+   "issue": 7094,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenAI strict mode: `prefixItems` (tuple fields) is marked strict-compatible but is rejected; `minLength`/`maxLength` are marked incompatible but are accepted",
+  "target": 7315,
+  "hide": {
+   "issue": 7315,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Prompt-cache prefix stability as a default-on, monitored framework guarantee",
+  "target": 6528,
+  "hide": {
+   "issue": 6528,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Feature request: safe tool-payload truncation helper preserving pairing invariants",
+  "target": 4379,
+  "hide": {
+   "issue": 4379,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Expose effective `reasoning.context` and `reasoning.mode` on `ModelResponse.provider_details` (OpenAI Responses)",
+  "target": 6717,
+  "hide": {
+   "issue": 6717,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "repr() of message parts raises ValueError when a field holds a numpy array",
+  "target": 6415,
+  "hide": {
+   "issue": 6415,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`MCPSamplingModel` repeats instructions every turn and drops `PromptedOutput` instructions",
+  "target": 8768,
+  "hide": {
+   "issue": 8768,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "AgentStreamEvent: ThinkingPartDelta with callable provider_details cannot be serialized (OpenAI gpt-oss raw CoT streaming)",
+  "target": 5612,
+  "hide": {
+   "issue": 5612,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "UI adapters swallow `RunCancelled`: no way to observe a cancelled run's state through AG-UI/Vercel streams",
+  "target": 6889,
+  "hide": {
+   "issue": 6889,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Vercel AI: Allow `DataUIPart` in user message",
+  "target": 4704,
+  "hide": {
+   "issue": 4704,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenAI Built In Code Interpreter not returning image files from OpenAI Response",
+  "target": 2391,
+  "hide": {
+   "issue": 2391,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Toolsets, OpenAPI and Model Context Protocol",
+  "target": 110,
+  "hide": {
+   "issue": 110,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OTel GenAI messages: tool responses are emitted under `role: \"user\"`, and tool-availability deltas under `role: \"system\"`",
+  "target": 7235,
+  "hide": {
+   "issue": 7235,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Feature Request: provide an easy way to include your (versioned) API docs in LLM contexts",
+  "target": 944,
+  "hide": {
+   "issue": 944,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Unable to use Local LLM via Transformers Library with PydanticAI",
+  "target": 1215,
+  "hide": {
+   "issue": 1215,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Should httpx.ReadTimeout be captured by pydantic-ai?",
+  "target": 2899,
+  "hide": {
+   "issue": 2899,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add headers and skip SSL verification to OpenAIModel API",
+  "target": 1107,
+  "hide": {
+   "issue": 1107,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[Feature Request] Add agentpay-mcp tool for typed payment schemas in agent workflows",
+  "target": 4890,
+  "hide": {
+   "issue": 4890,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Example for REST API with Fast API?",
+  "target": 170,
+  "hide": {
+   "issue": 170,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[stale-finder] Stale issues report — 2 issues likely resolved or obsolete",
+  "target": 8168,
+  "hide": {
+   "issue": 8168,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Round-Trip Sweep failed",
+  "target": 5603,
+  "hide": {
+   "issue": 5603,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] CI Review produced no safe outputs",
+  "target": 8078,
+  "hide": {
+   "issue": 8078,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Gemini image model does not accept history with tool calls or thinking",
+  "target": 3149,
+  "hide": {
+   "issue": 3149,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenAI response timestamp contradicts chronological order of message history",
+  "target": 2071,
+  "hide": {
+   "issue": 2071,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Builtin tools + deferred tools: DeferredToolRequests returned before builtin tool result arrives",
+  "target": 4054,
+  "hide": {
+   "issue": 4054,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Parallel tool call containing both ToolReturn and deferred tool does not work",
+  "target": 2500,
+  "hide": {
+   "issue": 2500,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "The ag-ui adapter does not use a system prompt.",
+  "target": 3507,
+  "hide": {
+   "issue": 3507,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "AnyIO worker exception due to sync history processor function in TemporalAgent",
+  "target": 3607,
+  "hide": {
+   "issue": 3607,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Missing Docs: `run_stream()` with no `result` interaction does not call `output` tools",
+  "target": 3816,
+  "hide": {
+   "issue": 3816,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`HuggingFaceModel` silently drops file content in multimodal tool returns",
+  "target": 5879,
+  "hide": {
+   "issue": 5879,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "A `CachePoint` behind a replayed MCP tool result raises `TypeError` instead of building the request",
+  "target": 7546,
+  "hide": {
+   "issue": 7546,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Including common tools / toolsets within PydanticAI",
+  "target": 909,
+  "hide": {
+   "issue": 909,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Union output retries report `data` validation errors at the wrong location and drop their `input`",
+  "target": 8662,
+  "hide": {
+   "issue": 8662,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Anthropic prompt caching on Bedrock",
+  "target": 3418,
+  "hide": {
+   "issue": 3418,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Implement `RecordModel`",
+  "target": 1046,
+  "hide": {
+   "issue": 1046,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Tool return serialization ignores aliases advertised by return_schema",
+  "target": 6542,
+  "hide": {
+   "issue": 6542,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`NativeOutput` with `end_strategy=\"early\"` still executes tool calls",
+  "target": 6277,
+  "hide": {
+   "issue": 6277,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add `prepare` function for `ToolOutput`",
+  "target": 2942,
+  "hide": {
+   "issue": 2942,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenRouter - How to specify app title and referer",
+  "target": 2902,
+  "hide": {
+   "issue": 2902,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Pydantic-AI listed on Joy Trust Network",
+  "target": 5051,
+  "hide": {
+   "issue": 5051,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Regression in MCP use with Gemini in v0.1.0",
+  "target": 1494,
+  "hide": {
+   "issue": 1494,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add multimodal `ToolReturn.content` durability coverage for DBOS and Prefect",
+  "target": 7648,
+  "hide": {
+   "issue": 7648,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`BedrockConverseModel` sends `thinking='xhigh'` as `effort='max'` on models where Bedrock accepts `xhigh`",
+  "target": 8391,
+  "hide": {
+   "issue": 8391,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`VercelAIAdapter.load_messages` merges two user `UIMessage`s into one `ModelRequest`",
+  "target": 8575,
+  "hide": {
+   "issue": 8575,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Durable execution: the runtime-toolset rejection error never says which toolset was rejected",
+  "target": 6783,
+  "hide": {
+   "issue": 6783,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`FallbackModel` does not support Native structured outputs for models supporting it",
+  "target": 3104,
+  "hide": {
+   "issue": 3104,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Problems with Tuples",
+  "target": 372,
+  "hide": {
+   "issue": 372,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] CI Review produced no safe outputs",
+  "target": 8510,
+  "hide": {
+   "issue": 8510,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`__init__` override of Providers is too strict",
+  "target": 3730,
+  "hide": {
+   "issue": 3730,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Support parallel_tool_calls configuration for gemini models",
+  "target": 3668,
+  "hide": {
+   "issue": 3668,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Make XSearch model-agnostic via subagent fallback",
+  "target": 5119,
+  "hide": {
+   "issue": 5119,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Does UserPromptPart that has list of contents just appends the list as a single string without any whitespaces?",
+  "target": 4394,
+  "hide": {
+   "issue": 4394,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Openapi routes issues caused by convert_request in routes.py",
+  "target": 1053,
+  "hide": {
+   "issue": 1053,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "How can I add lifecycle hooks or callbacks to a PydanticAI Agent?",
+  "target": 4082,
+  "hide": {
+   "issue": 4082,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Temporal cache-eviction of a workflow running an agent livelocks the event loop (anyio re-arms cancellation delivery for already-`_must_cancel` tasks)",
+  "target": 6883,
+  "hide": {
+   "issue": 6883,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Mistral streamed structured output silently returns a stale integer prefix when the completed number is not an integer",
+  "target": 6504,
+  "hide": {
+   "issue": 6504,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`MCPToolset(url, http_client=...)` crashes: factory missing `follow_redirects` kwarg passed by `FastMCP`",
+  "target": 5688,
+  "hide": {
+   "issue": 5688,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "MCP improvement: `mcp-run-python` should be be able to call back to the client",
+  "target": 1271,
+  "hide": {
+   "issue": 1271,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Not wrapping errors that occur after request setup in streaming (GoogleModel)",
+  "target": 4434,
+  "hide": {
+   "issue": 4434,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Streaming Resilience Sweep failed",
+  "target": 5783,
+  "hide": {
+   "issue": 5783,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[Docs/Behavior] Clarify Model Armor support for streaming (`streamGenerateContent`) vs non-streaming requests",
+  "target": 7051,
+  "hide": {
+   "issue": 7051,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[docs-drift] Document Bedrock native JSON output and strict tool call support",
+  "target": 5613,
+  "hide": {
+   "issue": 5613,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add config option to select json path for access token in OAuth response for Slack MCP",
+  "target": 4070,
+  "hide": {
+   "issue": 4070,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Stale Issues Finder failed",
+  "target": 6007,
+  "hide": {
+   "issue": 6007,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`additionalProperties` is not supported by Gemini",
+  "target": 2588,
+  "hide": {
+   "issue": 2588,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Builtin Tools Human in the loop approval",
+  "target": 4376,
+  "hide": {
+   "issue": 4376,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "TemporalAgent silently runs non-durably when `run_stream`/`run_stream_events`/`iter` are called outside a workflow",
+  "target": 6620,
+  "hide": {
+   "issue": 6620,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "v2: Bump the default instrumentation version, maybe remove older versions",
+  "target": 5368,
+  "hide": {
+   "issue": 5368,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`TemporalMCPServer.get_tools` tool-definition cache breaks workflow replay determinism (TMPRL1100)",
+  "target": 5875,
+  "hide": {
+   "issue": 5875,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[roundtrip-sweep] AG-UI adapter: cluster of part-level fields (id, provider_name, provider_details, dynamic_ref) silently dropped on dump→load rou\n[Content truncated due to length]",
+  "target": 5937,
+  "hide": {
+   "issue": 5937,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Assistant message missing after streaming the response",
+  "target": 375,
+  "hide": {
+   "issue": 375,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Bedrock Mantle parallel streaming cross-wires tool names and arguments with GPT5.x models",
+  "target": 6759,
+  "hide": {
+   "issue": 6759,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[TEST] This is a title",
+  "target": 2233,
+  "hide": {
+   "issue": 2233,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "CI is not testing evals without logfire",
+  "target": 1401,
+  "hide": {
+   "issue": 1401,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "agent does not load system_prompt (running on celery worker)",
+  "target": 682,
+  "hide": {
+   "issue": 682,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Wrap IPv6 literals in brackets in the `Host` header on default ports",
+  "target": 8413,
+  "hide": {
+   "issue": 8413,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[roundtrip-sweep] ModelRequestPart: NativeToolReturnPart (and typed NativeToolSearchReturnPart) missing from discriminated union\n[Content truncated due to length]",
+  "target": 5992,
+  "hide": {
+   "issue": 5992,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "BedrockModel refuses thinking + output tools, but Bedrock accepts it (Sonnet 4.6 / Sonnet 5)",
+  "target": 7960,
+  "hide": {
+   "issue": 7960,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Cache the agent graph instead of rebuilding it on every `Agent.run()`",
+  "target": 8592,
+  "hide": {
+   "issue": 8592,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add DeepInfra as a model provider",
+  "target": 7326,
+  "hide": {
+   "issue": 7326,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Bedrock fails on request with only instructions, no user prompt: \"A conversation must start with a user message.\"",
+  "target": 4495,
+  "hide": {
+   "issue": 4495,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Have Vercel emit event for deferred tool calls",
+  "target": 5219,
+  "hide": {
+   "issue": 5219,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "How to use streaming in sync ?",
+  "target": 1502,
+  "hide": {
+   "issue": 1502,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenAI Responses + multiple MCP servers: only the last `mcp_list_tools` emits a result",
+  "target": 5419,
+  "hide": {
+   "issue": 5419,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Streaming and Tools does not work on Ollama",
+  "target": 2284,
+  "hide": {
+   "issue": 2284,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Evals: API key not found using LLMJudge with AsyncAzureOpenAI client",
+  "target": 1345,
+  "hide": {
+   "issue": 1345,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Let an instruction function declare itself static, so writing a block in code does not force it out of the cacheable prefix",
+  "target": 7391,
+  "hide": {
+   "issue": 7391,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "DeepSeek profile keys thinking on a \"deepseek-v4-\" name prefix, so deepseek-flash is sent a forced tool choice and 400s",
+  "target": 8353,
+  "hide": {
+   "issue": 8353,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add retry-safe summary field to `judge_output()` results",
+  "target": 5045,
+  "hide": {
+   "issue": 5045,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`OpenAIChatModel` rejects Nebius responses because `metadata.weight_versions` is a list",
+  "target": 8009,
+  "hide": {
+   "issue": 8009,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Ollama rejects assistant messages with content=None during multi-tool chaining",
+  "target": 5206,
+  "hide": {
+   "issue": 5206,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Route Jev (TypeSafeModel) through OpenRouter's Decisions API",
+  "target": 8552,
+  "hide": {
+   "issue": 8552,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Bug: tool_call_id or _generate_tool_call_id swallows empty string from providers",
+  "target": 6390,
+  "hide": {
+   "issue": 6390,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "How to stream tool usage and final answers in MCP calls with pydantic-ai?",
+  "target": 2497,
+  "hide": {
+   "issue": 2497,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[Docs/Bug]: Docs claim length/content_filter raise and are caught by default FallbackModel",
+  "target": 6565,
+  "hide": {
+   "issue": 6565,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Allow passing usage_limits and model_settings in to_cli",
+  "target": 4118,
+  "hide": {
+   "issue": 4118,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Standard tool-level speculation-safety declarations (`side_effect_free`, `idempotent`, `stable_for`, resource keys)",
+  "target": 7955,
+  "hide": {
+   "issue": 7955,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[Bedrock] `ValidationException`: \"Thinking may not be enabled when `tool_choice` forces tool use\" with interleaved thinking on Sonnet 4.5",
+  "target": 3092,
+  "hide": {
+   "issue": 3092,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Support explicit prompt caching for OpenAI GPT-5.6",
+  "target": 6419,
+  "hide": {
+   "issue": 6419,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Explicit empty `Tool` descriptions fall back to the function docstring",
+  "target": 7670,
+  "hide": {
+   "issue": 7670,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add HVTracker badge to README?",
+  "target": 5738,
+  "hide": {
+   "issue": 5738,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Empty transcript corrections leave stale captions in `stream_transcripts(delta=True)`",
+  "target": 8319,
+  "hide": {
+   "issue": 8319,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Expose Gemini `tool_config.function_calling_config` in `GoogleModelSettings`",
+  "target": 5366,
+  "hide": {
+   "issue": 5366,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Agent using Gemini freezes, then raises 400 error when using MCPServerStreamableHTTP MCP server",
+  "target": 4556,
+  "hide": {
+   "issue": 4556,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Make hardcoded tool retry/error messages configurable",
+  "target": 2009,
+  "hide": {
+   "issue": 2009,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "otel span exceptions missing error messages",
+  "target": 2965,
+  "hide": {
+   "issue": 2965,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Tool not executed - a final result was already processed.",
+  "target": 2679,
+  "hide": {
+   "issue": 2679,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Support LiteLLM",
+  "target": 152,
+  "hide": {
+   "issue": 152,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Longer text returns may seem to be missing at the end.",
+  "target": 552,
+  "hide": {
+   "issue": 552,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Nesting capture_run_messages",
+  "target": 1568,
+  "hide": {
+   "issue": 1568,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "An empty `CompactionPart` summary is treated as a wire boundary, dropping the history it cannot replace",
+  "target": 7773,
+  "hide": {
+   "issue": 7773,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Agent `max_concurrency` hangs workflows under `TemporalDurability`",
+  "target": 7002,
+  "hide": {
+   "issue": 7002,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "CombinedToolset and CombinedCapability use asyncio.gather, leaking background tasks on failure",
+  "target": 5073,
+  "hide": {
+   "issue": 5073,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Streaming Resilience Sweep failed",
+  "target": 5985,
+  "hide": {
+   "issue": 5985,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[roundtrip-sweep] AG-UI adapter: ThinkingPart.id is lost on round-trip when original id is None",
+  "target": 5599,
+  "hide": {
+   "issue": 5599,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Inconsistent behavior between `agent.run_sync` and `agent.run_stream` when no output tool calls are valid",
+  "target": 3638,
+  "hide": {
+   "issue": 3638,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "call_tool returns un-recoverable McpError; should surface a ModelRetry so the agent can self-correct",
+  "target": 1989,
+  "hide": {
+   "issue": 1989,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Anthropic `stop_reason` `pause_turn` is not handled correctly, resulting in errors with long-running built-in tools",
+  "target": 2600,
+  "hide": {
+   "issue": 2600,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "TemporalDurability without mcp extra causes import errors",
+  "target": 8249,
+  "hide": {
+   "issue": 8249,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "v2: Output functions should be called once on final output during `run_stream()`, not on every partial",
+  "target": 5517,
+  "hide": {
+   "issue": 5517,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Tool call retries lose self-correction ability after #4947 strips `input` from validation errors",
+  "target": 5178,
+  "hide": {
+   "issue": 5178,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`VercelAIAdapter.load_messages` does not preserve loaded deferred capability state",
+  "target": 5846,
+  "hide": {
+   "issue": 5846,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] Pydantic AI Stale Issues Finder failed",
+  "target": 5676,
+  "hide": {
+   "issue": 5676,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Support for OpenAI's `tool_search` and `defer_loading` in Responses API.",
+  "target": 4566,
+  "hide": {
+   "issue": 4566,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "UI stream leaves in-flight text part dangling on mid-stream error (no `text-end` before `ErrorChunk`) — text-part analogue of #4962",
+  "target": 6546,
+  "hide": {
+   "issue": 6546,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Anthropic: a `defer_loading` reveal in a parallel tool batch splits the sibling's `tool_result` from its `tool_use`",
+  "target": 7878,
+  "hide": {
+   "issue": 7878,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Chat-app not working with importError, most likely due to recent API changes",
+  "target": 557,
+  "hide": {
+   "issue": 557,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Input and output validation of tool calls",
+  "target": 2928,
+  "hide": {
+   "issue": 2928,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Add support for algorithmic optimizers (e.g., GEPA, TextGrad, MIPRO)",
+  "target": 3179,
+  "hide": {
+   "issue": 3179,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Tool output it overwritten by LLM's response",
+  "target": 5054,
+  "hide": {
+   "issue": 5054,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Ollama Model",
+  "target": 1122,
+  "hide": {
+   "issue": 1122,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Free OWASP security scanner for AI agents: mcps-audit",
+  "target": 4666,
+  "hide": {
+   "issue": 4666,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`_join_threads` helper of `pydantic_evals/pydantic_evals/_online.py` has no test coverage.",
+  "target": 8216,
+  "hide": {
+   "issue": 8216,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`deps` arrives as a raw dict in the non-streaming model-request activity  `__annotations__` patched after `@activity.defn` already captured type hints",
+  "target": 5893,
+  "hide": {
+   "issue": 5893,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Enforce usage limits by exact tool call count (not just request/turn count)",
+  "target": 2593,
+  "hide": {
+   "issue": 2593,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "\"Agent cassettes\"",
+  "target": 4972,
+  "hide": {
+   "issue": 4972,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Anthropic models failing by injecting phantom empty message",
+  "target": 1854,
+  "hide": {
+   "issue": 1854,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "OpenAIJsonSchemaTransformer missing common strict-incompatible keys(pattern, minimum, maximum, minItems, maxItems)",
+  "target": 4438,
+  "hide": {
+   "issue": 4438,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "[aw] CI Review hit engine rate limit (HTTP 429)",
+  "target": 8716,
+  "hide": {
+   "issue": 8716,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "AWS Bedrock Support",
+  "target": 817,
+  "hide": {
+   "issue": 817,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`abandon_threads_on_cancel()`'s `ContextVar` leaks abandon-on-cancel semantics into nested sync tool calls that never set a timeout",
+  "target": 7692,
+  "hide": {
+   "issue": 7692,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "`McpError` when `run-mcp-python` code sandbox handles concurrent requests",
+  "target": 2655,
+  "hide": {
+   "issue": 2655,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "title",
+  "text": "Streaming with tools using VercelAIEventStream with Anthropic extended thinking models raises error",
+  "target": 3748,
+  "hide": {
+   "issue": 3748,
+   "kind": "body"
+  }
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "typed response comes all at once instead of incrementally when streaming",
+  "target": 1237,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Gemini stream_structured returns full output not chunks",
+  "target": 1237,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "have to import from private module to request JSON schema output directly",
+  "target": 2990,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "OutputObjectDefinition private import pydantic_ai._output",
+  "target": 2990,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "save each model request and response to plain files for local debugging",
+  "target": 4972,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "agent cassettes VCR-like request response files",
+  "target": 4972,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "tool hook also fires on final answer and breaks the result type",
+  "target": 5111,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "after_tool_execute hook output tool result.output ToolReturn",
+  "target": 5111,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "tools re-run with side effects on workflow retry instead of cached result",
+  "target": 6907,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Prefect call_tool_task cache key ToolsetTool cloudpickle retry",
+  "target": 6907,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "docs pages show raw diagram source code instead of pictures",
+  "target": 1124,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "mermaid diagrams not rendering multi-agent-applications docs",
+  "target": 1124,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "synchronous run call crashes inside a notebook but works as a script",
+  "target": 2077,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "run_sync RuntimeError This event loop is already running",
+  "target": 2077,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "per-run tools from a function vanish when overriding built-in tools",
+  "target": 6331,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "override(native_tools=...) DynamicCapability for_run native tools dropped",
+  "target": 6331,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "stream ends early and cut-off reply returned as if finished",
+  "target": 6610,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "missing finish_reason stream ModelAPIError truncated",
+  "target": 6610,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "log of automated bot runs flagged for security concerns",
+  "target": 5722,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "threat detection continue-on-error safe-outputs parse_error",
+  "target": 5722,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "smaller model listed in autocomplete gives not found error from the API",
+  "target": 3969,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "gpt-5.1-mini ModelHTTPError 404 model_not_found",
+  "target": 3969,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "saving conversation history fails when a tool returns binary data",
+  "target": 8367,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "ToolReturnPart bytes PydanticSerializationError invalid utf-8 ser_json_bytes",
+  "target": 8367,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "missing documentation for recently merged features and edge cases",
+  "target": 5909,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "docs backfill UploadedFile EvaluatorFailure forced tool choice",
+  "target": 5909,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "require human sign-off for a tool only for certain argument values",
+  "target": 5617,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "requires_approval callable ApprovalRequired metadata",
+  "target": 5617,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "show partial typed result in the frontend while still generating",
+  "target": 7756,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "VercelAIAdapter partial structured output on_complete",
+  "target": 7756,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "vectors not recorded in telemetry spans even though content logging is on",
+  "target": 8293,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Embedder include_content=True embeddings span attribute missing",
+  "target": 8293,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "CI bot workflows fail because API key suddenly rejected as forbidden",
+  "target": 8205,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "CLAUDE_CODE_API_KEY gateway HTTP 403 structured_output",
+  "target": 8205,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "newly released small and tiny versions of the latest model not supported",
+  "target": 4785,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "GPT-5.4 mini nano KnownModels support",
+  "target": 4785,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "parameter flagged missing description though it's set in the type hint",
+  "target": 7996,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "require_parameter_descriptions Annotated Field Missing parameter descriptions",
+  "target": 7996,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "tool-returned images show as encoded text in tracing UI, not preview",
+  "target": 8247,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "BinaryImage tool return Logfire image preview otel_message_parts",
+  "target": 8247,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "provider hints on generated files lost when frontend sends chat history back",
+  "target": 6102,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Vercel AI adapter FilePart vendor_metadata dropped round-trip",
+  "target": 6102,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "rebuild conversation history from exported trace messages to replay in evals",
+  "target": 4182,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "invert messages_to_otel_messages back to message history",
+  "target": 4182,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "agent stops right after a tool call and returns nothing",
+  "target": 2256,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "empty TextPart before ToolCallPart ends run_stream ollama",
+  "target": 2256,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "reusable bundles of tools and connecting to external API schemas",
+  "target": 110,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "toolsets OpenAPI Model Context Protocol MCP",
+  "target": 110,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "model capabilities detected wrong when model name has a provider prefix",
+  "target": 6517,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "openai_model_profile vendor-prefixed openai.gpt-5.6-sol Bedrock Mantle",
+  "target": 6517,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "switch to the vendor's official async SDK instead of custom client",
+  "target": 916,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "google-genai async support replace Gemini integration",
+  "target": 916,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "use provider's built-in JSON mode instead of forced function call",
+  "target": 1182,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "native structured output tool_choice required final_result",
+  "target": 1182,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "reasoning models crash the frontend event stream with empty thinking chunks",
+  "target": 2687,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "ThinkingTextMessageContentEvent Delta must not be an empty string",
+  "target": 2687,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "automated PR review bot finished but posted nothing",
+  "target": 8748,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "CI Review No Safe Outputs Generated",
+  "target": 8748,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "sending a picture link to the model fails with bad request error",
+  "target": 1082,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "ImageUrl gemini 400 Request contains an invalid argument",
+  "target": 1082,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "bots to automatically review pull requests and sort incoming issues",
+  "target": 4301,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "review bot triage bot AGENTS.md auto-review label",
+  "target": 4301,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "hosted endpoint rejects the setting for simultaneous tool calls",
+  "target": 169,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Unrecognized request argument supplied: parallel_tool_calls Azure",
+  "target": 169,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "type checker loses generic result type after upgrading, returns Any",
+  "target": 8717,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "mypy OutputSpec[T] AgentRunResult[Any] 2.49.0",
+  "target": 8717,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "get notified in code when cache hit rate suddenly drops",
+  "target": 7250,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "on_cache_bust hook warn_on_cache_busts",
+  "target": 7250,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "remember what the user said in earlier sessions without saving history myself",
+  "target": 4773,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "AbstractMemoryStore cross-run memory session_id",
+  "target": 4773,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "reloading saved history fails when a tool lookup result has an error",
+  "target": 7211,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "ModelMessagesTypeAdapter tool-search return ValidationError round-trip",
+  "target": 7211,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "merged fix for streaming crash seems missing from main branch",
+  "target": 2944,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "assert chunk.candidates is not None google streaming",
+  "target": 2944,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "passing endpoint and key as arguments ignored, only works with env vars",
+  "target": 1982,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "AzureProvider Must provide one of the azure_endpoint argument",
+  "target": 1982,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "prevent invalid tool call sequences across different model vendors up front",
+  "target": 3723,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "DeterministicToolContract tool-calling contract",
+  "target": 3723,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "calling several tools at once fails, some calls missing responses",
+  "target": 2360,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "ToolReturn content tool_call_ids did not have response messages",
+  "target": 2360,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "can one agent instance handle multiple requests at the same time safely",
+  "target": 3241,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Agent.run concurrently same agent safe",
+  "target": 3241,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "serve my agent as an HTTP endpoint compatible with chat completion clients",
+  "target": 3321,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "OpenResponses API /v1/chat/completions /v1/responses",
+  "target": 3321,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "custom typed model refuses the schema-based output mode",
+  "target": 8610,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "TypeSafeModel NativeOutput Native structured output is not supported",
+  "target": 8610,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "cloud model client blocks the event loop when loading credentials, causing timeouts",
+  "target": 3531,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Vertex AI blocking credentials durable agent",
+  "target": 3531,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "workflow that finds old inactive tickets crashed with pricing error",
+  "target": 7932,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "MiniMax-M3 unknown_model_ai_credits defaultAiCreditsPricing",
+  "target": 7932,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "tool that writes and publishes research papers from an agent",
+  "target": 5133,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "PaperClaw generate_scientific_paper integration",
+  "target": 5133,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "automated workflow for catching breakages died midway after connection dropped",
+  "target": 6805,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Regression Detector claude engine terminated unexpectedly",
+  "target": 6805,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "switching providers mid-conversation breaks because earlier tool calls have no id",
+  "target": 895,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "AssertionError: OpenAI requires tool_call_id to be set",
+  "target": 895,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "blank tool description still sends the function's doc comment to model",
+  "target": 7670,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "Tool description empty string falls back to docstring",
+  "target": 7670,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "paraphrase",
+  "text": "auto-tune agent prompts to improve performance",
+  "target": 3179,
+  "hide": null
+ },
+ {
+  "repo": "pydantic/pydantic-ai",
+  "kind": "specific",
+  "text": "GEPA TextGrad MIPRO optimizers",
+  "target": 3179,
+  "hide": null
+ }
+]

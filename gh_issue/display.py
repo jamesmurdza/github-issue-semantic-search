@@ -45,8 +45,7 @@ def format_hits(hits: list[SearchHit]) -> str:
             "\n".join(
                 [
                     f"{position}. {hit['repo']}#{number} ({hit['state']}) {hit['title']}",
-                    f"   {hit['kind']} by {hit['author']} on {hit['created_at'][:10]},"
-                    f" score {hit['score']:.2f}",
+                    f"   {hit['kind']} by {hit['author']} on {hit['created_at'][:10]}",
                     f"   {_snippet(text)}",
                     f"   https://github.com/{hit['repo']}/issues/{number}",
                 ]
