@@ -36,9 +36,9 @@ import cyclopts
 import httpx
 from qdrant_client import QdrantClient, models
 
-from gh_issue import config
+from gh_issue import env
 from gh_issue.index.store import COLLECTION
-from gh_issue.settings import qdrant_url
+from gh_issue.interface.cli import config
 
 REPOS = ["inngest/inngest", "pydantic/pydantic-ai"]
 HERE = Path(__file__).parent
@@ -80,7 +80,7 @@ app = cyclopts.App(help=__doc__)
 
 def indexed_chunks(repo: str, fields: list[str]) -> list[dict[str, Any]]:
     """The payload `fields` of every chunk of `repo` in the index."""
-    client = QdrantClient(url=qdrant_url(), timeout=60)
+    client = QdrantClient(url=env.qdrant_url(), timeout=60)
     where = models.Filter(
         must=[models.FieldCondition(key="repo", match=models.MatchValue(value=repo))]
     )

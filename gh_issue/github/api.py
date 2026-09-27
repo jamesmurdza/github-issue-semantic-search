@@ -4,7 +4,6 @@ Everything here is called from inside an Inngest step, so each function is one
 network round trip with no retry logic of its own — Inngest owns the retries.
 """
 
-import os
 import re
 from collections.abc import Mapping
 from typing import Any, TypedDict
@@ -12,6 +11,7 @@ from urllib.parse import parse_qs, urlparse
 
 import httpx
 
+from gh_issue.env import github_token
 from gh_issue.github.types import Comment, Issue
 
 API = "https://api.github.com"
@@ -61,7 +61,7 @@ MISSING_TOKEN = "github.token is not set. Set it with: gh-issue config set githu
 
 
 def _client() -> httpx.Client:
-    token = os.environ.get("GITHUB_TOKEN")
+    token = github_token()
     if not token:
         raise RuntimeError(MISSING_TOKEN)
     return httpx.Client(

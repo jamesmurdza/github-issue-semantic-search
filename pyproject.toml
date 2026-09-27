@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-gh-issue = "gh_issue.cli:main"
+gh-issue = "gh_issue.interface.cli.app:main"
 
 [build-system]
 requires = ["hatchling"]

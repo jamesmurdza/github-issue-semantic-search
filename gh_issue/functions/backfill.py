@@ -17,11 +17,12 @@ from typing import NotRequired, TypedDict, cast
 
 import inngest
 
-from gh_issue.clock import now
 from gh_issue.functions.client import client
+from gh_issue.functions.events import EVENT_BACKFILL_PAGE, EVENT_ISSUE_CHANGED
 from gh_issue.github import api
-from gh_issue.index.backfills import BackfillProgress
-from gh_issue.settings import EVENT_BACKFILL_PAGE, EVENT_ISSUE_CHANGED, backfills
+from gh_issue.index.records.backfills import BackfillProgress
+from gh_issue.index.storage import backfills
+from gh_issue.utils import now
 
 
 class BackfillPage(TypedDict):

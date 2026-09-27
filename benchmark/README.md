@@ -139,7 +139,7 @@ Three reasons, the first one fixed.
    "Represent this sentence for searching relevant passages: " in front of
    short queries, and nothing in front of stored text. fastembed does not add
    it, so every query was embedded as if it were a stored comment. Adding it
-   (`gh_issue/embed.py`) took dense from 0.513 to 0.569.
+   (`gh_issue/index/embed.py`) took dense from 0.513 to 0.569.
 2. **The model reads only the first 512 tokens** of a chunk. Long comments,
    usually pasted logs and code, are embedded by their opening alone; BM25
    counts every word. From `benchmark.chunk_lengths`:
@@ -159,7 +159,7 @@ Three reasons, the first one fixed.
 ## What shipped
 
 DBSF, with 100 candidates from each side, and BGE's instruction in front
-of every query (`gh_issue/embed.py`, `gh_issue/index/store.py`). The runner
+of every query (`gh_issue/index/embed.py`, `gh_issue/index/store.py`). The runner
 checks that its "DBSF (shipped)" row is the query `gh-issue search` actually
 sends: on every query that hides nothing, the two list the same issues in the
 same order, with the same scores.

@@ -26,10 +26,11 @@ from qdrant_client import QdrantClient, models
 
 from benchmark.make_queries import QUERIES, Query
 from benchmark.scoring import Rank, difference_interval, macro, rank_of, summarise
-from gh_issue import config
-from gh_issue.embed import embed_query, embed_texts
+from gh_issue import env
+from gh_issue.index.embed import embed_query, embed_texts
+from gh_issue.index.storage import store
 from gh_issue.index.store import CANDIDATES, COLLECTION, DENSE, KEYWORDS, best_first
-from gh_issue.settings import qdrant_url, store
+from gh_issue.interface.cli import config
 
 
 class Vectors(TypedDict):
@@ -180,7 +181,7 @@ def check_shipped(client: QdrantClient, queries: list[Query], vectors: list[Vect
 
 def main(path: Path = QUERIES) -> None:
     queries: list[Query] = json.loads(path.read_text(encoding="utf-8"))
-    client = QdrantClient(url=qdrant_url(), timeout=60)
+    client = QdrantClient(url=env.qdrant_url(), timeout=60)
     vectors = embed(queries)
     check_shipped(client, queries, vectors)
 

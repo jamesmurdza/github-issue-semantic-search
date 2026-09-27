@@ -3,13 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from gh_issue import settings
+from gh_issue.index import storage
 
 
 def _forget_handles() -> None:
-    settings.cursors.cache_clear()
-    settings.backfills.cache_clear()
-    settings.failures.cache_clear()
+    storage.cursors.cache_clear()
+    storage.backfills.cache_clear()
+    storage.failures.cache_clear()
 
 
 # The embedding models, downloaded once and shared by every test, rather than

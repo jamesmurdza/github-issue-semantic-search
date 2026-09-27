@@ -25,10 +25,11 @@ from typing import TypedDict, cast
 
 import inngest
 
-from gh_issue.clock import now
 from gh_issue.functions.client import client
+from gh_issue.functions.events import EVENT_ISSUE_CHANGED, EVENT_SWEEP_REQUESTED
 from gh_issue.github import api
-from gh_issue.settings import EVENT_ISSUE_CHANGED, EVENT_SWEEP_REQUESTED, cursors
+from gh_issue.index.storage import cursors
+from gh_issue.utils import now
 
 
 class SweepRequested(TypedDict):

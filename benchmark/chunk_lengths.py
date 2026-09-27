@@ -13,8 +13,8 @@ from typing import Any
 from tokenizers import Tokenizer
 
 from benchmark.make_queries import REPOS, indexed_chunks
-from gh_issue import config
-from gh_issue.embed import _model
+from gh_issue.index.embed import _model
+from gh_issue.interface.cli import config
 
 LIMIT = 512
 

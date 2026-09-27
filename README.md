@@ -237,6 +237,44 @@ the scripts to reproduce them.
   comment, usually a pasted log, is embedded by its opening; BM25 still reads
   all of it. The model is fixed in this example.
 
+## Code map
+
+To see the Inngest side, start at `functions/index_issue.py`.
+
+```
+gh_issue/
+├── interface/             the ways in, for people and for agents
+│   ├── cli/                 the gh-issue command
+│   │   ├── app.py             every command and its help
+│   │   ├── worker.py          gh-issue worker: runs the Inngest functions
+│   │   ├── sync.py            gh-issue sync: sends the events that start the work
+│   │   ├── remove.py          gh-issue remove
+│   │   ├── preflight.py       the checks worker and sync run first
+│   │   ├── config.py          config.toml, and the config commands
+│   │   └── display.py         everything the commands print
+│   └── mcp.py               the MCP tools: search_issues, get_issue, status
+├── functions/             the Inngest functions
+│   ├── index_issue.py       one issue: fetch, chunk, embed, write, clean up
+│   ├── backfill.py          a whole repo, one page per run
+│   ├── reconcile.py         the hourly sweep
+│   ├── events.py            the event names
+│   └── client.py            the Inngest client
+├── index/                 the searchable index
+│   ├── chunking.py          an issue into chunks, and what changed
+│   ├── embed.py             the local models: dense and BM25
+│   ├── store.py             Qdrant: write, search, filters
+│   ├── query.py             search, get_issue, status, for the CLI and MCP
+│   ├── storage.py           one shared handle each on the store and the records
+│   └── records/             sweep cursors, backfill progress, failures, the heartbeat
+├── github/                GitHub's REST API, and the shapes it returns
+├── env.py                 the environment variables the package reads
+└── utils.py               the time, printing, safe file writes
+```
+
+Imports go one way: `interface/cli/` uses `functions/` and `index/`,
+`interface/mcp.py` and `functions/` use `index/`, and `index/` imports none of
+them. `tests/` has the same layout.
+
 ## Development
 
 ```bash
@@ -249,7 +287,7 @@ temporary directory, and never touch your `~/.gh-issue`. To run the index tests
 against a real Qdrant server instead:
 
 ```bash
-GH_ISSUE_TEST_QDRANT_URL=http://localhost:6333 uv run pytest tests/test_store.py
+GH_ISSUE_TEST_QDRANT_URL=http://localhost:6333 uv run pytest tests/index/test_store.py
 ```
 
 The Qdrant dashboard is at http://localhost:6333/dashboard.

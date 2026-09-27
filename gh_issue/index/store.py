@@ -32,7 +32,7 @@ from typing import Any, Literal, TypedDict
 
 from qdrant_client import QdrantClient, models
 
-from gh_issue.chunking import EmbeddedChunk, IssueMeta, SparseVector
+from gh_issue.index.chunking import EmbeddedChunk, IssueMeta, SparseVector
 
 COLLECTION = "gh_issue_chunks"
 

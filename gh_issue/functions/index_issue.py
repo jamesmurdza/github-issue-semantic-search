@@ -23,21 +23,22 @@ from typing import Any, NotRequired, TypedDict, cast
 
 import inngest
 
-from gh_issue.chunking import (
+from gh_issue.functions.client import client
+from gh_issue.functions.events import EVENT_ISSUE_CHANGED
+from gh_issue.github import api
+from gh_issue.github.types import Comment, Issue
+from gh_issue.index.chunking import (
     chunks_for,
     issue_meta,
     metadata_outdated,
     needs_embedding,
     orphaned_ids,
 )
-from gh_issue.clock import now
-from gh_issue.embed import BATCH as EMBED_BATCH
-from gh_issue.embed import embed_chunks
-from gh_issue.functions.client import client
-from gh_issue.github import api
-from gh_issue.github.types import Comment, Issue
-from gh_issue.index.failures import Failure
-from gh_issue.settings import EVENT_ISSUE_CHANGED, failures, is_synced, store
+from gh_issue.index.embed import BATCH as EMBED_BATCH
+from gh_issue.index.embed import embed_chunks
+from gh_issue.index.records.failures import Failure
+from gh_issue.index.storage import failures, is_synced, store
+from gh_issue.utils import now
 
 
 class IssueChanged(TypedDict):
