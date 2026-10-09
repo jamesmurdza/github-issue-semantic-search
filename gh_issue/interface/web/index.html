@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>gh-issue: {{repo}}</title>
+<title>gh-issue</title>
 <style>
   :root {
     --color-canvas: #f6f8fa;
@@ -55,24 +55,75 @@
     margin: 0 auto;
   }
 
-  /* The question ------------------------------------------------------------ */
+  /* The repo, and the question ---------------------------------------------- */
 
+  .ask {
+    display: flex;
+    gap: 10px;
+    max-width: 880px;
+    margin: 0 auto 28px;
+  }
+
+  .repo-picker,
   .search-box {
     display: flex;
     align-items: center;
-    gap: 10px;
-    max-width: 760px;
-    margin: 0 auto;
     background: var(--color-canvas-inset);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    padding: 11px 14px;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
 
+  .repo-picker:focus-within,
   .search-box:focus-within {
     border-color: var(--color-accent);
     box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  }
+
+  .repo-picker {
+    position: relative;
+    flex: none;
+    gap: 8px;
+    padding-left: 12px;
+    cursor: pointer;
+  }
+
+  .repo-picker .repo-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--color-fg-muted);
+  }
+
+  .repo-picker select {
+    appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    max-width: 260px;
+    padding: 11px 34px 11px 0;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .repo-picker .chevron {
+    position: absolute;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    color: var(--color-fg-muted);
+    pointer-events: none;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+    padding: 11px 14px;
   }
 
   .search-box .search-icon {
@@ -108,17 +159,15 @@
     padding: 1px 7px;
   }
 
-  .scope {
-    margin: 10px 0 28px;
+  /* Only shown when the repos can't be listed: the index is down, or empty. */
+  .trouble {
+    margin: -12px 0 28px;
     text-align: center;
-    font-size: 13px;
-    color: var(--color-fg-muted);
+    font-size: 14px;
+    color: var(--color-attention);
   }
 
-  .scope strong {
-    font-weight: 600;
-    color: var(--color-fg);
-  }
+  .trouble:empty { display: none; }
 
   /* The two lists ----------------------------------------------------------- */
 
@@ -242,8 +291,12 @@
     -webkit-line-clamp: 3;
   }
 
-  /* The one loud thing on the page: an answer that was found in a comment. */
+  /* The one loud thing on the page: an answer that was found in a comment.
+     It is shown whole, since its last words are often the answer; the server
+     has already cut it to a snippet's length. */
   .post.in-comment {
+    display: block;
+    overflow-wrap: anywhere;
     color: var(--color-fg);
     background: var(--color-accent-subtle);
     border-left: 3px solid var(--color-accent);
@@ -284,6 +337,8 @@
 
   @media (max-width: 720px) {
     body { padding-top: 5vh; }
+    .ask { flex-direction: column; }
+    .repo-picker select { flex: 1; max-width: none; }
     .lists { grid-template-columns: minmax(0, 1fr); }
   }
 </style>
@@ -306,25 +361,45 @@
   </header>
 
   <main>
-    <form class="search-box" id="ask" role="search">
-      <div class="search-icon">
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04ZM12
-          6.5a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0Z"/>
-        </svg>
-      </div>
-      <input
-        id="question"
-        type="search"
-        aria-label="Question"
-        placeholder="Ask about an issue, in your own words"
-        autocomplete="off"
-        spellcheck="false"
-        autofocus
-      />
-      <kbd>Enter</kbd>
-    </form>
-    <p class="scope">Searching <strong>{{repo}}</strong></p>
+    <div class="ask">
+      <label class="repo-picker">
+        <span class="repo-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75
+            0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1
+            1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1
+            .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/>
+          </svg>
+        </span>
+        <select id="repo" aria-label="Repo"></select>
+        <span class="chevron">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749
+            0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/>
+          </svg>
+        </span>
+      </label>
+
+      <form class="search-box" id="ask" role="search">
+        <div class="search-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04ZM12
+            6.5a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0Z"/>
+          </svg>
+        </div>
+        <input
+          id="question"
+          type="search"
+          aria-label="Question"
+          placeholder="Ask about an issue, in your own words"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+        />
+        <kbd>Enter</kbd>
+      </form>
+    </div>
+    <p class="trouble" id="trouble" role="status"></p>
 
     <div class="lists">
       <section class="list" id="github" aria-labelledby="github-name">
@@ -351,6 +426,8 @@
 <script>
   const form = document.getElementById("ask");
   const input = document.getElementById("question");
+  const repo = document.getElementById("repo");
+  const trouble = document.getElementById("trouble");
   const lists = {
     github: document.getElementById("github"),
     ours: document.getElementById("ours"),
@@ -431,7 +508,8 @@
     let response;
     let body;
     try {
-      response = await fetch(`/api/${name}?q=${encodeURIComponent(question)}`);
+      const asked = new URLSearchParams({ q: question, repo: repo.value });
+      response = await fetch(`/api/${name}?${asked}`);
       body = await response.json();
     } catch {
       if (turn === latest) say(list, "The search failed.", true);
@@ -456,14 +534,50 @@
     list.querySelector(".results").replaceChildren(...body.results.map(row));
   }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
+  function search() {
     const question = input.value.trim();
-    if (!question) return;
     latest += 1;
+    if (!question || !repo.value) {
+      // Nothing to ask: don't leave another repo's results on the page.
+      for (const list of Object.values(lists)) say(list, "");
+      return;
+    }
     ask("github", question, latest);
     ask("ours", question, latest);
+  }
+
+  // The repos to choose from are the ones in the index, asked for on load so
+  // that a repo synced since the server started is there after a refresh.
+  async function offerRepos() {
+    let response;
+    let body;
+    try {
+      response = await fetch("/api/repos");
+      body = await response.json();
+    } catch {
+      trouble.textContent = "Can't reach the gh-issue server.";
+      return;
+    }
+    if (!response.ok) {
+      trouble.textContent = body.error || "The repos can't be listed.";
+      return;
+    }
+    if (!body.repos.length) {
+      trouble.textContent = "Nothing is synced yet. Sync a repo with: gh-issue sync owner/name";
+      return;
+    }
+    repo.replaceChildren(...body.repos.map((name) => new Option(name, name)));
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (input.value.trim()) search();
   });
+
+  // Another repo, the same question: ask it there straight away.
+  repo.addEventListener("change", search);
+
+  offerRepos();
 
   // "/" brings the cursor back to the question, as it does on GitHub.
   document.addEventListener("keydown", (event) => {

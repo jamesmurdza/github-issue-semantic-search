@@ -1,4 +1,6 @@
+import threading
 from collections.abc import Iterator
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -47,7 +49,7 @@ def test_the_store_is_opened_once_and_reused(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("QDRANT_URL", "http://qdrant.internal:6333")
 
     assert storage.store() is storage.store()
-    assert opened == [{"dim": DIM, "url": "http://qdrant.internal:6333"}]
+    assert opened == [{"dim": DIM, "url": "http://qdrant.internal:6333", "api_key": None}]
 
 
 def test_an_index_that_opens_has_no_problem(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -115,3 +117,79 @@ def test_a_backfill_record_alone_means_synced() -> None:
         }
     )
     assert storage.is_synced("owner/name") is True
+
+
+# A Qdrant that wants a key -----------------------------------------------------
+
+
+@pytest.fixture
+def locked_qdrant(monkeypatch: pytest.MonkeyPatch) -> Iterator[list[str | None]]:
+    """A server that refuses every request the way a key-protected Qdrant
+    does, and keeps the key each request carried. Seen on Qdrant 1.19.1
+    started with an API key: 401 and one of these two lines, for no key and for
+    a wrong one. qdrant.url points at it for the test."""
+    keys: list[str | None] = []
+
+    class Refusing(BaseHTTPRequestHandler):
+        def refuse(self) -> None:
+            key = self.headers.get("api-key")
+            keys.append(key)
+            said = (
+                b"Invalid API key or JWT"
+                if key
+                else b"Must provide an API key or an Authorization bearer token"
+            )
+            self.send_response(401)
+            self.send_header("Content-Length", str(len(said)))
+            self.end_headers()
+            self.wfile.write(said)
+
+        do_GET = do_PUT = do_POST = do_DELETE = refuse
+
+        def log_message(self, format: str, *args: object) -> None:
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Refusing)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    monkeypatch.setenv("QDRANT_URL", f"http://127.0.0.1:{server.server_port}")
+    yield keys
+    server.shutdown()
+    server.server_close()
+
+
+# qdrant-client warns about two things here, and both are the point of the
+# test server: it refuses the version check like every other request, and it is
+# plain http, where a real hosted Qdrant is https.
+quiet = pytest.mark.filterwarnings(
+    "ignore:Failed to obtain server version", "ignore:Api key is used with an insecure connection"
+)
+
+
+@quiet
+def test_a_qdrant_that_wants_a_key_says_which_setting_holds_it(
+    locked_qdrant: list[str | None], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A hosted Qdrant with no key set. "Can't connect" would be wrong: it
+    answered."""
+    monkeypatch.delenv("QDRANT_API_KEY", raising=False)
+
+    problem = storage.index_problem()
+
+    assert problem is not None
+    assert problem.startswith("Qdrant at http://127.0.0.1:")
+    assert problem.endswith(" needs an API key. Set it with: gh-issue config set qdrant.api_key")
+
+
+@quiet
+def test_a_key_that_qdrant_refuses_is_reported_as_the_key(
+    locked_qdrant: list[str | None], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The key in the setting is the one sent, and a refusal names it."""
+    monkeypatch.setenv("QDRANT_API_KEY", "a-key-that-is-wrong")
+
+    problem = storage.index_problem()
+
+    assert "a-key-that-is-wrong" in locked_qdrant
+    assert problem is not None
+    assert problem.startswith("Qdrant at http://127.0.0.1:")
+    assert problem.endswith(" refused the API key (qdrant.api_key).")

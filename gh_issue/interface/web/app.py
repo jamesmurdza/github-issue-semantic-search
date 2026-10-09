@@ -1,14 +1,14 @@
 """The index next to GitHub's own issue search, as a web page.
 
-One page, one question, two lists, both for the repo the server was started
-with. It is there to show one thing: a question whose answer sits in a comment.
+One page, one question, two lists, both for the repo chosen on the page from
+the ones in the index. It is there to show one thing: a question whose answer
+sits in a comment.
 
 The page asks this server for both lists, GitHub's too, so the GitHub token
 stays on this side. The endpoints are plain functions, which Starlette runs in
 its thread pool: a slow answer from GitHub does not hold up ours.
 """
 
-import html
 from pathlib import Path
 from typing import TypedDict
 
@@ -31,10 +31,9 @@ LIMIT = 5
 SNIPPET = 280
 
 NO_QUESTION = "Type a question first."
+NO_REPO = "Choose a repo first."
 
-# The page, and where the repo's name goes in it.
 PAGE = Path(__file__).with_name("index.html")
-REPO_SLOT = "{{repo}}"
 
 
 class OurResult(TypedDict):
@@ -79,31 +78,49 @@ def _error(status: int, message: str, **more: object) -> JSONResponse:
     return JSONResponse({"error": message, **more}, status_code=status)
 
 
-def _question(request: Request) -> str:
-    return request.query_params.get("q", "").strip()
+def _asked(request: Request) -> tuple[str, str] | JSONResponse:
+    """The question and the repo to ask it of, or what is wrong with them.
+
+    Whatever is sent as the repo ends up inside the query GitHub is sent, so
+    only a repo that is in the index, which is what the page offers, gets through.
+    """
+    question = request.query_params.get("q", "").strip()
+    if not question:
+        return _error(400, NO_QUESTION)
+    repo = request.query_params.get("repo", "").strip()
+    if not repo:
+        return _error(400, NO_REPO)
+    if problem := storage.index_problem():
+        return _error(503, problem)
+    if repo not in reads.indexed_repos():
+        return _error(400, f"{repo} is not synced.")
+    return question, repo
 
 
-def make_app(repo: str) -> Starlette:
-    """The app for one repo. `repo` is owner/name, checked by the caller."""
-
-    page = PAGE.read_text(encoding="utf-8").replace(REPO_SLOT, html.escape(repo))
+def make_app() -> Starlette:
+    page = PAGE.read_text(encoding="utf-8")
 
     def index(request: Request) -> Response:
         return HTMLResponse(page)
 
-    def ours(request: Request) -> Response:
-        question = _question(request)
-        if not question:
-            return _error(400, NO_QUESTION)
+    def repos(request: Request) -> Response:
         if problem := storage.index_problem():
             return _error(503, problem)
+        return JSONResponse({"repos": reads.indexed_repos()})
+
+    def ours(request: Request) -> Response:
+        asked = _asked(request)
+        if isinstance(asked, JSONResponse):
+            return asked
+        question, repo = asked
         hits = reads.search(question, reads.make_filters(repos=[repo]), LIMIT)
         return JSONResponse({"results": [_result(hit) for hit in hits]})
 
     def github(request: Request) -> Response:
-        question = _question(request)
-        if not question:
-            return _error(400, NO_QUESTION)
+        asked = _asked(request)
+        if isinstance(asked, JSONResponse):
+            return asked
+        question, repo = asked
         if not github_token():
             return _error(503, api.MISSING_TOKEN)
         try:
@@ -123,5 +140,10 @@ def make_app(repo: str) -> Starlette:
         return JSONResponse({"mode": found["mode"], "results": found["issues"]})
 
     return Starlette(
-        routes=[Route("/", index), Route("/api/ours", ours), Route("/api/github", github)]
+        routes=[
+            Route("/", index),
+            Route("/api/repos", repos),
+            Route("/api/ours", ours),
+            Route("/api/github", github),
+        ]
     )

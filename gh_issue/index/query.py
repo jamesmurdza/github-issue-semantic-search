@@ -124,6 +124,12 @@ def get_issue(repo: str, number: int) -> Thread | None:
     }
 
 
+def indexed_repos() -> list[str]:
+    """The repos a search can find something in, in order. A repo that is
+    tracked but has nothing indexed yet is not one of them."""
+    return sorted(store().stats())
+
+
 def status() -> Status:
     """The worker, and every repo that is indexed, tracked, or both."""
     counts = store().stats()

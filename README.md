@@ -116,12 +116,13 @@ at `http://127.0.0.1:8000/mcp`.
 ## Compare it with GitHub's search
 
 ```bash
-gh-issue web inngest/inngest
+gh-issue web
 ```
 
-Open http://127.0.0.1:8080 and type a question. The page sends it to GitHub's
-own issue search and to this index, for the same repo, and shows the two lists
-side by side. A match in a comment is shown as that comment.
+Open http://127.0.0.1:8080, choose one of your synced repos and type a
+question. The page sends it to GitHub's own issue search and to this index,
+for that repo, and shows the two lists side by side. A match in a comment is
+shown as that comment.
 
 GitHub's list comes from its search API in hybrid mode, with the same
 `github.token`. GitHub allows 10 of those searches a minute.
@@ -138,7 +139,7 @@ GitHub's list comes from its search API in hybrid mode, with the same
 | `gh-issue search <words>` | Search every synced repo. `--repo` (`-R`), `--state` (`-s`), `--label` (`-l`), `--author` (`-A`), `--kind` and `--since` filter, as in `gh issue list`; `--limit` (`-L`) sets how many results, 1 to 50. |
 | `gh-issue mcp stdio` | Serve the index over MCP, for an agent that starts the server itself. |
 | `gh-issue mcp http` | The same over streamable HTTP, for an agent that connects to a running server. |
-| `gh-issue web owner/name` | Show GitHub's own issue search and the index side by side, in a browser. |
+| `gh-issue web` | Show GitHub's own issue search and the index side by side, in a browser, for any synced repo. |
 
 `gh-issue <command> --help` has the details, and examples.
 
@@ -154,13 +155,22 @@ one value.
 | `inngest.dev` | `1` for a local dev server, or its URL | not set: Inngest Cloud |
 | `inngest.event_key` | Inngest Cloud's event key | none |
 | `inngest.signing_key` | Inngest Cloud's signing key | none |
+| `qdrant.api_key` | a hosted Qdrant's API key | none |
 | `qdrant.url` | where Qdrant is | `http://localhost:6333` |
 
 They are kept in `~/.gh-issue/config.toml`. Each also has an environment
 variable (`GITHUB_TOKEN`, `INNGEST_DEV`, `INNGEST_EVENT_KEY`,
-`INNGEST_SIGNING_KEY`, `QDRANT_URL`), which wins over the file. The same
-directory holds the sync records and the embedding model, and `GH_ISSUE_HOME`
-moves all of it.
+`INNGEST_SIGNING_KEY`, `QDRANT_API_KEY`, `QDRANT_URL`), which wins over the
+file. The same directory holds the sync records and the embedding model, and
+`GH_ISSUE_HOME` moves all of it.
+
+The Qdrant in `docker-compose.yml` needs no key. To use a hosted one instead,
+such as a Qdrant Cloud cluster, set its address and its key:
+
+```bash
+gh-issue config set qdrant.url https://your-cluster.cloud.qdrant.io:6333
+gh-issue config set qdrant.api_key
+```
 
 ## Running on Inngest Cloud
 

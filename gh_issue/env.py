@@ -31,6 +31,12 @@ def qdrant_url() -> str:
     return os.environ.get("QDRANT_URL", DEFAULT_QDRANT_URL)
 
 
+def qdrant_api_key() -> str | None:
+    """The qdrant.api_key setting; None if it is not set or is blank. A Qdrant
+    on your own machine has no key; a hosted one, such as Qdrant Cloud, needs it."""
+    return os.environ.get("QDRANT_API_KEY") or None
+
+
 def github_token() -> str | None:
     """The github.token setting; None if it is not set or is blank."""
     return os.environ.get("GITHUB_TOKEN") or None

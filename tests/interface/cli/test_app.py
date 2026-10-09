@@ -117,6 +117,7 @@ def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     for name in ("GITHUB_TOKEN", "INNGEST_DEV", "INNGEST_EVENT_KEY", "INNGEST_SIGNING_KEY"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.delenv("QDRANT_URL", raising=False)
+    monkeypatch.delenv("QDRANT_API_KEY", raising=False)
     return tmp_path
 
 
@@ -270,9 +271,9 @@ def test_config_unset_of_a_setting_the_file_lacks_says_so(
             id="search-repo",
         ),
         pytest.param(["remove"], "REPO requires an argument", id="remove-with-no-repo"),
-        pytest.param(["web"], "REPO requires an argument", id="web-with-no-repo"),
-        pytest.param(["web", "inngest"], '"inngest" for REPO. Use owner/name', id="web-repo"),
-        pytest.param(["web", "a/b", "--port", "99999"], "Must be <= 65535", id="web-port"),
+        pytest.param(["web", "--port", "99999"], "Must be <= 65535", id="web-port"),
+        # The repo is chosen on the page; one named here must not become the host.
+        pytest.param(["web", "a/b"], "Unused Tokens: ['a/b']", id="web-with-a-repo"),
         pytest.param(
             ["config", "set", "qdrant.host", "x"],
             'Did you mean "qdrant.url"?',
@@ -445,7 +446,7 @@ def test_each_says_what_is_wrong_with_the_index_before_trying(
         elif command == "remove":
             cli.remove("a/b", yes=True)
         else:
-            cli.web("a/b")
+            cli.web()
 
 
 def test_status_prints_the_worker_and_the_repos(
@@ -503,22 +504,6 @@ def test_remove_hands_the_repo_and_the_flag_on(monkeypatch: pytest.MonkeyPatch) 
 
 # web ----------------------------------------------------------------------------
 
-
-def test_web_refuses_a_repo_that_is_not_synced(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Otherwise the page opens and every question finds nothing."""
-    store = Store(dim=DIM, path=str(tmp_path / "qdrant"))
-    monkeypatch.setattr(storage, "store", lambda: store)
-    try:
-        with pytest.raises(
-            SystemExit, match=r"a/b is not synced\. Sync it with: gh-issue sync a/b"
-        ):
-            cli.web("a/b")
-    finally:
-        store.close()
-
-
 ONE_ISSUE: Issue = {
     "number": 1,
     "title": "Anything",
@@ -531,25 +516,39 @@ ONE_ISSUE: Issue = {
 }
 
 
-def test_web_serves_the_page_for_its_repo_where_it_was_told_to(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+@pytest.fixture
+def index(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Store]:
+    """A real, empty embedded index in place of the Qdrant server."""
+    store = Store(dim=DIM, path=str(tmp_path / "qdrant"))
+    monkeypatch.setattr(storage, "store", lambda: store)
+    monkeypatch.setattr(query, "store", lambda: store)
+    yield store
+    store.close()
+
+
+def test_web_refuses_to_start_with_nothing_synced(index: Store) -> None:
+    """Otherwise the page opens with no repo to choose."""
+    with pytest.raises(
+        SystemExit, match=r"Nothing is synced yet\. Sync a repo with: gh-issue sync owner/name"
+    ):
+        cli.web()
+
+
+def test_web_serves_the_page_where_it_was_told_to(
+    index: Store, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """uvicorn.run is the one thing replaced: it blocks until the process is
     stopped. The browser test runs the real uvicorn server."""
-    store = Store(dim=DIM, path=str(tmp_path / "qdrant"))
-    store.upsert(embed_chunks(chunks_for("a/b", ONE_ISSUE, [])))
-    monkeypatch.setattr(storage, "store", lambda: store)
+    index.upsert(embed_chunks(chunks_for("a/b", ONE_ISSUE, [])))
     served: dict[str, Any] = {}
 
     def run(app: Any, **options: Any) -> None:
-        served.update(options, page=TestClient(app).get("/").text)
+        served.update(options, repos=TestClient(app).get("/api/repos").json())
 
     monkeypatch.setattr("uvicorn.run", run)
-    try:
-        cli.web("a/b", port=9000)
-    finally:
-        store.close()
+
+    cli.web(port=9000)
 
     assert (served["host"], served["port"]) == ("127.0.0.1", 9000)
-    assert "Searching <strong>a/b</strong>" in served["page"]
+    assert served["repos"] == {"repos": ["a/b"]}
     assert "http://127.0.0.1:9000" in capsys.readouterr().out

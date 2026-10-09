@@ -8,7 +8,9 @@ functions and commands reach for them.
 import os
 from functools import lru_cache
 
-from gh_issue.env import home, qdrant_url
+from qdrant_client.http.exceptions import UnexpectedResponse
+
+from gh_issue.env import home, qdrant_api_key, qdrant_url
 from gh_issue.index.embed import DIM
 from gh_issue.index.records.backfills import Backfills
 from gh_issue.index.records.cursors import Cursors
@@ -19,7 +21,7 @@ from gh_issue.index.store import Store
 @lru_cache(maxsize=1)
 def store() -> Store:
     """One connection per process, reused by every function and by the CLI."""
-    return Store(dim=DIM, url=qdrant_url())
+    return Store(dim=DIM, url=qdrant_url(), api_key=qdrant_api_key())
 
 
 def index_problem() -> str | None:
@@ -29,6 +31,17 @@ def index_problem() -> str | None:
     except ValueError as error:
         # Qdrant answered, but the collection there is unusable; say which way.
         return str(error)
+    except UnexpectedResponse as error:
+        # Qdrant answered, and turned the request down. A hosted Qdrant does
+        # this without its key, or with a wrong one.
+        if error.status_code not in (401, 403):
+            return f"Can't connect to Qdrant at {qdrant_url()} (qdrant.url)."
+        if qdrant_api_key():
+            return f"Qdrant at {qdrant_url()} refused the API key (qdrant.api_key)."
+        return (
+            f"Qdrant at {qdrant_url()} needs an API key. "
+            "Set it with: gh-issue config set qdrant.api_key"
+        )
     except Exception:
         return f"Can't connect to Qdrant at {qdrant_url()} (qdrant.url)."
     return None

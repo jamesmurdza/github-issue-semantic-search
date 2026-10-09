@@ -9,7 +9,14 @@ import pytest
 
 from gh_issue.interface.cli import config
 
-ENV_VARS = ["GITHUB_TOKEN", "INNGEST_DEV", "INNGEST_EVENT_KEY", "INNGEST_SIGNING_KEY", "QDRANT_URL"]
+ENV_VARS = [
+    "GITHUB_TOKEN",
+    "INNGEST_DEV",
+    "INNGEST_EVENT_KEY",
+    "INNGEST_SIGNING_KEY",
+    "QDRANT_API_KEY",
+    "QDRANT_URL",
+]
 
 
 @pytest.fixture(autouse=True)
@@ -118,6 +125,7 @@ def test_shown_masks_secrets_and_says_where_each_value_came_from(
         "inngest.dev": ("1", "config file"),
         "inngest.event_key": (None, None),
         "inngest.signing_key": ("****7654", "environment (INNGEST_SIGNING_KEY)"),
+        "qdrant.api_key": (None, None),
         "qdrant.url": ("http://localhost:6333", "default"),
     }
 
@@ -151,3 +159,18 @@ def test_a_short_secret_is_masked_entirely() -> None:
     config.set_value("inngest.event_key", "abc123")
     [row] = [row for row in config.shown() if row["key"] == "inngest.event_key"]
     assert row["value"] == "****"
+
+
+def test_the_qdrant_api_key_is_a_secret_with_a_variable_of_its_own(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """It opens a hosted index for reading and writing, so it is masked like
+    the other keys, and the file's value reaches the code that reads the
+    environment."""
+    config.set_value("qdrant.api_key", "key-from-the-cloud-console")
+
+    [shown] = [row for row in config.shown() if row["key"] == "qdrant.api_key"]
+    assert (shown["value"], shown["source"]) == ("****sole", "config file")
+
+    config.apply()
+    assert os.environ["QDRANT_API_KEY"] == "key-from-the-cloud-console"

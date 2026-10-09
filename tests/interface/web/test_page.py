@@ -30,7 +30,7 @@ def served(indexed: Store, monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
         probe.bind(("127.0.0.1", 0))
         port: int = probe.getsockname()[1]
     server = uvicorn.Server(
-        uvicorn.Config(make_app("owner/name"), host="127.0.0.1", port=port, log_level="warning")
+        uvicorn.Config(make_app(), host="127.0.0.1", port=port, log_level="warning")
     )
     thread = threading.Thread(target=server.run)
     thread.start()
@@ -59,11 +59,20 @@ def page() -> Iterator[Page]:
             browser.close()
 
 
+def test_the_repos_to_choose_from_are_the_ones_in_the_index(served: str, page: Page) -> None:
+    page.goto(served)
+
+    repo = page.get_by_role("combobox", name="Repo")
+    expect(repo.get_by_role("option")).to_have_text(["other/repo", "owner/name"])
+    expect(repo).to_have_value("other/repo")
+
+
 def test_a_question_shows_the_comment_that_answers_it_first(served: str, page: Page) -> None:
     page.goto(served)
     question = page.get_by_role("searchbox", name="Question")
     expect(question).to_be_focused()
 
+    page.get_by_role("combobox", name="Repo").select_option("owner/name")
     question.fill(MIGRATIONS)
     question.press("Enter")
 
@@ -79,3 +88,52 @@ def test_a_question_shows_the_comment_that_answers_it_first(served: str, page: P
     github = page.get_by_role("region", name="GitHub search")
     expect(github).to_contain_text("github.token is not set")
     expect(github.get_by_role("listitem")).to_have_count(0)
+
+
+def test_a_comment_that_matched_is_shown_whole(served: str, page: Page) -> None:
+    """Its last words are often the answer. Seen on inngest/inngest: three
+    lines of a comment were shown, the error message it was found by was on
+    the fourth, and half of that line showed through under the third.
+
+    The window is narrow here so that the test comment takes more than three
+    lines. The server has already cut it to a snippet's length.
+    """
+    page.set_viewport_size({"width": 320, "height": 800})
+    page.goto(served)
+    page.get_by_role("combobox", name="Repo").select_option("owner/name")
+    question = page.get_by_role("searchbox", name="Question")
+    question.fill(MIGRATIONS)
+    question.press("Enter")
+
+    comment = page.get_by_role("region", name="gh-issue").get_by_role("listitem").first
+    post = comment.get_by_text("Downgrading to 1.3.3 fixed it for me.")
+    expect(post).to_be_visible()
+    lines = post.evaluate(
+        """node => {
+            const style = getComputedStyle(node);
+            const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+            return Math.round((node.scrollHeight - padding) / parseFloat(style.lineHeight));
+        }"""
+    )
+    assert lines > 3, "the window is not narrow enough to test this"
+    assert post.evaluate("node => node.scrollHeight <= node.clientHeight")
+
+
+def test_choosing_another_repo_asks_the_same_question_there(served: str, page: Page) -> None:
+    """Otherwise the lists would go on showing the repo that was left."""
+    page.goto(served)
+    repo = page.get_by_role("combobox", name="Repo")
+    repo.select_option("owner/name")
+    question = page.get_by_role("searchbox", name="Question")
+    question.fill(MIGRATIONS)
+    question.press("Enter")
+    first = page.get_by_role("region", name="gh-issue").get_by_role("listitem").first
+    expect(first).to_contain_text("#412")
+
+    repo.select_option("other/repo")
+
+    expect(first).to_contain_text("#99")
+    expect(first).to_contain_text("Server does not start: the sqlite migrations folder is missing")
+    expect(first.get_by_role("link")).to_have_attribute(
+        "href", "https://github.com/other/repo/issues/99"
+    )

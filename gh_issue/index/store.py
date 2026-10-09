@@ -137,17 +137,21 @@ class Store:
         url: str | None = None,
         path: str | None = None,
         collection: str = COLLECTION,
+        api_key: str | None = None,
     ) -> None:
         """Connect to a Qdrant server at `url`, or open an embedded one at `path`.
 
         Exactly one of the two. `url` is what ships; `path` exists so the tests
         can run without a daemon. `collection` exists so tests pointed at a real
-        server never touch the index that lives there.
+        server never touch the index that lives there. `api_key` is for a
+        hosted server, such as Qdrant Cloud; one on your own machine has none.
         """
         if (url is None) == (path is None):
             raise ValueError("pass exactly one of url= (server) or path= (embedded)")
         self._server = url is not None
-        self._client = QdrantClient(url=url) if url is not None else QdrantClient(path=path)
+        self._client = (
+            QdrantClient(url=url, api_key=api_key) if url is not None else QdrantClient(path=path)
+        )
         self._dim = dim
         self._collection = collection
         self._ensure_collection()

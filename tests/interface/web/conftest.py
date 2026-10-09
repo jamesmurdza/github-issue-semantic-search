@@ -69,4 +69,4 @@ def indexed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Store]:
 
 @pytest.fixture
 def client(indexed: Store) -> TestClient:
-    return TestClient(make_app(REPO))
+    return TestClient(make_app())

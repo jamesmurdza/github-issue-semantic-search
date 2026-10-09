@@ -56,6 +56,12 @@ SETTINGS: dict[str, Setting] = {
         "default": None,
         "help": "Inngest Cloud's signing key.",
     },
+    "qdrant.api_key": {
+        "env": "QDRANT_API_KEY",
+        "secret": True,
+        "default": None,
+        "help": "A hosted Qdrant's API key, for Qdrant Cloud; a local Qdrant needs none.",
+    },
     "qdrant.url": {
         "env": "QDRANT_URL",
         "secret": False,

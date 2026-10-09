@@ -224,6 +224,23 @@ def test_status_of_nothing_is_empty(index: Index) -> None:
 # make_filters -----------------------------------------------------------------
 
 
+# indexed_repos ------------------------------------------------------------------
+
+
+def test_indexed_repos_are_the_ones_with_something_to_search_in_order(index: Index) -> None:
+    """What the web page offers to search. A repo whose backfill has only been
+    queued is tracked, but a search of it would find nothing."""
+    index.add(LOGIN, repo="zeta/repo")
+    index.add(FREEZE)
+    index.cursors.set("queued/repo", "2026-09-25T10:05:00Z")
+
+    assert query.indexed_repos() == [REPO, "zeta/repo"]
+
+
+def test_indexed_repos_of_an_empty_index_is_empty(index: Index) -> None:
+    assert query.indexed_repos() == []
+
+
 def test_filters_leave_out_whatever_was_not_given() -> None:
     assert query.make_filters() == {}
     assert query.make_filters(repos=[], labels=[]) == {}

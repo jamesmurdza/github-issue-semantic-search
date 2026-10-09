@@ -11,28 +11,34 @@ from starlette.testclient import TestClient
 from gh_issue.github import api
 from gh_issue.index import storage
 
+REPO = "owner/name"
 MIGRATIONS = (
     "after upgrading the server fails to start because the database migration files are missing"
 )
 
 
-def ours(client: TestClient, question: str) -> list[dict[str, object]]:
-    response = client.get("/api/ours", params={"q": question})
+def ours(client: TestClient, question: str, repo: str = REPO) -> list[dict[str, object]]:
+    response = client.get("/api/ours", params={"q": question, "repo": repo})
     assert response.status_code == 200, response.text
     results: list[dict[str, object]] = response.json()["results"]
     return results
 
 
-# The page ---------------------------------------------------------------------------
+# The page, and the repos it offers ------------------------------------------------
 
 
-def test_the_page_names_the_repo_it_searches(client: TestClient) -> None:
+def test_the_page_is_served(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert "Searching <strong>owner/name</strong>" in response.text
-    assert "{{repo}}" not in response.text
+
+
+def test_the_repos_offered_are_the_ones_in_the_index(client: TestClient) -> None:
+    response = client.get("/api/repos")
+
+    assert response.status_code == 200
+    assert response.json() == {"repos": ["other/repo", "owner/name"]}
 
 
 # Our list ---------------------------------------------------------------------------
@@ -54,9 +60,11 @@ def test_a_question_finds_the_comment_that_answers_it(client: TestClient) -> Non
     }
 
 
-def test_only_the_repo_the_server_was_started_with_is_searched(client: TestClient) -> None:
-    """Issue 99, in another repo, says it in the title and would win otherwise."""
+def test_only_the_repo_that_was_chosen_is_searched(client: TestClient) -> None:
+    """Issue 99, in the other repo, says it in the title: it wins there and
+    must not show up here."""
     assert 99 not in [result["number"] for result in ours(client, MIGRATIONS)]
+    assert ours(client, MIGRATIONS, repo="other/repo")[0]["number"] == 99
 
 
 def test_a_match_in_the_body_comes_without_the_title_and_links_to_the_issue(
@@ -110,14 +118,14 @@ def test_githubs_list_is_githubs_results_and_the_mode_it_ran(
         "number": 433,
         "title": "Support dev server running on https",
         "state": "open",
-        "html_url": "https://github.com/owner/name/issues/433",
+        "html_url": "https://github.com/other/repo/issues/433",
     }
     made = github_answers(
         monkeypatch,
         lambda request: httpx.Response(200, json={"search_type": "hybrid", "items": [item]}),
     )
 
-    response = client.get("/api/github", params={"q": MIGRATIONS})
+    response = client.get("/api/github", params={"q": MIGRATIONS, "repo": "other/repo"})
 
     assert response.status_code == 200
     assert response.json() == {
@@ -127,11 +135,11 @@ def test_githubs_list_is_githubs_results_and_the_mode_it_ran(
                 "number": 433,
                 "title": "Support dev server running on https",
                 "state": "open",
-                "url": "https://github.com/owner/name/issues/433",
+                "url": "https://github.com/other/repo/issues/433",
             }
         ],
     }
-    assert made[0].url.params["q"] == f"{MIGRATIONS} repo:owner/name is:issue"
+    assert made[0].url.params["q"] == f"{MIGRATIONS} repo:other/repo is:issue"
     assert made[0].url.params["per_page"] == "5"
 
 
@@ -139,21 +147,47 @@ def test_githubs_list_is_githubs_results_and_the_mode_it_ran(
 
 
 @pytest.mark.parametrize("path", ["/api/ours", "/api/github"])
-@pytest.mark.parametrize("query_string", ["", "?q=", "?q=%20%20"])
-def test_an_empty_question_is_refused(client: TestClient, path: str, query_string: str) -> None:
-    response = client.get(path + query_string)
+@pytest.mark.parametrize("question", [None, "", "  "])
+def test_an_empty_question_is_refused(client: TestClient, path: str, question: str | None) -> None:
+    params = {"repo": REPO} if question is None else {"repo": REPO, "q": question}
+
+    response = client.get(path, params=params)
 
     assert response.status_code == 400
     assert response.json() == {"error": "Type a question first."}
 
 
-def test_our_list_says_what_is_wrong_with_the_index(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("path", ["/api/ours", "/api/github"])
+def test_a_question_with_no_repo_chosen_is_refused(client: TestClient, path: str) -> None:
+    response = client.get(path, params={"q": "x"})
+
+    assert response.status_code == 400
+    assert response.json() == {"error": "Choose a repo first."}
+
+
+@pytest.mark.parametrize("path", ["/api/ours", "/api/github"])
+def test_a_repo_that_is_not_in_the_index_is_refused(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, path: str
+) -> None:
+    """Whatever is sent as the repo ends up inside the query GitHub is sent, so
+    only a repo the page was offered is let through. GitHub is never asked."""
+    made = github_answers(monkeypatch, lambda request: httpx.Response(200, json={"items": []}))
+
+    response = client.get(path, params={"q": "x", "repo": "owner/name is:pr"})
+
+    assert response.status_code == 400
+    assert response.json() == {"error": "owner/name is:pr is not synced."}
+    assert made == []
+
+
+@pytest.mark.parametrize("path", ["/api/repos", "/api/ours", "/api/github"])
+def test_each_says_what_is_wrong_with_the_index(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, path: str
 ) -> None:
     problem = "Can't connect to Qdrant at http://localhost:6333 (qdrant.url)."
     monkeypatch.setattr(storage, "index_problem", lambda: problem)
 
-    response = client.get("/api/ours", params={"q": "x"})
+    response = client.get(path, params={"q": "x", "repo": REPO})
 
     assert response.status_code == 503
     assert response.json() == {"error": problem}
@@ -164,7 +198,7 @@ def test_githubs_list_without_a_token_says_how_to_set_one(
 ) -> None:
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
-    response = client.get("/api/github", params={"q": "x"})
+    response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
     assert response.status_code == 503
     assert response.json() == {
@@ -178,7 +212,7 @@ def test_githubs_list_says_how_long_to_wait_when_the_limit_is_spent(
     headers = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(int(time.time()) + 40)}
     github_answers(monkeypatch, lambda request: httpx.Response(403, headers=headers))
 
-    response = client.get("/api/github", params={"q": "x"})
+    response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
     assert response.status_code == 429
     body = response.json()
@@ -193,7 +227,7 @@ def test_githubs_list_says_when_github_failed(
 ) -> None:
     github_answers(monkeypatch, lambda request: httpx.Response(500))
 
-    response = client.get("/api/github", params={"q": "x"})
+    response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
     assert response.status_code == 502
     assert response.json() == {"error": "GitHub's search failed (HTTP 500)."}
@@ -207,7 +241,7 @@ def test_githubs_list_says_when_github_cannot_be_reached(
 
     github_answers(monkeypatch, unreachable)
 
-    response = client.get("/api/github", params={"q": "x"})
+    response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
     assert response.status_code == 502
     assert response.json() == {"error": "Can't reach GitHub."}

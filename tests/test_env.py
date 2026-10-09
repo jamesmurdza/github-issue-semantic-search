@@ -49,3 +49,14 @@ def test_an_empty_github_token_counts_as_not_set(monkeypatch: pytest.MonkeyPatch
     assert env.github_token() is None
     monkeypatch.delenv("GITHUB_TOKEN")
     assert env.github_token() is None
+
+
+def test_an_empty_qdrant_api_key_counts_as_not_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A Qdrant on your own machine has no key, so not set is the usual case,
+    and a blank variable must mean the same."""
+    monkeypatch.setenv("QDRANT_API_KEY", "key-from-the-cloud-console")
+    assert env.qdrant_api_key() == "key-from-the-cloud-console"
+    monkeypatch.setenv("QDRANT_API_KEY", "")
+    assert env.qdrant_api_key() is None
+    monkeypatch.delenv("QDRANT_API_KEY")
+    assert env.qdrant_api_key() is None
