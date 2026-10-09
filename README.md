@@ -5,9 +5,9 @@ the index current as threads change, and serves it to Claude Code or Cursor
 over MCP. Ask in your own words and get back the thread that answers it, even
 when the bug report used different words.
 
-GitHub's own search matches words. This matches meaning too, so "cannot run the
-dev server on windows" finds "Unable to run `npx inngest-cli@latest dev` on
-Windows 11".
+GitHub's own semantic search reads issue titles and bodies. This reads the
+comments too, which is often where the answer is, and shows you the comment
+that matched.
 
 Indexing a large repo takes hours, and has to survive being interrupted along
 the way. [Inngest](https://inngest.link/james-murdza-gh) runs that part:
@@ -113,6 +113,19 @@ The agent starts the server itself. For an agent that connects to a running
 server instead, `gh-issue mcp http` serves the same tools over streamable HTTP
 at `http://127.0.0.1:8000/mcp`.
 
+## Compare it with GitHub's search
+
+```bash
+gh-issue web inngest/inngest
+```
+
+Open http://127.0.0.1:8080 and type a question. The page sends it to GitHub's
+own issue search and to this index, for the same repo, and shows the two lists
+side by side. A match in a comment is shown as that comment.
+
+GitHub's list comes from its search API in hybrid mode, with the same
+`github.token`. GitHub allows 10 of those searches a minute.
+
 ## Commands
 
 | command | what it does |
@@ -125,6 +138,7 @@ at `http://127.0.0.1:8000/mcp`.
 | `gh-issue search <words>` | Search every synced repo. `--repo` (`-R`), `--state` (`-s`), `--label` (`-l`), `--author` (`-A`), `--kind` and `--since` filter, as in `gh issue list`; `--limit` (`-L`) sets how many results, 1 to 50. |
 | `gh-issue mcp stdio` | Serve the index over MCP, for an agent that starts the server itself. |
 | `gh-issue mcp http` | The same over streamable HTTP, for an agent that connects to a running server. |
+| `gh-issue web owner/name` | Show GitHub's own issue search and the index side by side, in a browser. |
 
 `gh-issue <command> --help` has the details, and examples.
 
@@ -252,7 +266,8 @@ gh_issue/
 │   │   ├── preflight.py       the checks worker and sync run first
 │   │   ├── config.py          config.toml, and the config commands
 │   │   └── display.py         everything the commands print
-│   └── mcp.py               the MCP tools: search_issues, get_issue, status
+│   ├── mcp.py               the MCP tools: search_issues, get_issue, status
+│   └── web/                 gh-issue web: the page, and the server behind it
 ├── functions/             the Inngest functions
 │   ├── index_issue.py       one issue: fetch, chunk, embed, write, clean up
 │   ├── backfill.py          a whole repo, one page per run
@@ -268,12 +283,12 @@ gh_issue/
 │   └── records/             sweep cursors, backfill progress, failures, the heartbeat
 ├── github/                GitHub's REST API, and the shapes it returns
 ├── env.py                 the environment variables the package reads
-└── utils.py               the time, printing, safe file writes
+└── utils.py               the time, printing, snippets, safe file writes
 ```
 
 Imports go one way: `interface/cli/` uses `functions/` and `index/`,
-`interface/mcp.py` and `functions/` use `index/`, and `index/` imports none of
-them. `tests/` has the same layout.
+`interface/mcp.py`, `interface/web/` and `functions/` use `index/`, and
+`index/` imports none of them. `tests/` has the same layout.
 
 ## Development
 
@@ -282,8 +297,15 @@ uv sync
 uv run pytest
 ```
 
-The tests need nothing running: they open Qdrant in embedded mode, in a
-temporary directory, and never touch your `~/.gh-issue`. To run the index tests
+One test opens the web page in Chromium. If Playwright has no Chromium on your
+machine yet, install it once:
+
+```bash
+uv run playwright install chromium
+```
+
+Apart from that the tests need nothing running: they open Qdrant in embedded
+mode, in a temporary directory, and never touch your `~/.gh-issue`. To run the index tests
 against a real Qdrant server instead:
 
 ```bash

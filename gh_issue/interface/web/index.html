@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>gh-issue: {{repo}}</title>
+<style>
+  :root {
+    --color-canvas: #f6f8fa;
+    --color-canvas-inset: #ffffff;
+    --color-border: #d0d7de;
+    --color-border-muted: #d8dee4;
+    --color-fg: #1f2328;
+    --color-fg-muted: #656d76;
+    --color-accent: #0969da;
+    --color-accent-subtle: #ddf4ff;
+    --color-open: #1a7f37;
+    --color-closed: #8250df;
+    --color-attention: #9a6700;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--color-canvas);
+    color: var(--color-fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 9vh 16px 32px;
+  }
+
+  svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+  .brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .brand .mark { width: 32px; height: 32px; }
+
+  .brand span {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  /* The question ------------------------------------------------------------ */
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .search-box:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  }
+
+  .search-box .search-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--color-fg-muted);
+  }
+
+  .search-box input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+    font-size: 16px;
+    appearance: none;
+  }
+
+  .search-box input::placeholder { color: var(--color-fg-muted); }
+  .search-box input::-webkit-search-cancel-button { display: none; }
+
+  kbd {
+    flex: none;
+    font: inherit;
+    font-size: 12px;
+    color: var(--color-fg-muted);
+    background: var(--color-canvas);
+    border: 1px solid var(--color-border-muted);
+    border-radius: 6px;
+    padding: 1px 7px;
+  }
+
+  .scope {
+    margin: 10px 0 28px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-fg-muted);
+  }
+
+  .scope strong {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+
+  /* The two lists ----------------------------------------------------------- */
+
+  .lists {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .list {
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    min-height: 168px;
+  }
+
+  .list > header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 12px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--color-border-muted);
+  }
+
+  .list h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .list .mode {
+    font-size: 12px;
+    color: var(--color-fg-muted);
+  }
+
+  .list .covers {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--color-fg-muted);
+  }
+
+  .results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .result + .result { border-top: 1px solid var(--color-border-muted); }
+
+  .result a {
+    display: block;
+    padding: 12px 16px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .result a:hover { background: var(--color-canvas); }
+
+  .result a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  .result:last-child a { border-radius: 0 0 7px 7px; }
+
+  .heading {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    align-self: center;
+  }
+
+  .icon.open { color: var(--color-open); }
+  .icon.closed { color: var(--color-closed); }
+
+  .title {
+    font-weight: 600;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .number {
+    flex: none;
+    font-size: 13px;
+    color: var(--color-fg-muted);
+  }
+
+  /* Which post matched, and the post. Only our results have these. */
+
+  .where {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 0 24px;
+    font-size: 13px;
+    color: var(--color-fg-muted);
+  }
+
+  .where .icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .post {
+    margin: 6px 0 0 24px;
+    font-size: 14px;
+    color: var(--color-fg-muted);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* The one loud thing on the page: an answer that was found in a comment. */
+  .post.in-comment {
+    color: var(--color-fg);
+    background: var(--color-accent-subtle);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+  }
+
+  .where.in-comment { color: var(--color-accent); }
+
+  .message {
+    margin: 0;
+    padding: 36px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-fg-muted);
+  }
+
+  .message:empty { display: none; }
+
+  .message.failed {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .message.failed .icon {
+    align-self: auto;
+    margin-top: 3px;
+    color: var(--color-attention);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .results { animation: arrive 0.16s ease-out; }
+    @keyframes arrive { from { opacity: 0; } }
+  }
+
+  @media (max-width: 720px) {
+    body { padding-top: 5vh; }
+    .lists { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+  <header class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38
+        0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95
+        0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27
+        -.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82
+        1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66
+        -.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94
+        0 .67.01 1.3.01 1.49 0 .21-.15.46-.55.38A8.012 8.012 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+      </svg>
+    </div>
+    <span>gh-issue</span>
+  </header>
+
+  <main>
+    <form class="search-box" id="ask" role="search">
+      <div class="search-icon">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04ZM12
+          6.5a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0Z"/>
+        </svg>
+      </div>
+      <input
+        id="question"
+        type="search"
+        aria-label="Question"
+        placeholder="Ask about an issue, in your own words"
+        autocomplete="off"
+        spellcheck="false"
+        autofocus
+      />
+      <kbd>Enter</kbd>
+    </form>
+    <p class="scope">Searching <strong>{{repo}}</strong></p>
+
+    <div class="lists">
+      <section class="list" id="github" aria-labelledby="github-name">
+        <header>
+          <h2 id="github-name">GitHub search</h2>
+          <span class="mode" hidden></span>
+          <span class="covers">Semantic: titles and bodies</span>
+        </header>
+        <ol class="results"></ol>
+        <p class="message" role="status"></p>
+      </section>
+
+      <section class="list" id="ours" aria-labelledby="ours-name">
+        <header>
+          <h2 id="ours-name">gh-issue</h2>
+          <span class="covers">Semantic: titles, bodies and comments</span>
+        </header>
+        <ol class="results"></ol>
+        <p class="message" role="status"></p>
+      </section>
+    </div>
+  </main>
+
+<script>
+  const form = document.getElementById("ask");
+  const input = document.getElementById("question");
+  const lists = {
+    github: document.getElementById("github"),
+    ours: document.getElementById("ours"),
+  };
+  // Counts the searches started, so an answer to an older one can be dropped.
+  let latest = 0;
+
+  const ICONS = {
+    open: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>`,
+    closed: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.28 6.78a.75.75 0 0 0-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l3.5-3.5Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>`,
+    comment: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>`,
+    alert: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>`,
+  };
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  // The only HTML built from a string is an icon, and those are the constants
+  // above. Titles and posts are other people's text and go in as text.
+  function icon(name) {
+    const holder = element("span", `icon ${name}`);
+    holder.innerHTML = ICONS[name];
+    return holder;
+  }
+
+  function day(date) {
+    return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  }
+
+  function say(list, text, failed = false) {
+    list.querySelector(".results").replaceChildren();
+    const message = list.querySelector(".message");
+    message.classList.toggle("failed", failed);
+    message.replaceChildren();
+    if (failed) message.append(icon("alert"));
+    if (text) message.append(element("span", "", text));
+  }
+
+  function row(result) {
+    const item = element("li", "result");
+    const link = element("a");
+    link.href = result.url;
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    const heading = element("span", "heading");
+    heading.append(icon(result.state === "open" ? "open" : "closed"));
+    heading.append(element("span", "title", result.title));
+    heading.append(element("span", "number", `#${result.number}`));
+    link.append(heading);
+
+    // Only our results say which post matched, and show it.
+    if (result.kind) {
+      const comment = result.kind === "comment";
+      const where = element("span", comment ? "where in-comment" : "where");
+      if (comment) where.append(icon("comment"));
+      const post = comment ? "Comment" : "Issue body";
+      where.append(element("span", "", `${post} by ${result.author}, ${day(result.date)}`));
+      link.append(where);
+      link.append(element("span", comment ? "post in-comment" : "post", result.text));
+    }
+    item.append(link);
+    return item;
+  }
+
+  async function ask(name, question, turn) {
+    const list = lists[name];
+    say(list, "Searching...");
+    let response;
+    let body;
+    try {
+      response = await fetch(`/api/${name}?q=${encodeURIComponent(question)}`);
+      body = await response.json();
+    } catch {
+      if (turn === latest) say(list, "The search failed.", true);
+      return;
+    }
+    if (turn !== latest) return;
+    if (!response.ok) {
+      say(list, body.error || "The search failed.", true);
+      return;
+    }
+
+    const mode = list.querySelector(".mode");
+    if (mode) {
+      mode.textContent = `${body.mode} mode`;
+      mode.hidden = false;
+    }
+    if (!body.results.length) {
+      say(list, "No results");
+      return;
+    }
+    say(list, "");
+    list.querySelector(".results").replaceChildren(...body.results.map(row));
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    latest += 1;
+    ask("github", question, latest);
+    ask("ours", question, latest);
+  });
+
+  // "/" brings the cursor back to the question, as it does on GitHub.
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "/" && document.activeElement !== input) {
+      event.preventDefault();
+      input.focus();
+    }
+  });
+</script>
+</body>
+</html>

@@ -156,6 +156,45 @@ def search(
     print(display.format_hits(hits), flush=True)
 
 
+@app.command(
+    group=SEARCH,
+    sort_key=3,
+    help_epilogue=_examples(
+        "`gh-issue web inngest/inngest  # then open http://127.0.0.1:8080`",
+        "`gh-issue web inngest/inngest --port 9000`",
+    ),
+)
+def web(
+    repo: Repo,
+    /,
+    *,
+    host: str = "127.0.0.1",
+    port: Annotated[int, Parameter(validator=validators.Number(gte=1, lte=65535))] = 8080,
+) -> None:
+    """Show GitHub's own issue search and this index side by side, in a browser.
+
+    Parameters
+    ----------
+    repo
+        The synced repo both searches look in, as owner/name.
+    host
+        Interface to listen on. The default only accepts local connections.
+    port
+        Port to listen on.
+    """
+    import uvicorn
+
+    from gh_issue.index import storage
+    from gh_issue.interface.web.app import make_app
+
+    _check_index()
+    if repo not in storage.store().stats():
+        raise SystemExit(f"{repo} is not synced. Sync it with: gh-issue sync {repo}")
+    print(f"Open http://{host}:{port}", flush=True)
+    # Quiet, so a line per request doesn't bury the address just printed.
+    uvicorn.run(make_app(repo), host=host, port=port, log_level="warning")
+
+
 @app.command(group=INDEX, sort_key=2, help_epilogue="")
 def status() -> None:
     """What is synced, how far each backfill has got, and whether a worker is up."""

@@ -14,10 +14,14 @@ from typing import Any
 
 import cyclopts
 import pytest
+from starlette.testclient import TestClient
 
+from gh_issue.github.types import Issue
 from gh_issue.index import query, storage
+from gh_issue.index.chunking import chunks_for
+from gh_issue.index.embed import DIM, embed_chunks
 from gh_issue.index.query import Status
-from gh_issue.index.store import SearchFilters
+from gh_issue.index.store import SearchFilters, Store
 from gh_issue.interface.cli import app as cli
 from gh_issue.interface.cli import config, remove
 
@@ -266,6 +270,9 @@ def test_config_unset_of_a_setting_the_file_lacks_says_so(
             id="search-repo",
         ),
         pytest.param(["remove"], "REPO requires an argument", id="remove-with-no-repo"),
+        pytest.param(["web"], "REPO requires an argument", id="web-with-no-repo"),
+        pytest.param(["web", "inngest"], '"inngest" for REPO. Use owner/name', id="web-repo"),
+        pytest.param(["web", "a/b", "--port", "99999"], "Must be <= 65535", id="web-port"),
         pytest.param(
             ["config", "set", "qdrant.host", "x"],
             'Did you mean "qdrant.url"?',
@@ -312,7 +319,7 @@ def test_help_groups_the_commands_in_the_order_you_use_them(
     groups = re.findall(r"^\W+ (Set up|Index|Search|Help) \W", text, re.MULTILINE)
     rows = re.findall(r"^\W (\w[\w-]*) {2,}\S", text, re.MULTILINE)
     assert groups == ["Set up", "Index", "Search", "Help"]
-    assert rows[:7] == ["config", "worker", "sync", "status", "remove", "search", "mcp"]
+    assert rows[:8] == ["config", "worker", "sync", "status", "remove", "search", "mcp", "web"]
     assert "Start here" in text
     assert "Start here" not in help_for(["status"], capsys)
 
@@ -341,7 +348,7 @@ EXAMPLES = [line for path in commands(cli.app) for line in examples(path)]
 
 def test_the_commands_with_options_to_learn_show_examples_in_their_help() -> None:
     shown = {path for path in commands(cli.app) if examples(path)}
-    assert {("sync",), ("search",), ("remove",), ("config",), ("mcp",)} <= shown
+    assert {("sync",), ("search",), ("remove",), ("config",), ("mcp",), ("web",)} <= shown
 
 
 @pytest.mark.parametrize("line", EXAMPLES)
@@ -425,7 +432,7 @@ def test_words_that_are_only_spaces_are_a_message_not_a_traceback(
         cli.search("  ")
 
 
-@pytest.mark.parametrize("command", ["search", "status", "remove"])
+@pytest.mark.parametrize("command", ["search", "status", "remove", "web"])
 def test_each_says_what_is_wrong_with_the_index_before_trying(
     monkeypatch: pytest.MonkeyPatch, command: str
 ) -> None:
@@ -435,8 +442,10 @@ def test_each_says_what_is_wrong_with_the_index_before_trying(
             cli.search("x")
         elif command == "status":
             cli.status()
-        else:
+        elif command == "remove":
             cli.remove("a/b", yes=True)
+        else:
+            cli.web("a/b")
 
 
 def test_status_prints_the_worker_and_the_repos(
@@ -490,3 +499,57 @@ def test_remove_hands_the_repo_and_the_flag_on(monkeypatch: pytest.MonkeyPatch) 
     cli.remove("a/b", yes=True)
 
     assert handed == [("a/b", True)]
+
+
+# web ----------------------------------------------------------------------------
+
+
+def test_web_refuses_a_repo_that_is_not_synced(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Otherwise the page opens and every question finds nothing."""
+    store = Store(dim=DIM, path=str(tmp_path / "qdrant"))
+    monkeypatch.setattr(storage, "store", lambda: store)
+    try:
+        with pytest.raises(
+            SystemExit, match=r"a/b is not synced\. Sync it with: gh-issue sync a/b"
+        ):
+            cli.web("a/b")
+    finally:
+        store.close()
+
+
+ONE_ISSUE: Issue = {
+    "number": 1,
+    "title": "Anything",
+    "body": "One issue is enough for the repo to count as synced.",
+    "state": "open",
+    "labels": [],
+    "user": {"login": "reporter"},
+    "created_at": "2026-01-01T00:00:00Z",
+    "comments": 0,
+}
+
+
+def test_web_serves_the_page_for_its_repo_where_it_was_told_to(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """uvicorn.run is the one thing replaced: it blocks until the process is
+    stopped. The browser test runs the real uvicorn server."""
+    store = Store(dim=DIM, path=str(tmp_path / "qdrant"))
+    store.upsert(embed_chunks(chunks_for("a/b", ONE_ISSUE, [])))
+    monkeypatch.setattr(storage, "store", lambda: store)
+    served: dict[str, Any] = {}
+
+    def run(app: Any, **options: Any) -> None:
+        served.update(options, page=TestClient(app).get("/").text)
+
+    monkeypatch.setattr("uvicorn.run", run)
+    try:
+        cli.web("a/b", port=9000)
+    finally:
+        store.close()
+
+    assert (served["host"], served["port"]) == ("127.0.0.1", 9000)
+    assert "Searching <strong>a/b</strong>" in served["page"]
+    assert "http://127.0.0.1:9000" in capsys.readouterr().out
