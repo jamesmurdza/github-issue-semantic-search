@@ -1,3 +1,4 @@
+import time
 from collections.abc import Callable
 
 import httpx
@@ -125,3 +126,91 @@ def test_trim_comment_turns_a_null_body_into_an_empty_string() -> None:
         "created_at": "2026-01-02T00:00:00Z",
     }
     assert trim_comment(raw)["body"] == ""
+
+
+# GitHub's own search, which the web page shows next to ours ----------------------
+
+
+def test_search_issues_asks_githubs_hybrid_search_for_issues_in_one_repo(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: list[httpx.Request] = []
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        item = {
+            "number": 433,
+            "title": "Support dev server running on https",
+            "state": "open",
+            "html_url": "https://github.com/owner/name/issues/433",
+            "body": "a long body the page never shows",
+            "user": {"login": "someone"},
+        }
+        return httpx.Response(
+            200, json={"total_count": 1, "search_type": "hybrid", "items": [item]}
+        )
+
+    asked = answering(monkeypatch, answer)
+
+    found = api.search_issues("owner/name", "cannot start the server", limit=5)
+
+    assert asked == ["/search/issues"]
+    assert dict(seen[0].url.params) == {
+        "q": "cannot start the server repo:owner/name is:issue",
+        "search_type": "hybrid",
+        "per_page": "5",
+    }
+    assert found == {
+        "mode": "hybrid",
+        "issues": [
+            {
+                "number": 433,
+                "title": "Support dev server running on https",
+                "state": "open",
+                "url": "https://github.com/owner/name/issues/433",
+            }
+        ],
+    }
+
+
+def test_search_issues_reports_the_mode_github_ran_not_the_one_asked_for(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """If GitHub ever answers with plain keyword search, the page has to say so."""
+    answering(
+        monkeypatch,
+        lambda request: httpx.Response(200, json={"search_type": "lexical", "items": []}),
+    )
+    found = api.search_issues("owner/name", "x")
+
+    assert found["mode"] == "lexical"
+    assert found["issues"] == []
+
+
+def test_search_issues_turns_the_spent_limit_into_seconds_to_wait(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """What GitHub sent for the tenth search inside a minute, on 2026-10-09: a
+    403, nothing remaining, and the time of the reset. No retry-after."""
+    headers = {
+        "x-ratelimit-remaining": "0",
+        "x-ratelimit-reset": str(int(time.time()) + 40),
+        "x-ratelimit-resource": "semantic_search",
+    }
+    answering(monkeypatch, lambda request: httpx.Response(403, headers=headers))
+
+    with pytest.raises(api.SearchLimited) as limited:
+        api.search_issues("owner/name", "x")
+    assert 38 <= limited.value.retry_after <= 40
+
+
+def test_search_issues_still_raises_on_a_403_that_is_not_the_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A token that may not see the repo is also a 403, and waiting won't fix it."""
+    answering(
+        monkeypatch,
+        lambda request: httpx.Response(403, headers={"x-ratelimit-remaining": "7"}),
+    )
+    with pytest.raises(httpx.HTTPStatusError):
+        api.search_issues("owner/name", "x")

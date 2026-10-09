@@ -5,6 +5,7 @@ network round trip with no retry logic of its own — Inngest owns the retries.
 """
 
 import re
+import time
 from collections.abc import Mapping
 from typing import Any, TypedDict
 from urllib.parse import parse_qs, urlparse
@@ -16,6 +17,8 @@ from gh_issue.github.types import Comment, Issue
 
 API = "https://api.github.com"
 PER_PAGE = 100
+# The mode GitHub's own issue search is asked for: semantic and keyword together.
+SEARCH_MODE = "hybrid"
 
 _NEXT_LINK = re.compile(r'<([^>]+)>;\s*rel="next"')
 
@@ -25,6 +28,28 @@ class IssuePage(TypedDict):
 
     issues: list[Issue]
     next: str | None
+
+
+class FoundIssue(TypedDict):
+    number: int
+    title: str
+    state: str
+    url: str
+
+
+class IssueSearch(TypedDict):
+    # What GitHub says it ran, which need not be what was asked for.
+    mode: str
+    issues: list[FoundIssue]
+
+
+class SearchLimited(Exception):
+    """GitHub's allowance of semantic searches is spent; `retry_after` is the
+    seconds until it is refilled."""
+
+    def __init__(self, retry_after: int) -> None:
+        super().__init__(f"GitHub's search limit is spent for {retry_after} more seconds")
+        self.retry_after = retry_after
 
 
 def next_cursor_from_link(link_header: str | None) -> str | None:
@@ -141,6 +166,40 @@ def repo_exists(repo: str) -> bool:
             return False
         response.raise_for_status()
         return True
+
+
+def search_issues(repo: str, query: str, limit: int = 5) -> IssueSearch:
+    """GitHub's own issue search for `query`, in one repo.
+
+    Hybrid is its strongest mode: the semantic index and the keyword search
+    together. GitHub allows a user 10 of these a minute and answers 403, with
+    the time of the reset, once they are spent.
+    """
+    params: dict[str, str | int] = {
+        "q": f"{query} repo:{repo} is:issue",
+        "search_type": SEARCH_MODE,
+        "per_page": limit,
+    }
+    with _client() as http:
+        response = http.get("/search/issues", params=params)
+        spent = response.headers.get("x-ratelimit-remaining") == "0"
+        if response.status_code in (403, 429) and spent:
+            reset = int(response.headers.get("x-ratelimit-reset", "0"))
+            raise SearchLimited(max(1, reset - int(time.time())))
+        response.raise_for_status()
+        found: dict[str, Any] = response.json()
+        return {
+            "mode": found.get("search_type", SEARCH_MODE),
+            "issues": [
+                {
+                    "number": item["number"],
+                    "title": item["title"],
+                    "state": item["state"],
+                    "url": item["html_url"],
+                }
+                for item in found["items"]
+            ],
+        }
 
 
 def register_webhook(repo: str, url: str, secret: str) -> dict[str, Any]:

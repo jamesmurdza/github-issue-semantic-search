@@ -8,6 +8,7 @@ from gh_issue.index.records.backfills import BackfillProgress
 from gh_issue.index.records.heartbeat import WorkerStatus
 from gh_issue.index.store import SearchHit
 from gh_issue.interface.cli.config import SETTINGS, Shown
+from gh_issue.utils import snippet
 
 SNIPPET = 240
 
@@ -26,11 +27,6 @@ def ago(then: str, now: datetime.datetime) -> str:
     return f"{days} day ago" if days == 1 else f"{days} days ago"
 
 
-def _snippet(text: str) -> str:
-    flat = " ".join(text.split())
-    return flat if len(flat) <= SNIPPET else flat[: SNIPPET - 3].rstrip() + "..."
-
-
 def format_hits(hits: list[SearchHit]) -> str:
     if not hits:
         return "No matches."
@@ -47,7 +43,7 @@ def format_hits(hits: list[SearchHit]) -> str:
                 [
                     f"{position}. {hit['repo']}#{number} ({hit['state']}) {hit['title']}",
                     f"   {hit['kind']} by {hit['author']} on {hit['created_at'][:10]}",
-                    f"   {_snippet(text)}",
+                    f"   {snippet(text, SNIPPET)}",
                     f"   https://github.com/{hit['repo']}/issues/{number}",
                 ]
             )

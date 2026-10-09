@@ -38,6 +38,12 @@ def print_now(message: str) -> None:
     print(message, flush=True)
 
 
+def snippet(text: str, length: int) -> str:
+    """`text` on one line, cut to `length` characters, ending in "..." if cut."""
+    flat = " ".join(text.split())
+    return flat if len(flat) <= length else flat[: length - 3].rstrip() + "..."
+
+
 def patiently[T](action: Callable[[], T]) -> T:
     """Run a file operation, trying again while the file is briefly in use.
 
