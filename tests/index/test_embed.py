@@ -1,3 +1,13 @@
+import inspect
+import threading
+import time
+from collections.abc import Iterator
+
+import numpy as np
+import pytest
+from fastembed import TextEmbedding
+
+from gh_issue.index import embed
 from gh_issue.index.chunking import Chunk
 from gh_issue.index.embed import DIM, QUERY_INSTRUCTION, embed_chunks, embed_query, embed_texts
 
@@ -98,3 +108,66 @@ def test_a_query_is_embedded_with_the_instruction_bge_expects() -> None:
 
     assert dense == embed_texts([QUERY_INSTRUCTION + text])[0]
     assert dense != embed_texts([text])[0]
+
+
+# How much memory an embedding takes ----------------------------------------------
+#
+# Found indexing psf/requests on 2026-10-11, a repo of long threads. The worker
+# grew to 7 GB, the machine ran out of memory ("bad allocation" from the model's
+# attention layer), the Inngest dev server on the same machine slowed until its
+# queue timed out, and indexing stopped for half an hour.
+
+
+class Counting:
+    """In place of the model: notes how it was called, and how many calls were
+    inside it at once."""
+
+    def __init__(self) -> None:
+        self.batch_sizes: list[object] = []
+        self.inside = 0
+        self.most_inside = 0
+        self._count = threading.Lock()
+
+    def embed(self, texts: list[str], batch_size: object = None) -> Iterator[np.ndarray]:
+        self.batch_sizes.append(batch_size)
+        with self._count:
+            self.inside += 1
+            self.most_inside = max(self.most_inside, self.inside)
+        time.sleep(0.05)
+        with self._count:
+            self.inside -= 1
+        return iter([np.zeros(embed.DIM, dtype=np.float32) for _ in texts])
+
+
+def test_texts_go_through_the_model_a_few_at_a_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The memory one call takes grows with how many texts the model is given
+    at once, and the library's own choice is 256. Measured on 100 chunks of
+    2,000 characters: 1.6 GB at 256, 0.5 GB at 16, 0.1 GB at 4, and all three
+    took 12 to 14 seconds."""
+    model = Counting()
+    monkeypatch.setattr(embed, "_model", lambda: model)
+
+    vectors = embed.embed_texts(["a comment"] * 30)
+
+    assert len(vectors) == 30
+    assert model.batch_sizes == [embed.MODEL_BATCH]
+    assert embed.MODEL_BATCH <= 8
+    # The stand-in takes what the real model takes.
+    assert "batch_size" in inspect.signature(TextEmbedding.embed).parameters
+
+
+def test_one_embedding_runs_at_a_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Dozens of issues are indexed at once, each in a thread of its own. The
+    model already uses every core for one of them, so two at once are no
+    faster, and each holds its own batch in memory."""
+    model = Counting()
+    monkeypatch.setattr(embed, "_model", lambda: model)
+
+    threads = [threading.Thread(target=embed.embed_texts, args=(["a comment"],)) for _ in range(6)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert len(model.batch_sizes) == 6
+    assert model.most_inside == 1

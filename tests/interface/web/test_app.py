@@ -2,14 +2,13 @@
 Qdrant and the real embedding model."""
 
 import time
-from collections.abc import Callable
 
 import httpx
 import pytest
 from starlette.testclient import TestClient
 
-from gh_issue.github import api
 from gh_issue.index import storage
+from tests.interface.web.conftest import GitHubAnswers, github_item
 
 REPO = "owner/name"
 MIGRATIONS = (
@@ -88,41 +87,33 @@ def test_a_long_post_is_cut(client: TestClient) -> None:
     assert text.endswith("...")
 
 
+def test_a_post_comes_without_its_markdown_markers(client: TestClient) -> None:
+    """The page shows a post as plain words, so a heading's hashes, bold's
+    stars, a quote's arrow, a link's address and a template's comment are left
+    out. Code keeps its backticks: that is how the page knows to show it as code."""
+    first = ours(
+        client, "the webhook signature is rejected after rotating the key", repo="other/repo"
+    )[0]
+
+    assert first["number"] == 100
+    assert first["text"] == (
+        "Describe the bug: The webhook signature check fails with `InvalidSignature` after "
+        "I rotate the signing key. I followed the rotation guide. "
+        "`curl -X POST localhost:8288/hook`"
+    )
+
+
 # GitHub's list ----------------------------------------------------------------------
 
 
-def github_answers(
-    monkeypatch: pytest.MonkeyPatch, handler: Callable[[httpx.Request], httpx.Response]
-) -> list[httpx.Request]:
-    """Give the server a token, and route its GitHub client through a fake
-    transport; returns the requests it made."""
-    made: list[httpx.Request] = []
-
-    def transport(request: httpx.Request) -> httpx.Response:
-        made.append(request)
-        return handler(request)
-
-    monkeypatch.setenv("GITHUB_TOKEN", "a-token-for-tests")
-    monkeypatch.setattr(
-        api,
-        "_client",
-        lambda: httpx.Client(base_url=api.API, transport=httpx.MockTransport(transport)),
-    )
-    return made
-
-
 def test_githubs_list_is_githubs_results_and_the_mode_it_ran(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
+    client: TestClient, github_answers: GitHubAnswers
 ) -> None:
-    item = {
-        "number": 433,
-        "title": "Support dev server running on https",
-        "state": "open",
-        "html_url": "https://github.com/other/repo/issues/433",
-    }
+    item = github_item(433, "Support dev server running on https", repo="other/repo")
     made = github_answers(
-        monkeypatch,
-        lambda request: httpx.Response(200, json={"search_type": "hybrid", "items": [item]}),
+        lambda request: httpx.Response(
+            200, json={"total_count": 23, "search_type": "hybrid", "items": [item]}
+        ),
     )
 
     response = client.get("/api/github", params={"q": MIGRATIONS, "repo": "other/repo"})
@@ -130,12 +121,16 @@ def test_githubs_list_is_githubs_results_and_the_mode_it_ran(
     assert response.status_code == 200
     assert response.json() == {
         "mode": "hybrid",
+        "total": 23,
         "results": [
             {
                 "number": 433,
                 "title": "Support dev server running on https",
                 "state": "open",
                 "url": "https://github.com/other/repo/issues/433",
+                "author": "someone",
+                "date": "2026-03-03",
+                "comments": 4,
             }
         ],
     }
@@ -167,11 +162,11 @@ def test_a_question_with_no_repo_chosen_is_refused(client: TestClient, path: str
 
 @pytest.mark.parametrize("path", ["/api/ours", "/api/github"])
 def test_a_repo_that_is_not_in_the_index_is_refused(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch, path: str
+    client: TestClient, github_answers: GitHubAnswers, path: str
 ) -> None:
     """Whatever is sent as the repo ends up inside the query GitHub is sent, so
     only a repo the page was offered is let through. GitHub is never asked."""
-    made = github_answers(monkeypatch, lambda request: httpx.Response(200, json={"items": []}))
+    made = github_answers(lambda request: httpx.Response(200, json={"items": []}))
 
     response = client.get(path, params={"q": "x", "repo": "owner/name is:pr"})
 
@@ -207,10 +202,10 @@ def test_githubs_list_without_a_token_says_how_to_set_one(
 
 
 def test_githubs_list_says_how_long_to_wait_when_the_limit_is_spent(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
+    client: TestClient, github_answers: GitHubAnswers
 ) -> None:
     headers = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(int(time.time()) + 40)}
-    github_answers(monkeypatch, lambda request: httpx.Response(403, headers=headers))
+    github_answers(lambda request: httpx.Response(403, headers=headers))
 
     response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
@@ -223,9 +218,9 @@ def test_githubs_list_says_how_long_to_wait_when_the_limit_is_spent(
 
 
 def test_githubs_list_says_when_github_failed(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
+    client: TestClient, github_answers: GitHubAnswers
 ) -> None:
-    github_answers(monkeypatch, lambda request: httpx.Response(500))
+    github_answers(lambda request: httpx.Response(500))
 
     response = client.get("/api/github", params={"q": "x", "repo": REPO})
 
@@ -234,12 +229,12 @@ def test_githubs_list_says_when_github_failed(
 
 
 def test_githubs_list_says_when_github_cannot_be_reached(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
+    client: TestClient, github_answers: GitHubAnswers
 ) -> None:
     def unreachable(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("no route", request=request)
 
-    github_answers(monkeypatch, unreachable)
+    github_answers(unreachable)
 
     response = client.get("/api/github", params={"q": "x", "repo": REPO})
 

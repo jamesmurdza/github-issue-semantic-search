@@ -23,7 +23,7 @@ from gh_issue.github import api
 from gh_issue.index import query as reads
 from gh_issue.index import storage
 from gh_issue.index.store import SearchHit
-from gh_issue.utils import snippet
+from gh_issue.interface.web.plain import excerpt
 
 # How many issues each list shows.
 LIMIT = 5
@@ -68,7 +68,7 @@ def _result(hit: SearchHit) -> OurResult:
         "kind": hit["kind"],
         "author": hit["author"],
         "date": hit["created_at"][:10],
-        "text": snippet(text, SNIPPET),
+        "text": excerpt(text, SNIPPET),
         "url": _url(hit),
     }
 
@@ -137,7 +137,9 @@ def make_app() -> Starlette:
             return _error(502, f"GitHub's search failed (HTTP {error.response.status_code}).")
         except httpx.HTTPError:
             return _error(502, "Can't reach GitHub.")
-        return JSONResponse({"mode": found["mode"], "results": found["issues"]})
+        return JSONResponse(
+            {"mode": found["mode"], "total": found["total"], "results": found["issues"]}
+        )
 
     return Starlette(
         routes=[

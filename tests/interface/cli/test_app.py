@@ -17,7 +17,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from gh_issue.github.types import Issue
-from gh_issue.index import query, storage
+from gh_issue.index import embed, query, storage
 from gh_issue.index.chunking import chunks_for
 from gh_issue.index.embed import DIM, embed_chunks
 from gh_issue.index.query import Status
@@ -552,3 +552,23 @@ def test_web_serves_the_page_where_it_was_told_to(
     assert (served["host"], served["port"]) == ("127.0.0.1", 9000)
     assert served["repos"] == {"repos": ["a/b"]}
     assert "http://127.0.0.1:9000" in capsys.readouterr().out
+
+
+def test_web_loads_the_model_before_it_serves(
+    index: Store, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Otherwise the first search waits for the model. Measured on 2026-10-11:
+    1.9 s for the first search and 0.05 s for the ones after it, so on a first
+    try the index answered after GitHub did."""
+    index.upsert(embed_chunks(chunks_for("a/b", ONE_ISSUE, [])))
+    embed._model.cache_clear()
+    loaded: list[int] = []
+
+    def run(app: Any, **options: Any) -> None:
+        loaded.append(embed._model.cache_info().currsize)
+
+    monkeypatch.setattr("uvicorn.run", run)
+
+    cli.web()
+
+    assert loaded == [1]

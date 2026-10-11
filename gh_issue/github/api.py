@@ -35,11 +35,17 @@ class FoundIssue(TypedDict):
     title: str
     state: str
     url: str
+    author: str
+    # The day it was opened, as YYYY-MM-DD.
+    date: str
+    comments: int
 
 
 class IssueSearch(TypedDict):
     # What GitHub says it ran, which need not be what was asked for.
     mode: str
+    # How many issues matched in all; `issues` is only the first few of them.
+    total: int
     issues: list[FoundIssue]
 
 
@@ -190,12 +196,17 @@ def search_issues(repo: str, query: str, limit: int = 5) -> IssueSearch:
         found: dict[str, Any] = response.json()
         return {
             "mode": found.get("search_type", SEARCH_MODE),
+            "total": found.get("total_count", len(found["items"])),
             "issues": [
                 {
                     "number": item["number"],
                     "title": item["title"],
                     "state": item["state"],
                     "url": item["html_url"],
+                    # GitHub sends no user for a deleted account, and shows "ghost".
+                    "author": (item["user"] or {}).get("login", "ghost"),
+                    "date": item["created_at"][:10],
+                    "comments": item["comments"],
                 }
                 for item in found["items"]
             ],

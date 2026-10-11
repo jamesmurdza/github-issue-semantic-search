@@ -3,6 +3,7 @@ variables that override it. Real files in a directory of each test's own."""
 
 import os
 import stat
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -20,12 +21,17 @@ ENV_VARS = [
 
 
 @pytest.fixture(autouse=True)
-def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     """An empty home, and none of the settings' variables set."""
     monkeypatch.setenv("GH_ISSUE_HOME", str(tmp_path / "home"))
     for name in ENV_VARS:
         monkeypatch.delenv(name, raising=False)
-    return tmp_path / "home"
+    yield tmp_path / "home"
+    # apply() writes to the environment itself, and monkeypatch only puts back
+    # a variable that was set before the test. Without this, a key set here
+    # was still set for whichever test file ran next.
+    for name in ENV_VARS:
+        os.environ.pop(name, None)
 
 
 def test_set_writes_one_toml_section_per_service(home: Path) -> None:

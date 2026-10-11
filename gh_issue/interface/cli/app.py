@@ -188,6 +188,7 @@ def web(
     _check_index()
     if not query.indexed_repos():
         raise SystemExit("Nothing is synced yet. Sync a repo with: gh-issue sync owner/name")
+    query.warm_up()
     print(f"Open http://{host}:{port}", flush=True)
     # Quiet, so a line per request doesn't bury the address just printed.
     uvicorn.run(make_app(), host=host, port=port, log_level="warning")

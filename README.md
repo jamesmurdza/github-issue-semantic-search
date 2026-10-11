@@ -121,11 +121,16 @@ gh-issue web
 
 Open http://127.0.0.1:8080, choose one of your synced repos and type a
 question. The page sends it to GitHub's own issue search and to this index,
-for that repo, and shows the two lists side by side. A match in a comment is
-shown as that comment.
+for that repo, and shows the two lists side by side. A result that GitHub's
+list does not have says so. When the first result is a comment, the comment is
+shown, with its author's picture loaded from github.com.
+
+The address keeps the repo and the question, so a bookmark opens on the same
+search.
 
 GitHub's list comes from its search API in hybrid mode, with the same
-`github.token`. GitHub allows 10 of those searches a minute.
+`github.token`. GitHub allows 10 of those searches a minute. Past that, the
+page counts down and asks again.
 
 ## Commands
 

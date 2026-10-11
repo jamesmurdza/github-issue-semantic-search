@@ -91,6 +91,13 @@ def search(query: str, filters: SearchFilters | None = None, limit: int = 10) ->
     return store().search(vectors["dense"], vectors["sparse"], limit=limit, filters=filters)
 
 
+def warm_up() -> None:
+    """Load the embedding model now, for a caller that stays up and answers
+    searches. Otherwise the first search waits for it: 1.9 s against 0.05 s
+    for the ones after it, measured on `gh-issue web`."""
+    embed_query("warm up")
+
+
 def get_issue(repo: str, number: int) -> Thread | None:
     """One whole indexed thread: the body, then the comments oldest first."""
     chunks = store().chunks_for_issue(repo, number)

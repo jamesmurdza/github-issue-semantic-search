@@ -19,6 +19,7 @@ misses. Measured on 620 queries across two repos (benchmark/), either one alone
 scored about 0.57 (MRR@10) and the two fused scored 0.64.
 """
 
+import threading
 from functools import lru_cache
 from typing import TypedDict
 
@@ -42,6 +43,21 @@ QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 # once it is JSON, so the caller embeds in batches of this size, leaving a run
 # free to index a thread of any length.
 BATCH = 200
+
+
+# How many texts go through the model at once. The memory one call takes grows
+# with this, and fastembed's own choice is 256. Measured on 100 chunks of 2,000
+# characters: 1.6 GB at 256, 0.5 GB at 16 and 0.1 GB at 4, on top of the 0.6 GB
+# the model takes, and all three in 12 to 14 seconds.
+MODEL_BATCH = 4
+
+# One embedding at a time. Dozens of issues are indexed at once, each in a
+# thread of its own. onnxruntime already uses every core for one embedding, so
+# two at once are no faster, and each holds its own batch in memory. Before
+# this, a repo of long threads took the worker to 7 GB and the machine out of
+# memory. It also keeps the model from being loaded once per thread when the
+# first few issues arrive together.
+_one_at_a_time = threading.Lock()
 
 
 class QueryVectors(TypedDict):
@@ -73,7 +89,8 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     """Vectors for each text, in the order given."""
     if not texts:
         return []
-    return [vector.tolist() for vector in _model().embed(texts)]
+    with _one_at_a_time:
+        return [vector.tolist() for vector in _model().embed(texts, batch_size=MODEL_BATCH)]
 
 
 def embed_chunks(chunks: list[Chunk]) -> list[EmbeddedChunk]:

@@ -145,9 +145,11 @@ def test_search_issues_asks_githubs_hybrid_search_for_issues_in_one_repo(
             "html_url": "https://github.com/owner/name/issues/433",
             "body": "a long body the page never shows",
             "user": {"login": "someone"},
+            "created_at": "2026-03-03T09:30:00Z",
+            "comments": 4,
         }
         return httpx.Response(
-            200, json={"total_count": 1, "search_type": "hybrid", "items": [item]}
+            200, json={"total_count": 23, "search_type": "hybrid", "items": [item]}
         )
 
     asked = answering(monkeypatch, answer)
@@ -162,15 +164,40 @@ def test_search_issues_asks_githubs_hybrid_search_for_issues_in_one_repo(
     }
     assert found == {
         "mode": "hybrid",
+        "total": 23,
         "issues": [
             {
                 "number": 433,
                 "title": "Support dev server running on https",
                 "state": "open",
                 "url": "https://github.com/owner/name/issues/433",
+                "author": "someone",
+                "date": "2026-03-03",
+                "comments": 4,
             }
         ],
     }
+
+
+def test_search_issues_names_the_author_of_a_deleted_account_as_github_does(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GitHub sends no user for an account that was deleted, and shows "ghost"."""
+    item = {
+        "number": 9,
+        "title": "Anything",
+        "state": "closed",
+        "html_url": "https://github.com/owner/name/issues/9",
+        "user": None,
+        "created_at": "2026-03-03T09:30:00Z",
+        "comments": 0,
+    }
+    answering(
+        monkeypatch,
+        lambda request: httpx.Response(200, json={"total_count": 1, "items": [item]}),
+    )
+
+    assert api.search_issues("owner/name", "x")["issues"][0]["author"] == "ghost"
 
 
 def test_search_issues_reports_the_mode_github_ran_not_the_one_asked_for(
