@@ -10,18 +10,7 @@ Indexing a large repo can take hours, so [Inngest](https://inngest.link/james-mu
 handles the retries, rate limits, and checkpoints to make sure the process can
 resume if it gets interrupted. This example is sponsored by Inngest.
 
-Example usage:
-
-```
-$ gh-issue search event key not recognized
-1. inngest/inngest#3129 (closed) Inngest start event key not recognized
-   comment by digitalbase on 2026-03-21
-   Great will try it. Do you get `rejecting event; event key not recognized` errors in your log?
-   https://github.com/inngest/inngest/issues/3129
-
-2. inngest/inngest#2819 (closed) Unable to start inngest in prod mode
-   ...
-```
+https://github.com/user-attachments/assets/b44263a4-5710-4713-821b-a8d651f50cc1
 
 ## Install
 
@@ -164,6 +153,19 @@ page counts down and asks again.
 | `gh-issue web` | Show GitHub's own issue search and the index side by side, in a browser, for any synced repo. |
 
 `gh-issue <command> --help` has the details, and examples.
+
+Example usage:
+
+```
+$ gh-issue search event key not recognized
+1. inngest/inngest#3129 (closed) Inngest start event key not recognized
+   comment by digitalbase on 2026-03-21
+   Great will try it. Do you get `rejecting event; event key not recognized` errors in your log?
+   https://github.com/inngest/inngest/issues/3129
+
+2. inngest/inngest#2819 (closed) Unable to start inngest in prod mode
+   ...
+```
 
 ## Settings
 
