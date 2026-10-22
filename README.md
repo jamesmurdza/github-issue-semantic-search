@@ -1,18 +1,16 @@
 # GitHub Issue Semantic Search
 
-A durable pipeline that indexes every issue and comment in a GitHub repo, keeps
-the index current as threads change, and serves it to Claude Code or Cursor
-over MCP. Ask in your own words and get back the thread that answers it, even
-when the bug report used different words.
+A durable pipeline that indexes every issue and comment in a GitHub repo,
+keeps the index current as threads change, and serves it to Claude Code or
+Cursor over MCP. Unlike GitHub's own semantic search, which reads only issue
+titles and bodies, this also reads the comments and shows you the one that
+matched.
 
-GitHub's own semantic search reads issue titles and bodies. This reads the
-comments too, which is often where the answer is, and shows you the comment
-that matched.
+Indexing a large repo can take hours, so [Inngest](https://inngest.link/james-murdza-gh)
+handles the retries, rate limits, and checkpoints to make sure the process can
+resume if it gets interrupted. This example is sponsored by Inngest.
 
-Indexing a large repo takes hours, and has to survive being interrupted along
-the way. [Inngest](https://inngest.link/james-murdza-gh) runs that part:
-resumable backfill, retries, rate limiting and checkpointed steps. This example
-is sponsored by Inngest.
+Example usage:
 
 ```
 $ gh-issue search event key not recognized
@@ -24,9 +22,6 @@ $ gh-issue search event key not recognized
 2. inngest/inngest#2819 (closed) Unable to start inngest in prod mode
    ...
 ```
-
-Python, Qdrant, and embeddings computed locally: no embedding API key, and no
-per-token cost.
 
 ## Install
 
@@ -43,7 +38,9 @@ effect without installing again.
 
 ## Quickstart
 
-This runs everything on your machine, with the Inngest dev server.
+This runs everything on your machine, with the Inngest dev server. Python,
+Qdrant, and embeddings computed locally: no embedding API key, and no
+per-token cost.
 
 1. Start Qdrant (the index) and the Inngest dev server:
 
@@ -83,6 +80,26 @@ This runs everything on your machine, with the Inngest dev server.
    ```bash
    gh-issue search cannot run the dev server on windows
    ```
+
+## Running on Inngest Cloud
+
+The worker opens an outbound connection to Inngest and runs whatever work
+Inngest hands it (connect mode). Nothing has to reach in, so it runs anywhere
+that can reach the internet: no public URL, and no port to open.
+
+1. Get an event key and a signing key from your
+   [Inngest](https://inngest.link/james-murdza-gh) account.
+2. Point gh-issue at Inngest Cloud:
+
+   ```bash
+   gh-issue config unset inngest.dev
+   gh-issue config set inngest.event_key
+   gh-issue config set inngest.signing_key
+   ```
+
+3. If Qdrant is not local, point gh-issue at it:
+   `gh-issue config set qdrant.url <url>`.
+4. Run `gh-issue worker` wherever it should live, and `gh-issue sync` as before.
 
 ## Use it from Claude Code or Cursor
 
@@ -177,26 +194,6 @@ gh-issue config set qdrant.url https://your-cluster.cloud.qdrant.io:6333
 gh-issue config set qdrant.api_key
 ```
 
-## Running on Inngest Cloud
-
-The worker opens an outbound connection to Inngest and runs whatever work
-Inngest hands it (connect mode). Nothing has to reach in, so it runs anywhere
-that can reach the internet: no public URL, and no port to open.
-
-1. Get an event key and a signing key from your
-   [Inngest](https://inngest.link/james-murdza-gh) account.
-2. Point gh-issue at Inngest Cloud:
-
-   ```bash
-   gh-issue config unset inngest.dev
-   gh-issue config set inngest.event_key
-   gh-issue config set inngest.signing_key
-   ```
-
-3. If Qdrant is not local, point gh-issue at it:
-   `gh-issue config set qdrant.url <url>`.
-4. Run `gh-issue worker` wherever it should live, and `gh-issue sync` as before.
-
 ## How it works
 
 Every issue goes through one Inngest function, `index-issue`, whatever started
@@ -265,45 +262,6 @@ the scripts to reproduce them.
 - **The embedding model reads the first 512 tokens of a chunk.** A long
   comment, usually a pasted log, is embedded by its opening; BM25 still reads
   all of it. The model is fixed in this example.
-
-## Code map
-
-To see the Inngest side, start at `functions/index_issue.py`.
-
-```
-gh_issue/
-├── interface/             the ways in, for people and for agents
-│   ├── cli/                 the gh-issue command
-│   │   ├── app.py             every command and its help
-│   │   ├── worker.py          gh-issue worker: runs the Inngest functions
-│   │   ├── sync.py            gh-issue sync: sends the events that start the work
-│   │   ├── remove.py          gh-issue remove
-│   │   ├── preflight.py       the checks worker and sync run first
-│   │   ├── config.py          config.toml, and the config commands
-│   │   └── display.py         everything the commands print
-│   ├── mcp.py               the MCP tools: search_issues, get_issue, status
-│   └── web/                 gh-issue web: the page, and the server behind it
-├── functions/             the Inngest functions
-│   ├── index_issue.py       one issue: fetch, chunk, embed, write, clean up
-│   ├── backfill.py          a whole repo, one page per run
-│   ├── reconcile.py         the hourly sweep
-│   ├── events.py            the event names
-│   └── client.py            the Inngest client
-├── index/                 the searchable index
-│   ├── chunking.py          an issue into chunks, and what changed
-│   ├── embed.py             the local models: dense and BM25
-│   ├── store.py             Qdrant: write, search, filters
-│   ├── query.py             search, get_issue, status, for the CLI and MCP
-│   ├── storage.py           one shared handle each on the store and the records
-│   └── records/             sweep cursors, backfill progress, failures, the heartbeat
-├── github/                GitHub's REST API, and the shapes it returns
-├── env.py                 the environment variables the package reads
-└── utils.py               the time, printing, snippets, safe file writes
-```
-
-Imports go one way: `interface/cli/` uses `functions/` and `index/`,
-`interface/mcp.py`, `interface/web/` and `functions/` use `index/`, and
-`index/` imports none of them. `tests/` has the same layout.
 
 ## Development
 
