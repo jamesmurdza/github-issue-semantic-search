@@ -1,4 +1,4 @@
-# gh-issue
+# GitHub Issue Semantic Search
 
 A durable pipeline that indexes every issue and comment in a GitHub repo, keeps
 the index current as threads change, and serves it to Claude Code or Cursor
