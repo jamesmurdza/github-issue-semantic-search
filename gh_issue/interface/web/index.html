@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Issue Search</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%230969da' d='M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Z'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    --color-canvas: #f6f8fa;
+    --color-canvas-inset: #ffffff;
+    --color-border: #d0d7de;
+    --color-border-muted: #d8dee4;
+    --color-fg: #1f2328;
+    --color-fg-muted: #656d76;
+    --color-accent: #0969da;
+    --color-accent-subtle: #ddf4ff;
+    --color-open: #1a7f37;
+    --color-closed: #8250df;
+    --color-attention: #9a6700;
+    --color-accent-muted: rgba(84, 174, 255, 0.4);
+    --color-match: rgba(212, 167, 44, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  /* The page is as tall as the window and stays still. A list that is longer
+     than its box scrolls inside it, so both lists stay side by side under the
+     question. */
+  body {
+    margin: 0;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--color-canvas);
+    color: var(--color-fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+  /* Before a question, the logo and the question box sit in the middle of the
+     window: half the window, less half the box. Once one is asked the box
+     moves to the bottom, where the box is in a chat, the logo goes to the top
+     left, and the two lists take the room between them. */
+  main {
+    --ask-half: 51px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 16px max(24px, calc(50dvh - var(--ask-half)));
+  }
+
+  body.asked main { padding-bottom: 20px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    main { transition: padding-bottom 0.28s cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .asking { transition: max-width 0.28s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  }
+
+  /* The logo ------------------------------------------------------------------ */
+
+  .brand {
+    order: 0;
+    flex: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 30px;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .brand .wordmark span {
+    font-weight: 300;
+    color: var(--color-fg-muted);
+  }
+
+  /* GitHub's mark on a tile, with a comment's bubble at its corner: the search
+     is GitHub's issues, and what it adds is the comments. */
+  .tile {
+    position: relative;
+    flex: none;
+    width: 46px;
+    height: 46px;
+    padding: 8px;
+    color: #ffffff;
+    background: var(--color-fg);
+    border-radius: 12px;
+  }
+
+  .tile .bubble {
+    position: absolute;
+    right: -7px;
+    bottom: -6px;
+    width: 22px;
+    height: 22px;
+    color: var(--color-accent);
+  }
+
+  .tile .bubble svg {
+    stroke: var(--color-canvas);
+    stroke-width: 2.2;
+    paint-order: stroke;
+  }
+
+  body.asked .brand {
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+
+  body.asked .tile {
+    width: 26px;
+    height: 26px;
+    padding: 5px;
+    border-radius: 7px;
+  }
+
+  body.asked .tile .bubble {
+    right: -5px;
+    bottom: -4px;
+    width: 14px;
+    height: 14px;
+  }
+
+  body.asked .tile .bubble svg { stroke-width: 2.6; }
+
+  /* The question, and the repo to ask it of ----------------------------------- */
+
+  .asking {
+    order: 2;
+    flex: none;
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Once there are lists, the box is as wide as they are. */
+  body.asked .asking { max-width: 1168px; }
+
+  /* One box: the question on top, and under it the repo at the left and the
+     button at the right. */
+  .composer {
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .composer:has(textarea:focus) {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  }
+
+  .composer .write { padding: 14px 18px 6px; }
+
+  /* A long question wraps onto more lines: up to three, and then it scrolls,
+     since the lists need the rest of the window. */
+  .composer textarea {
+    display: block;
+    width: 100%;
+    max-height: 84px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+    font-size: 19px;
+    line-height: 28px;
+    resize: none;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    field-sizing: content;
+  }
+
+  .composer textarea::placeholder { color: var(--color-fg-muted); }
+
+  .composer .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 10px 12px;
+  }
+
+  .repo-picker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    height: 34px;
+    padding-left: 10px;
+    background: var(--color-canvas);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .repo-picker:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  }
+
+  .repo-picker .repo-icon {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--color-fg-muted);
+  }
+
+  .repo-picker select {
+    appearance: none;
+    min-width: 0;
+    max-width: 280px;
+    height: 32px;
+    padding: 0 30px 0 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .repo-picker .chevron {
+    position: absolute;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    color: var(--color-fg-muted);
+    pointer-events: none;
+  }
+
+  /* Where the browser lets a dropdown's open list be styled, which Chromium
+     does, the list looks like the rest of the page. Elsewhere it is the
+     system's own. */
+  @supports (appearance: base-select) {
+    .repo-picker select,
+    .repo-picker select::picker(select) {
+      appearance: base-select;
+    }
+
+    /* Styled this way the dropdown is a row of its own, and its name would
+       sit at the top of it. */
+    .repo-picker select { align-items: center; }
+
+    .repo-picker select::picker-icon { display: none; }
+
+    .repo-picker select::picker(select) {
+      margin: 8px 0 8px -32px;
+      padding: 6px;
+      background: var(--color-canvas-inset);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+    }
+
+    .repo-picker option {
+      gap: 8px;
+      padding: 8px 14px 8px 10px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 6px;
+    }
+
+    .repo-picker option:hover,
+    .repo-picker option:focus-visible {
+      background: var(--color-canvas);
+    }
+
+    .repo-picker option:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: -2px;
+    }
+
+    .repo-picker option:checked { font-weight: 600; }
+    .repo-picker option::checkmark { color: var(--color-accent); }
+  }
+
+  /* The button says Enter with the key's own sign, and takes a click too. */
+  .composer button {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 34px;
+    padding: 0;
+    color: #ffffff;
+    background: var(--color-accent);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .composer button svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .composer button:hover { background: #0860ca; }
+
+  .composer button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Only shown when the repos can't be listed: the index is down, or empty. */
+  .trouble {
+    margin: 14px 0 0;
+    text-align: center;
+    font-size: 15px;
+    color: var(--color-attention);
+  }
+
+  .trouble:empty { display: none; }
+
+  /* The two lists ----------------------------------------------------------- */
+
+  .lists {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    order: 1;
+    flex: 1;
+    min-height: 0;
+    margin-bottom: 20px;
+  }
+
+  .lists[hidden] { display: none; }
+
+  .list {
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .list > header {
+    flex: none;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--color-border-muted);
+  }
+
+  .name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .name .mark {
+    flex: none;
+    width: 22px;
+    height: 22px;
+  }
+
+  .ours .name .mark { color: var(--color-accent); }
+
+  .list h2 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .mode {
+    font-size: 13px;
+    color: var(--color-fg-muted);
+  }
+
+  /* What each search reads: the same three things on both sides, each with a
+     tick or a cross, and one of them differs. That is the comparison,
+     readable without sound. They are facts, so nothing is drawn around them
+     that would make them look like something to press. */
+  .reads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .reads li {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .reads svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: var(--color-open);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .reads li.off {
+    color: var(--color-fg-muted);
+    text-decoration: line-through;
+  }
+
+  .reads li.off svg { stroke: #afb8c1; }
+
+  .reads li.extra {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .reads li.extra svg { stroke: var(--color-accent); }
+
+  .results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .result + .result { border-top: 1px solid var(--color-border-muted); }
+
+  /* A row, as GitHub lays out an issue: the title, and under it the number and
+     who opened it. The rank and the state icon are set against one line of the
+     title, which keeps them on its first line however long it is. */
+  .result a {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 14px 20px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .result a:hover { background: var(--color-canvas); }
+
+  .result a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  .rank {
+    min-width: 1ch;
+    font-size: 14px;
+    line-height: 26px;
+    text-align: right;
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+
+  .result a > .icon { margin-top: 5px; }
+
+  .icon.open { color: var(--color-open); }
+  .icon.closed { color: var(--color-closed); }
+
+  .title {
+    font-size: 17px;
+    line-height: 26px;
+    font-weight: 600;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .details {
+    display: flex;
+    align-items: center;
+    gap: 2px 10px;
+    min-height: 22px;
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--color-fg-muted);
+  }
+
+  .details .icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .details > * { flex: none; }
+
+  /* Who, and when, on one line. A tag that arrives beside it and leaves no
+     room for both cuts it short. It is not pushed onto a line of its own, so
+     the row keeps its height. */
+  .who {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .who .icon {
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: -2px;
+  }
+
+  .count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Ours and not GitHub's. It is the point of the page, so the row says it.
+     GitHub answers about a second after we do, and no row may move under the
+     reader's eye when it does. */
+  .missed {
+    padding: 0 9px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    white-space: nowrap;
+    color: var(--color-accent);
+    background: var(--color-accent-subtle);
+    border: 1px solid var(--color-accent-muted);
+    border-radius: 999px;
+  }
+
+  .missed[aria-hidden="true"] { display: none; }
+
+  /* The post that matched: a line of it, or three on the first result. */
+  .post {
+    margin-top: 4px;
+    font-size: 15px;
+    color: var(--color-fg-muted);
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .result.first .post { -webkit-line-clamp: 3; }
+
+  /* The one loud thing on the page: the comment that answers the question,
+     when it is the first result. It is drawn as GitHub draws a comment, and
+     shown whole, since its last words are often the answer; the server has
+     already cut it to a snippet's length. */
+  .answer {
+    display: block;
+    margin-top: 10px;
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+    overflow: hidden;
+  }
+
+  .answer .by {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+    padding: 7px 14px;
+    font-size: 14px;
+    color: var(--color-fg-muted);
+    background: var(--color-accent-subtle);
+    border-bottom: 1px solid var(--color-accent-muted);
+  }
+
+  .answer .by b {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+
+  .answer img {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    /* Seen while the picture loads. */
+    background: var(--color-border-muted);
+    border-radius: 50%;
+  }
+
+  .answer .post {
+    display: block;
+    margin: 0;
+    padding: 12px 14px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-fg);
+  }
+
+  code {
+    padding: 0.15em 0.4em;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+      monospace;
+    font-size: 0.88em;
+    background: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+  }
+
+  /* The question's words, where a post has them. */
+  mark {
+    padding: 0 1px;
+    /* Not the grey of the line around it, which is too pale on the yellow. */
+    color: var(--color-fg);
+    background: var(--color-match);
+    border-radius: 3px;
+  }
+
+  .message {
+    margin: 0;
+    padding: 36px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-fg-muted);
+  }
+
+  .message:empty { display: none; }
+
+  .message.failed {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .message.failed .icon {
+    align-self: auto;
+    margin-top: 3px;
+    color: var(--color-attention);
+  }
+
+  /* While a list waits: the shape of rows to come. */
+  .placeholder { padding: 18px 20px; }
+
+  .placeholder + .placeholder { border-top: 1px solid var(--color-border-muted); }
+
+  .placeholder span {
+    display: block;
+    height: 12px;
+    background: var(--color-border-muted);
+    border-radius: 6px;
+  }
+
+  .placeholder span:first-child { width: 62%; }
+
+  .placeholder span:last-child {
+    width: 34%;
+    margin-top: 12px;
+    opacity: 0.6;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .result,
+    .missed:not([aria-hidden="true"]) {
+      animation: arrive 0.18s ease-out;
+    }
+
+    @keyframes arrive { from { opacity: 0; } }
+  }
+
+  @media (max-width: 720px) {
+    body {
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+
+    main {
+      height: auto;
+      min-height: 100dvh;
+    }
+
+    body.asked main { padding-bottom: 0; }
+
+    /* The page scrolls here, and the question holds to the bottom of the
+       window over it. */
+    .asking {
+      position: sticky;
+      bottom: 0;
+      /* From one side of the window to the other, over the page's own gutters. */
+      align-self: stretch;
+      width: auto;
+      max-width: none;
+      margin: 0 -16px;
+      padding: 12px 16px 16px;
+      background: var(--color-canvas);
+    }
+
+    body.asked .asking { box-shadow: 0 -1px 0 var(--color-border); }
+
+    /* One line has no room for everything here. The tag goes beside the
+       number and keeps its place while it is not shown; who and when go
+       after it, on the next line if need be. */
+    .details { flex-wrap: wrap; }
+
+    .who {
+      order: 2;
+      white-space: normal;
+    }
+
+    .count { order: 2; }
+
+    .missed { order: 1; }
+
+    .missed[aria-hidden="true"] {
+      display: inline;
+      visibility: hidden;
+    }
+
+    .lists { grid-template-rows: none; }
+
+    .list {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .results { overflow-y: visible; }
+    .lists { grid-template-columns: minmax(0, 1fr); }
+    .list > header { padding: 14px 14px 12px; }
+    .result a { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+<script>
+  // Before anything is drawn: an address that carries a question opens with
+  // the box at the bottom, where it will be, and not in the middle first.
+  if (new URLSearchParams(location.search).get("q")) document.body.classList.add("asked");
+</script>
+
+  <main>
+    <h1 class="brand">
+      <span class="tile">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38
+                0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95
+                0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27
+                -.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82
+                1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66
+                -.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94
+                0 .67.01 1.3.01 1.49 0 .21-.15.46-.55.38A8.012 8.012 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+              </svg>
+        <span class="bubble">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1
+            13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Z"/>
+          </svg>
+        </span>
+      </span>
+      <span class="wordmark">Issue <span>Search</span></span>
+    </h1>
+
+    <div class="asking">
+      <form class="composer" id="ask" role="search">
+        <div class="write">
+          <textarea
+            id="question"
+            rows="1"
+            aria-label="Question"
+            placeholder="Ask about an issue, in your own words"
+            autocomplete="off"
+            spellcheck="false"
+            enterkeyhint="search"
+            autofocus
+          ></textarea>
+        </div>
+        <div class="bar">
+          <label class="repo-picker">
+        <span class="repo-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75
+            0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1
+            1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1
+            .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/>
+          </svg>
+        </span>
+        <select id="repo" aria-label="Repo"></select>
+        <span class="chevron">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749
+            0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/>
+          </svg>
+        </span>
+      </label>
+          <button type="submit" aria-label="Search" title="Search (Enter)">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M12.5 3.5v4a2 2 0 0 1-2 2h-7" />
+              <path d="m6 6.5-3 3 3 3" />
+            </svg>
+          </button>
+        </div>
+      </form>
+      <p class="trouble" id="trouble" role="status"></p>
+    </div>
+
+    <div class="lists" id="lists" hidden>
+      <section class="list" id="github" aria-labelledby="github-name">
+        <header>
+          <div class="name">
+            <span class="mark">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38
+                0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95
+                0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27
+                -.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82
+                1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66
+                -.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94
+                0 .67.01 1.3.01 1.49 0 .21-.15.46-.55.38A8.012 8.012 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+              </svg>
+            </span>
+            <h2 id="github-name">Original</h2>
+            <span class="mode" hidden></span>
+          </div>
+          <ul class="reads" role="list" aria-label="What it searches">
+            <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" /></svg>Titles</li>
+            <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" /></svg>Bodies</li>
+            <li class="off"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" /></svg><span class="sr-only">not </span>Comments</li>
+          </ul>
+        </header>
+        <ol class="results" role="list" aria-label="Results"></ol>
+        <p class="message" role="status"></p>
+      </section>
+
+      <section class="list ours" id="ours" aria-labelledby="ours-name">
+        <header>
+          <div class="name">
+            <span class="mark">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1
+                13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25
+                0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1
+                .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/>
+              </svg>
+            </span>
+            <h2 id="ours-name">Ours</h2>
+          </div>
+          <ul class="reads" role="list" aria-label="What it searches">
+            <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" /></svg>Titles</li>
+            <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" /></svg>Bodies</li>
+            <li class="extra"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" /></svg>Comments</li>
+          </ul>
+        </header>
+        <ol class="results" role="list" aria-label="Results"></ol>
+        <p class="message" role="status"></p>
+      </section>
+    </div>
+  </main>
+
+<script>
+  const form = document.getElementById("ask");
+  const input = document.getElementById("question");
+  const repo = document.getElementById("repo");
+  const trouble = document.getElementById("trouble");
+  const shown = document.getElementById("lists");
+  const lists = {
+    github: document.getElementById("github"),
+    ours: document.getElementById("ours"),
+  };
+  // Counts the searches started, so an answer to an older one can be dropped.
+  let latest = 0;
+  // What each list answered for the search in hand, so that ours can be held
+  // against GitHub's.
+  const answered = { github: null, ours: null };
+
+  // Words that say nothing about what a question is about.
+  const SMALL = new Set(
+    `a about after all also an and any are as at be because been before but by can can't cannot
+    could did do does doesn't don't for from get gets got had has have how i if in into is isn't
+    it its just me my no not of on only or our out over so some than that the their then there
+    these they this those to too under up very was we were what when where which who why will
+    with won't would you your`.split(/\s+/),
+  );
+
+  const ICONS = {
+    open: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>`,
+    closed: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.28 6.78a.75.75 0 0 0-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l3.5-3.5Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>`,
+    comment: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>`,
+    alert: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>`,
+  };
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  // The only HTML built from a string is an icon, and those are the constants
+  // above. Titles and posts are other people's text and go in as text.
+  function icon(name) {
+    const holder = element("span", `icon ${name}`);
+    holder.innerHTML = ICONS[name];
+    return holder;
+  }
+
+  function day(date) {
+    return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  }
+
+  function say(list, text, failed = false) {
+    list.querySelector(".results").replaceChildren();
+    const message = list.querySelector(".message");
+    message.classList.remove("sr-only");
+    message.classList.toggle("failed", failed);
+    message.replaceChildren();
+    if (failed) message.append(icon("alert"));
+    if (text) message.append(element("span", "", text));
+  }
+
+  // The question's words as the starts of the words to mark in a post, so that
+  // "migration" marks "migrations" and "upgrading" marks "upgrade".
+  function marks(question) {
+    const starts = new Set();
+    for (const word of question.toLowerCase().match(/[a-z0-9']+/g) || []) {
+      if (word.length < 3 || SMALL.has(word)) continue;
+      const ending = ["ing", "ed", "es", "s"].find(
+        (end) => word.endsWith(end) && word.length - end.length >= 4,
+      );
+      starts.add((ending ? word.slice(0, -ending.length) : word).replace(/[^a-z0-9]/g, ""));
+    }
+    starts.delete("");
+    return starts.size ? new RegExp(`\\b(?:${[...starts].join("|")})[a-z0-9]*`, "gi") : null;
+  }
+
+  // A post as nodes: code where the server left a pair of backticks, and the
+  // question's words marked. A post that was cut inside its code has one
+  // backtick left over, and the rest of it is code too.
+  function rich(text, pattern) {
+    const whole = document.createDocumentFragment();
+    text.split("`").forEach((part, index) => {
+      if (!part) return;
+      const holder = index % 2 ? element("code") : whole;
+      let last = 0;
+      for (const match of pattern ? part.matchAll(pattern) : []) {
+        holder.append(part.slice(last, match.index), element("mark", "", match[0]));
+        last = match.index + match[0].length;
+      }
+      holder.append(part.slice(last));
+      if (holder !== whole) whole.append(holder);
+    });
+    return whole;
+  }
+
+  // A comment as GitHub draws one: its author's picture, who and when, then
+  // the words. The picture is GitHub's; without it the rest still reads.
+  function card(result, pattern) {
+    const box = element("span", "answer");
+    const by = element("span", "by");
+    const face = document.createElement("img");
+    face.alt = "";
+    face.width = 24;
+    face.height = 24;
+    face.referrerPolicy = "no-referrer";
+    face.addEventListener("error", () => face.remove());
+    face.src = `https://github.com/${encodeURIComponent(result.author)}.png?size=64`;
+    by.append(face, element("b", "", result.author), ` commented on ${day(result.date)}`);
+    const post = element("span", "post");
+    post.append(rich(result.text, pattern));
+    box.append(by, post);
+    return box;
+  }
+
+  function row(result, index, pattern) {
+    const item = element("li", index ? "result" : "result first");
+    item.dataset.number = result.number;
+    const link = element("a");
+    link.href = result.url;
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    const rank = element("span", "rank", String(index + 1));
+    // The list is numbered already, for anyone it is read out to.
+    rank.setAttribute("aria-hidden", "true");
+    link.append(rank, icon(result.state === "open" ? "open" : "closed"));
+
+    const main = element("span", "main");
+    main.append(element("span", "title", result.title));
+    const details = element("span", "details");
+    details.append(element("span", "number", `#${result.number}`));
+    // Only our results say which post matched, and show it. The first one, if
+    // it is a comment, shows it as a comment.
+    const comment = result.kind === "comment";
+    const loud = comment && index === 0;
+    if (comment && !loud) {
+      const who = element("span", "who");
+      who.append(icon("comment"), `${result.author} commented on ${day(result.date)}`);
+      details.append(who);
+    } else if (!comment) {
+      details.append(element("span", "who", `${result.author} opened on ${day(result.date)}`));
+    }
+    if (result.kind) {
+      // The place for the tag that compare() shows, kept from the start.
+      const tag = element("span", "missed", "Not in GitHub's results");
+      tag.setAttribute("aria-hidden", "true");
+      details.append(tag);
+    }
+    if (result.comments) {
+      const count = element("span", "count");
+      const unit = result.comments === 1 ? " comment" : " comments";
+      count.append(icon("comment"), String(result.comments), element("span", "sr-only", unit));
+      details.append(count);
+    }
+    main.append(details);
+    if (loud) {
+      main.append(card(result, pattern));
+    } else if (result.text) {
+      const post = element("span", "post");
+      post.append(rich(result.text, pattern));
+      main.append(post);
+    }
+    link.append(main);
+    item.append(link);
+    return item;
+  }
+
+  // Says, on each of our results, whether GitHub's list has that issue. Only
+  // once both lists have answered the same search: if GitHub's failed, there
+  // is nothing to hold ours against, and no tag is shown.
+  function compare() {
+    const theirs = answered.github;
+    const mine = answered.ours;
+    const both = Boolean(theirs && mine && theirs.turn === latest && mine.turn === latest);
+    const found = new Set(both ? theirs.results.map((result) => result.number) : []);
+    // GitHub may have the issue further down than the page asked it for.
+    const label =
+      both && theirs.total > theirs.results.length
+        ? `Not in GitHub's top ${theirs.results.length}`
+        : "Not in GitHub's results";
+    for (const item of lists.ours.querySelectorAll(".result")) {
+      const tag = item.querySelector(".missed");
+      if (both && !found.has(Number(item.dataset.number))) {
+        tag.textContent = label;
+        tag.removeAttribute("aria-hidden");
+      } else {
+        tag.setAttribute("aria-hidden", "true");
+      }
+    }
+  }
+
+  // While a list waits: the shape of three rows, and "Searching..." for
+  // anyone the page is read out to.
+  function wait(list) {
+    say(list, "Searching...");
+    list.querySelector(".message").classList.add("sr-only");
+    const rows = [1, 2, 3].map(() => {
+      const item = element("li", "placeholder");
+      item.setAttribute("aria-hidden", "true");
+      item.append(element("span"), element("span"));
+      return item;
+    });
+    list.querySelector(".results").replaceChildren(...rows);
+  }
+
+  // GitHub's allowance is spent. The seconds are counted down and the search
+  // is made again, so that one made too soon answers itself.
+  function again(name, question, turn, seconds) {
+    if (turn !== latest) return;
+    if (seconds <= 0) {
+      ask(name, question, turn);
+      return;
+    }
+    const unit = seconds === 1 ? "second" : "seconds";
+    const note = `GitHub allows 10 of these searches a minute. Trying again in ${seconds} ${unit}.`;
+    say(lists[name], note, true);
+    setTimeout(() => again(name, question, turn, seconds - 1), 1000);
+  }
+
+  async function ask(name, question, turn) {
+    const list = lists[name];
+    answered[name] = null;
+    // What the last search ran says nothing about this one.
+    const ran = list.querySelector(".mode");
+    if (ran) {
+      ran.textContent = "";
+      ran.hidden = true;
+    }
+    // Our list answers in about 50 ms, GitHub's in about a second. A list
+    // keeps what it shows for a moment, so that a quick answer replaces it
+    // without rows to come flashing in between.
+    const slow = setTimeout(() => {
+      if (turn === latest) wait(list);
+    }, 150);
+    let response;
+    let body;
+    try {
+      const asked = new URLSearchParams({ q: question, repo: repo.value });
+      response = await fetch(`/api/${name}?${asked}`);
+      body = await response.json();
+    } catch {
+      if (turn === latest) say(list, "The search failed.", true);
+      return;
+    } finally {
+      clearTimeout(slow);
+    }
+    if (turn !== latest) return;
+    if (response.status === 429 && body.retry_after) {
+      again(name, question, turn, body.retry_after);
+      return;
+    }
+    if (!response.ok) {
+      say(list, body.error || "The search failed.", true);
+      return;
+    }
+
+    // GitHub is asked for hybrid, and the list's heading counts on it. If it
+    // ran something else, the list says which.
+    const mode = list.querySelector(".mode");
+    if (mode) {
+      const asked = body.mode === "hybrid";
+      mode.textContent = asked ? "" : `${body.mode} mode`;
+      mode.hidden = asked;
+    }
+    answered[name] = { turn, results: body.results, total: body.total };
+    if (body.results.length) {
+      const pattern = marks(question);
+      say(list, "");
+      const results = list.querySelector(".results");
+      results.replaceChildren(...body.results.map((result, index) => row(result, index, pattern)));
+      results.scrollTop = 0;
+    } else {
+      say(list, "No results");
+    }
+    compare();
+  }
+
+  // The repo and the question are kept in the address, so that a reload, a
+  // bookmark, or a tab opened ahead of time comes back to the same search.
+  // The repo is kept in the browser too, for a visit with no address to go by.
+  function keep(question) {
+    if (!repo.value) return;
+    const kept = new URLSearchParams({ repo: repo.value });
+    if (question) kept.set("q", question);
+    history.replaceState(null, "", `?${kept}`);
+    try {
+      localStorage.setItem("repo", repo.value);
+    } catch {
+      // A browser that keeps nothing: the address still has it.
+    }
+  }
+
+  function search() {
+    const question = input.value.trim();
+    latest += 1;
+    keep(question);
+    // The lists are only there once there is something to ask.
+    const asking = Boolean(question && repo.value);
+    document.body.classList.toggle("asked", asking);
+    shown.hidden = !asking;
+    if (!asking) {
+      // Don't leave another repo's results behind them.
+      for (const list of Object.values(lists)) say(list, "");
+      return;
+    }
+    ask("github", question, latest);
+    ask("ours", question, latest);
+  }
+
+  // The repos to choose from are the ones in the index, asked for on load so
+  // that a repo synced since the server started is there after a refresh.
+  async function offerRepos() {
+    let response;
+    let body;
+    try {
+      response = await fetch("/api/repos");
+      body = await response.json();
+    } catch {
+      trouble.textContent = "Can't reach the server.";
+      return;
+    }
+    if (!response.ok) {
+      trouble.textContent = body.error || "The repos can't be listed.";
+      return;
+    }
+    if (!body.repos.length) {
+      trouble.textContent = "Nothing is synced yet. Sync a repo with: gh-issue sync owner/name";
+      return;
+    }
+    repo.replaceChildren(...body.repos.map((name) => new Option(name, name)));
+
+    // Pick up where the address, or the last visit, left off.
+    const kept = new URLSearchParams(location.search);
+    let last = null;
+    try {
+      last = localStorage.getItem("repo");
+    } catch {
+      // Nothing was kept.
+    }
+    const choice = [kept.get("repo"), last].find((name) => body.repos.includes(name));
+    if (choice) repo.value = choice;
+    if (kept.get("q")) {
+      input.value = kept.get("q");
+      fit();
+      search();
+    }
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (input.value.trim()) search();
+  });
+
+  // The box takes a long question on several lines, but a question is one
+  // line: Enter asks it, and a pasted line break becomes a space.
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  input.addEventListener("input", () => {
+    if (input.value.includes("\n")) input.value = input.value.replace(/\s*\n\s*/g, " ");
+    fit();
+  });
+
+  // For a browser that can't size the box to the question by itself.
+  function fit() {
+    if (CSS.supports("field-sizing", "content")) return;
+    input.style.height = "auto";
+    // Three lines at most, as the style sheet has it; then it scrolls.
+    input.style.height = `${Math.min(input.scrollHeight, 84)}px`;
+  }
+
+  // A narrower window wraps the question onto more lines.
+  window.addEventListener("resize", fit);
+
+  // Another repo, the same question: ask it there straight away.
+  repo.addEventListener("change", search);
+
+  offerRepos();
+
+  // "/" brings the cursor back to the question, as it does on GitHub.
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "/" && document.activeElement !== input) {
+      event.preventDefault();
+      input.focus();
+    }
+  });
+</script>
+</body>
+</html>

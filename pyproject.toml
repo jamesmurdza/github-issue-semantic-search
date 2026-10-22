@@ -1,0 +1,60 @@
+[project]
+name = "gh-issue"
+version = "0.1.0"
+description = "Semantic search over a GitHub repo's issue history, indexed durably with Inngest."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cyclopts>=4.25.3",
+    "fastembed>=0.8.1",
+    "fastmcp>=4.0.5",
+    "httpx>=0.28.1",
+    "inngest[connect]>=0.5.19",
+    "qdrant-client>=1.19.1",
+    "starlette>=1.7.0",
+    "tomli-w>=1.2",
+    "uvicorn>=0.53.0",
+]
+
+[project.scripts]
+gh-issue = "gh_issue.interface.cli.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gh_issue"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E731"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["gh_issue", "tests", "benchmark"]
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["fastembed.*", "qdrant_client.*", "cyclopts.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "playwright>=1.63.0",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.8",
+]
