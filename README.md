@@ -6,10 +6,9 @@ Cursor over MCP. Unlike GitHub's own semantic search, which reads only issue
 titles and bodies, this also reads the comments and shows you the one that
 matched.
 
-Indexing a large repo takes hours, and has to survive being interrupted along
-the way. [Inngest](https://inngest.link/james-murdza-gh) runs that part:
-resumable backfill, retries, rate limiting and checkpointed steps. This example
-is sponsored by Inngest.
+Indexing a large repo can take hours, so [Inngest](https://inngest.link/james-murdza-gh)
+handles the retries, rate limits, and checkpoints to make sure the process can
+resume if it gets interrupted. This example is sponsored by Inngest.
 
 Example usage:
 
