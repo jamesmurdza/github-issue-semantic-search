@@ -1,18 +1,17 @@
 # GitHub Issue Semantic Search
 
-A durable pipeline that indexes every issue and comment in a GitHub repo, keeps
-the index current as threads change, and serves it to Claude Code or Cursor
-over MCP. Ask in your own words and get back the thread that answers it, even
-when the bug report used different words.
-
-GitHub's own semantic search reads issue titles and bodies. This reads the
-comments too, which is often where the answer is, and shows you the comment
-that matched.
+A durable pipeline that indexes every issue and comment in a GitHub repo,
+keeps the index current as threads change, and serves it to Claude Code or
+Cursor over MCP. Unlike GitHub's own semantic search, which reads only issue
+titles and bodies, this also reads the comments and shows you the one that
+matched.
 
 Indexing a large repo takes hours, and has to survive being interrupted along
 the way. [Inngest](https://inngest.link/james-murdza-gh) runs that part:
 resumable backfill, retries, rate limiting and checkpointed steps. This example
 is sponsored by Inngest.
+
+Example usage:
 
 ```
 $ gh-issue search event key not recognized
@@ -24,9 +23,6 @@ $ gh-issue search event key not recognized
 2. inngest/inngest#2819 (closed) Unable to start inngest in prod mode
    ...
 ```
-
-Python, Qdrant, and embeddings computed locally: no embedding API key, and no
-per-token cost.
 
 ## Install
 
@@ -43,7 +39,9 @@ effect without installing again.
 
 ## Quickstart
 
-This runs everything on your machine, with the Inngest dev server.
+This runs everything on your machine, with the Inngest dev server. Python,
+Qdrant, and embeddings computed locally: no embedding API key, and no
+per-token cost.
 
 1. Start Qdrant (the index) and the Inngest dev server:
 
