@@ -82,6 +82,26 @@ per-token cost.
    gh-issue search cannot run the dev server on windows
    ```
 
+## Running on Inngest Cloud
+
+The worker opens an outbound connection to Inngest and runs whatever work
+Inngest hands it (connect mode). Nothing has to reach in, so it runs anywhere
+that can reach the internet: no public URL, and no port to open.
+
+1. Get an event key and a signing key from your
+   [Inngest](https://inngest.link/james-murdza-gh) account.
+2. Point gh-issue at Inngest Cloud:
+
+   ```bash
+   gh-issue config unset inngest.dev
+   gh-issue config set inngest.event_key
+   gh-issue config set inngest.signing_key
+   ```
+
+3. If Qdrant is not local, point gh-issue at it:
+   `gh-issue config set qdrant.url <url>`.
+4. Run `gh-issue worker` wherever it should live, and `gh-issue sync` as before.
+
 ## Use it from Claude Code or Cursor
 
 The MCP server gives an agent three read-only tools:
@@ -174,26 +194,6 @@ such as a Qdrant Cloud cluster, set its address and its key:
 gh-issue config set qdrant.url https://your-cluster.cloud.qdrant.io:6333
 gh-issue config set qdrant.api_key
 ```
-
-## Running on Inngest Cloud
-
-The worker opens an outbound connection to Inngest and runs whatever work
-Inngest hands it (connect mode). Nothing has to reach in, so it runs anywhere
-that can reach the internet: no public URL, and no port to open.
-
-1. Get an event key and a signing key from your
-   [Inngest](https://inngest.link/james-murdza-gh) account.
-2. Point gh-issue at Inngest Cloud:
-
-   ```bash
-   gh-issue config unset inngest.dev
-   gh-issue config set inngest.event_key
-   gh-issue config set inngest.signing_key
-   ```
-
-3. If Qdrant is not local, point gh-issue at it:
-   `gh-issue config set qdrant.url <url>`.
-4. Run `gh-issue worker` wherever it should live, and `gh-issue sync` as before.
 
 ## How it works
 
