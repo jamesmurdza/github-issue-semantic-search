@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/b44263a4-5710-4713-821b-a8d651f50cc1
 You need [uv](https://docs.astral.sh/uv/) and Docker.
 
 ```bash
-git clone https://github.com/jamesmurdza/example-projects
+git clone https://github.com/jamesmurdza/github-issue-semantic-search
 cd example-projects/gh-issue
 uv tool install --editable .
 ```
